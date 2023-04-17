@@ -1,15 +1,31 @@
 mod mdp;
-use std::collections::HashMap;
 use crate::mdp::*;
+use std::collections::HashMap;
 
 fn main() {
     let mdp = Mdp::new_test_mdp(0.0);
     let tolerance = 0.01;
     let value_map = value_iteration(&mdp, tolerance);
 
+    mdp.perform_action((State(0u8), Action::A));
+
     for (state, value) in value_map.iter() {
         println!("State {:?} has value: {:.4}", state, value);
     }
+
+    sarsa(&mdp, 0.5, 0.5, (State(0), Action::A));
+}
+
+fn sarsa(
+    mdp: &Mdp,
+    alpha: f64,
+    gamma: f64,
+    initial: (State, Action),
+) -> HashMap<(State, Action), f64> {
+    let q_map: HashMap<(State, Action), f64> = HashMap::new();
+    let next_state = mdp.perform_action(initial);
+    println!("Next state: {:?}", next_state);
+    q_map
 }
 
 fn value_iteration(mdp: &Mdp, tolerance: f64) -> HashMap<State, f64> {

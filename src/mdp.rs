@@ -1,6 +1,11 @@
+use rand::{
+    distributions::{Distribution, WeightedIndex},
+    Rng,
+};
 use std::collections::HashMap;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct State(u8);
+pub struct State(pub u8);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Action {
@@ -13,11 +18,29 @@ pub type Probability = f64;
 pub type Reward = f64;
 
 pub struct Mdp {
-    pub transition_probabilities: HashMap<(State, Action), Vec<(f64, State, f64)>>,
+    pub transition_probabilities: HashMap<(State, Action), Vec<(Probability, State, Reward)>>,
     pub discount_factor: f64,
 }
 
 impl Mdp {
+    pub fn perform_action(&self, state_action: (State, Action)) -> (State, Reward) {
+        if let Some(transitions) = self.transition_probabilities.get(&state_action) {
+            let mut rng = rand::thread_rng();
+
+            // extract probabilities, create distribution and sample
+            let probs: Vec<_> = transitions
+                .iter()
+                .map(|(prob, _, _)| (prob * 100.0) as u32)
+                .collect();
+            let dist = WeightedIndex::new(&probs).unwrap();
+            let state_index = dist.sample(&mut rng);
+
+            //return resulting state and reward
+            (State(state_index as u8), transitions[state_index].2)
+        } else {
+            panic!("something went very wrong");
+        }
+    }
     pub fn value_iteration(&self, tolerance: f64) -> HashMap<State, f64> {
         let mut value_map: HashMap<State, f64> = HashMap::new();
         let mut delta = f64::MAX;
@@ -75,5 +98,3 @@ impl Mdp {
         }
     }
 }
-
-
