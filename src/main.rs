@@ -35,11 +35,11 @@ fn sarsa(
     // println!("Possible actions: {:?}", possible_actions);
     // println!("Selected next_action: {:?}", selected_action);
 
-    for _ in 0..100000 {
+    for _ in 0..1000000 {
         let (next_state, reward) = mdp.perform_action((current_state, current_action));
 
         // TODO: actual policy
-        let next_action = epsilon_greedy_policy(&mdp, &q_map, next_state, 0.1);
+        let next_action = epsilon_greedy_policy(mdp, &q_map, next_state, 0.1);
 
         println!(
             "Quintuple: ({:?},{:?},{:?},{:?},{:?})",
@@ -47,10 +47,9 @@ fn sarsa(
         );
 
         // update q_map
-        let next_q = q_map
+        let next_q = *q_map
             .get(&(next_state, next_action))
-            .unwrap_or(&0.0)
-            .clone();
+            .unwrap_or(&0.0);
         let current_q = q_map.entry((current_state, current_action)).or_insert(0.0);
         *current_q = *current_q + alpha * (reward + gamma * next_q - *current_q);
 
@@ -106,8 +105,8 @@ fn epsilon_greedy_policy(
 ) -> Action {
     let mut rng = rand::thread_rng();
     let random_value = rng.gen_range(0.0..1.0);
-    if random_value < (1.0 - epsilon){
-        greedy_policy(mdp, value_map, current_state) 
+    if random_value < (1.0 - epsilon) {
+        greedy_policy(mdp, value_map, current_state)
     } else {
         random_policy(mdp, current_state)
     }

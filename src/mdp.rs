@@ -59,10 +59,10 @@ impl Mdp {
                     (State(0), Action::A),
                     vec![(0.8, State(1), 1.0), (0.2, State(1), 10.0)],
                 ),
-                ((State(0), Action::B), vec![(1.0, State(0), 1.0)]),
+                ((State(0), Action::B), vec![(1.0, State(0), -1.0)]),
                 ((State(1), Action::A), vec![(1.0, State(1), -1.0)]),
-                ((State(1), Action::B), vec![(1.0, State(0), 1.0)]),
-                ((State(2), Action::A), vec![(1.0, State(0), 1.0)]),
+                ((State(1), Action::B), vec![(1.0, State(0), -1.0)]),
+                ((State(2), Action::A), vec![(1.0, State(0), -1.0)]),
             ]);
 
         Mdp {
