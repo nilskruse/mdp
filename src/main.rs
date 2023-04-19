@@ -35,7 +35,7 @@ fn sarsa(
     // println!("Possible actions: {:?}", possible_actions);
     // println!("Selected next_action: {:?}", selected_action);
 
-    for _ in 0..1000000 {
+    for _ in 0..1000 {
         let (next_state, reward) = mdp.perform_action((current_state, current_action));
 
         // TODO: actual policy
@@ -47,9 +47,7 @@ fn sarsa(
         );
 
         // update q_map
-        let next_q = *q_map
-            .get(&(next_state, next_action))
-            .unwrap_or(&0.0);
+        let next_q = *q_map.get(&(next_state, next_action)).unwrap_or(&0.0);
         let current_q = q_map.entry((current_state, current_action)).or_insert(0.0);
         *current_q = *current_q + alpha * (reward + gamma * next_q - *current_q);
 
@@ -70,10 +68,10 @@ fn random_policy(mdp: &Mdp, current_state: State) -> Action {
 
 fn greedy_policy(
     mdp: &Mdp,
-    value_map: &HashMap<(State, Action), Reward>,
+    q_map: &HashMap<(State, Action), Reward>,
     current_state: State,
 ) -> Action {
-    value_map
+    q_map
         .iter()
         .filter_map(|((state, action), reward)| {
             if state.eq(&current_state) {
@@ -93,20 +91,20 @@ fn greedy_policy(
                 Some((current_action, current_reward))
             }
         })
-        .unwrap_or((random_policy(mdp, current_state), 0.0))
+        .unwrap_or((random_policy(mdp, current_state), 0.0)) // random when no entry
         .0
 }
 
 fn epsilon_greedy_policy(
     mdp: &Mdp,
-    value_map: &HashMap<(State, Action), Reward>,
+    q_map: &HashMap<(State, Action), Reward>,
     current_state: State,
     epsilon: f64,
 ) -> Action {
     let mut rng = rand::thread_rng();
     let random_value = rng.gen_range(0.0..1.0);
     if random_value < (1.0 - epsilon) {
-        greedy_policy(mdp, value_map, current_state)
+        greedy_policy(mdp, q_map, current_state)
     } else {
         random_policy(mdp, current_state)
     }
@@ -119,7 +117,7 @@ fn value_iteration(mdp: &Mdp, tolerance: f64, gamma: f64) -> HashMap<State, f64>
     while delta > tolerance {
         delta = 0.0;
 
-        for (state, _) in mdp.transition_probabilities.keys() {
+        for (state, _) in mdp.transitions.keys() {
             let old_value = *value_map.get(state).unwrap_or(&0.0);
             let new_value = best_action_value(mdp, *state, &value_map, gamma);
 
@@ -132,7 +130,7 @@ fn value_iteration(mdp: &Mdp, tolerance: f64, gamma: f64) -> HashMap<State, f64>
 }
 
 fn best_action_value(mdp: &Mdp, state: State, value_map: &HashMap<State, f64>, gamma: f64) -> f64 {
-    mdp.transition_probabilities
+    mdp.transitions
         .iter()
         .filter_map(|((s, _), transitions)| {
             if *s == state {
