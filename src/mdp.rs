@@ -2,20 +2,18 @@ use rand::distributions::{Distribution, WeightedIndex};
 use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct State(pub u8);
+pub struct State(pub u32);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum Action {
-    A,
-    B,
-}
+pub struct Action(pub u32);
 
 // some type aliases for readability
 pub type Probability = f64;
 pub type Reward = f64;
+pub type Transition = (Probability, State, Reward);
 
 pub struct Mdp {
-    pub transitions: HashMap<(State, Action), Vec<(Probability, State, Reward)>>,
+    pub transitions: HashMap<(State, Action), Vec<Transition>>,
 }
 
 impl Mdp {
@@ -32,7 +30,7 @@ impl Mdp {
             let state_index = dist.sample(&mut rng);
 
             //return resulting state and reward
-            (State(state_index as u8), transitions[state_index].2)
+            (State(state_index as u32), transitions[state_index].2)
         } else {
             // you don't want to be here
             panic!("something went very wrong");
@@ -53,16 +51,16 @@ impl Mdp {
     }
 
     pub fn new_test_mdp() -> Mdp {
-        let transition_probabilities: HashMap<(State, Action), Vec<(Probability, State, Reward)>> =
+        let transition_probabilities: HashMap<(State, Action), Vec<Transition>> =
             HashMap::from([
                 (
-                    (State(0), Action::A),
+                    (State(0), Action(0)),
                     vec![(0.2, State(1), 1.0), (0.8, State(1), 10.0)],
                 ),
-                ((State(0), Action::B), vec![(1.0, State(0), -1.0)]),
-                ((State(1), Action::A), vec![(1.0, State(1), -1.0)]),
-                ((State(1), Action::B), vec![(1.0, State(0), -1.0)]),
-                ((State(2), Action::A), vec![(1.0, State(0), -1.0)]),
+                ((State(0), Action(1)), vec![(1.0, State(0), -1.0)]),
+                ((State(1), Action(0)), vec![(1.0, State(1), -1.0)]),
+                ((State(1), Action(1)), vec![(1.0, State(0), -1.0)]),
+                ((State(2), Action(0)), vec![(1.0, State(0), -1.0)]),
             ]);
 
         Mdp {

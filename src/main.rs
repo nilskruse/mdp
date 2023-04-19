@@ -1,20 +1,20 @@
 mod mdp;
-use rand::Rng;
 
 use crate::mdp::*;
+use rand::Rng;
 use std::collections::HashMap;
 
 fn main() {
     let mdp = Mdp::new_test_mdp();
     let value_map = value_iteration(&mdp, 0.01, 0.0);
 
-    mdp.perform_action((State(0u8), Action::A));
+    mdp.perform_action((State(0u32), Action(0)));
 
     for (state, value) in value_map.iter() {
         println!("State {:?} has value: {:.4}", state, value);
     }
 
-    let q_map = sarsa(&mdp, 0.5, 0.5, (State(0), Action::A));
+    let q_map = sarsa(&mdp, 0.5, 0.5, (State(0), Action(0)));
     println!("Q: {:?}", q_map);
     let greedy_action = greedy_policy(&mdp, &q_map, State(0));
     println!("Selected greedy_action for State 0: {:?}", greedy_action);
@@ -35,16 +35,15 @@ fn sarsa(
     // println!("Possible actions: {:?}", possible_actions);
     // println!("Selected next_action: {:?}", selected_action);
 
-    for _ in 0..1000 {
+    for _ in 0..100000 {
         let (next_state, reward) = mdp.perform_action((current_state, current_action));
 
-        // TODO: actual policy
         let next_action = epsilon_greedy_policy(mdp, &q_map, next_state, 0.1);
 
-        println!(
-            "Quintuple: ({:?},{:?},{:?},{:?},{:?})",
-            current_state, current_action, reward, next_state, next_action
-        );
+        // println!(
+        //     "Quintuple: ({:?},{:?},{:?},{:?},{:?})",
+        //     current_state, current_action, reward, next_state, next_action
+        // );
 
         // update q_map
         let next_q = *q_map.get(&(next_state, next_action)).unwrap_or(&0.0);
