@@ -39,7 +39,7 @@ fn sarsa(
         let (next_state, reward) = mdp.perform_action((current_state, current_action));
 
         // TODO: actual policy
-        let next_action = random_policy(&mdp, next_state);
+        let next_action = epsilon_greedy_policy(&mdp, &q_map, next_state, 0.1);
 
         println!(
             "Quintuple: ({:?},{:?},{:?},{:?},{:?})",
@@ -93,7 +93,24 @@ fn greedy_policy(
             } else {
                 Some((current_action, current_reward))
             }
-        }).unwrap().0
+        })
+        .unwrap_or((random_policy(mdp, current_state), 0.0))
+        .0
+}
+
+fn epsilon_greedy_policy(
+    mdp: &Mdp,
+    value_map: &HashMap<(State, Action), Reward>,
+    current_state: State,
+    epsilon: f64,
+) -> Action {
+    let mut rng = rand::thread_rng();
+    let random_value = rng.gen_range(0.0..1.0);
+    if random_value < (1.0 - epsilon){
+        greedy_policy(mdp, value_map, current_state) 
+    } else {
+        random_policy(mdp, current_state)
+    }
 }
 
 fn value_iteration(mdp: &Mdp, tolerance: f64, gamma: f64) -> HashMap<State, f64> {
