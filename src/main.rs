@@ -3,9 +3,9 @@ use crate::mdp::*;
 use std::collections::HashMap;
 
 fn main() {
-    let mdp = Mdp::new_test_mdp(0.0);
+    let mdp = Mdp::new_test_mdp();
     let tolerance = 0.01;
-    let value_map = value_iteration(&mdp, tolerance);
+    let value_map = value_iteration(&mdp, tolerance, 0.0);
 
     mdp.perform_action((State(0u8), Action::A));
 
@@ -23,12 +23,18 @@ fn sarsa(
     initial: (State, Action),
 ) -> HashMap<(State, Action), f64> {
     let q_map: HashMap<(State, Action), f64> = HashMap::new();
-    let next_state = mdp.perform_action(initial);
-    println!("Next state: {:?}", next_state);
+    let (next_state, reward) = mdp.perform_action(initial);
+    println!("Next state: {:?} and reward: {:?}", next_state, reward);
+    let possible_actions = mdp.get_possible_actions(State(2));
+    println!("Possible actions: {:?}", possible_actions);
     q_map
 }
 
-fn value_iteration(mdp: &Mdp, tolerance: f64) -> HashMap<State, f64> {
+fn random_policy(mdp: &Mdp, state: State) -> Action {
+    Action::A
+}
+
+fn value_iteration(mdp: &Mdp, tolerance: f64, gamma: f64) -> HashMap<State, f64> {
     let mut value_map: HashMap<State, f64> = HashMap::new();
     let mut delta = f64::MAX;
 
@@ -37,7 +43,7 @@ fn value_iteration(mdp: &Mdp, tolerance: f64) -> HashMap<State, f64> {
 
         for (state, _) in mdp.transition_probabilities.keys() {
             let old_value = *value_map.get(state).unwrap_or(&0.0);
-            let new_value = best_action_value(mdp, *state, &value_map);
+            let new_value = best_action_value(mdp, *state, &value_map, gamma);
 
             value_map.insert(*state, new_value);
             delta = delta.max((old_value - new_value).abs());
@@ -47,7 +53,7 @@ fn value_iteration(mdp: &Mdp, tolerance: f64) -> HashMap<State, f64> {
     value_map
 }
 
-fn best_action_value(mdp: &Mdp, state: State, value_map: &HashMap<State, f64>) -> f64 {
+fn best_action_value(mdp: &Mdp, state: State, value_map: &HashMap<State, f64>, gamma: f64) -> f64 {
     mdp.transition_probabilities
         .iter()
         .filter_map(|((s, _), transitions)| {
@@ -56,7 +62,7 @@ fn best_action_value(mdp: &Mdp, state: State, value_map: &HashMap<State, f64>) -
                     .iter()
                     .map(|(prob, next_state, reward)| {
                         prob * (reward
-                            + mdp.discount_factor * value_map.get(next_state).unwrap_or(&0.0))
+                            + gamma * value_map.get(next_state).unwrap_or(&0.0))
                     })
                     .sum();
                 Some(expected_value)
