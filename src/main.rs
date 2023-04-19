@@ -16,6 +16,10 @@ fn main() {
 
     let q_map = sarsa(&mdp, 0.5, 0.5, (State(0), Action::A));
     println!("Q: {:?}", q_map);
+    let greedy_action = greedy_policy(&mdp, &q_map, State(0));
+    println!("Selected greedy_action for State 0: {:?}", greedy_action);
+    let greedy_action = greedy_policy(&mdp, &q_map, State(1));
+    println!("Selected greedy_action for State 1: {:?}", greedy_action);
 }
 
 fn sarsa(
@@ -32,7 +36,7 @@ fn sarsa(
     // println!("Selected next_action: {:?}", selected_action);
 
     for _ in 0..100000 {
-        let (mut next_state, mut reward) = mdp.perform_action((current_state, current_action));
+        let (next_state, reward) = mdp.perform_action((current_state, current_action));
 
         // TODO: actual policy
         let next_action = random_policy(&mdp, next_state);
@@ -43,7 +47,10 @@ fn sarsa(
         );
 
         // update q_map
-        let next_q = q_map.get(&(next_state, next_action)).unwrap_or(&0.0).clone();
+        let next_q = q_map
+            .get(&(next_state, next_action))
+            .unwrap_or(&0.0)
+            .clone();
         let current_q = q_map.entry((current_state, current_action)).or_insert(0.0);
         *current_q = *current_q + alpha * (reward + gamma * next_q - *current_q);
 
@@ -60,6 +67,33 @@ fn random_policy(mdp: &Mdp, current_state: State) -> Action {
     let selected_index = rng.gen_range(0..possible_states.len());
 
     possible_states[selected_index]
+}
+
+fn greedy_policy(
+    mdp: &Mdp,
+    value_map: &HashMap<(State, Action), Reward>,
+    current_state: State,
+) -> Action {
+    value_map
+        .iter()
+        .filter_map(|((state, action), reward)| {
+            if state.eq(&current_state) {
+                Some((*action, *reward))
+            } else {
+                None
+            }
+        })
+        .fold(None, |prev, (current_action, current_reward)| {
+            if let Some((_, prev_reward)) = prev {
+                if current_reward > prev_reward {
+                    Some((current_action, current_reward))
+                } else {
+                    prev
+                }
+            } else {
+                Some((current_action, current_reward))
+            }
+        }).unwrap().0
 }
 
 fn value_iteration(mdp: &Mdp, tolerance: f64, gamma: f64) -> HashMap<State, f64> {
