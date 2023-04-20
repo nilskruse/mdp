@@ -1,0 +1,57 @@
+
+use rand::Rng;
+
+use crate::{Mdp, mdp::{State, Action}};
+
+
+pub fn random_policy(mdp: &Mdp, current_state: State) -> Action {
+    let mut rng = rand::thread_rng();
+    let possible_states = mdp.get_possible_actions(current_state);
+    let selected_index = rng.gen_range(0..possible_states.len());
+
+    possible_states[selected_index]
+}
+
+fn greedy_policy(
+    mdp: &Mdp,
+    q_map: &HashMap<(State, Action), Reward>,
+    current_state: State,
+) -> Action {
+    q_map
+        .iter()
+        .filter_map(|((state, action), reward)| {
+            if state.eq(&current_state) {
+                Some((*action, *reward))
+            } else {
+                None
+            }
+        })
+        .fold(None, |prev, (current_action, current_reward)| {
+            if let Some((_, prev_reward)) = prev {
+                if current_reward > prev_reward {
+                    Some((current_action, current_reward))
+                } else {
+                    prev
+                }
+            } else {
+                Some((current_action, current_reward))
+            }
+        })
+        .unwrap_or((random_policy(mdp, current_state), 0.0)) // random when no entry
+        .0
+}
+
+fn epsilon_greedy_policy(
+    mdp: &Mdp,
+    q_map: &HashMap<(State, Action), Reward>,
+    current_state: State,
+    epsilon: f64,
+) -> Action {
+    let mut rng = rand::thread_rng();
+    let random_value = rng.gen_range(0.0..1.0);
+    if random_value < (1.0 - epsilon) {
+        greedy_policy(mdp, q_map, current_state)
+    } else {
+        random_policy(mdp, current_state)
+    }
+}

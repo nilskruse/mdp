@@ -14,6 +14,7 @@ pub type Transition = (Probability, State, Reward);
 
 pub struct Mdp {
     pub transitions: HashMap<(State, Action), Vec<Transition>>,
+    pub terminal_states: Vec<State>,
 }
 
 impl Mdp {
@@ -30,7 +31,7 @@ impl Mdp {
             let state_index = dist.sample(&mut rng);
 
             //return resulting state and reward
-            (State(state_index as u32), transitions[state_index].2)
+            (transitions[state_index].1, transitions[state_index].2)
         } else {
             // you don't want to be here
             panic!("something went very wrong");
@@ -51,20 +52,25 @@ impl Mdp {
     }
 
     pub fn new_test_mdp() -> Mdp {
-        let transition_probabilities: HashMap<(State, Action), Vec<Transition>> =
-            HashMap::from([
-                (
-                    (State(0), Action(0)),
-                    vec![(0.2, State(1), 1.0), (0.8, State(1), 10.0)],
-                ),
-                ((State(0), Action(1)), vec![(1.0, State(0), -1.0)]),
-                ((State(1), Action(0)), vec![(1.0, State(1), -1.0)]),
-                ((State(1), Action(1)), vec![(1.0, State(0), -1.0)]),
-                ((State(2), Action(0)), vec![(1.0, State(0), -1.0)]),
-            ]);
+        let transition_probabilities: HashMap<(State, Action), Vec<Transition>> = HashMap::from([
+            (
+                (State(0), Action(0)),
+                vec![(0.2, State(1), 1.0), (0.8, State(1), 10.0)],
+            ),
+            ((State(0), Action(1)), vec![(1.0, State(0), -1.0)]),
+            ((State(1), Action(0)), vec![(1.0, State(1), -1.0)]),
+            (
+                (State(1), Action(1)),
+                vec![(0.99, State(0), -2.0), (0.01, State(2), -1.0)],
+            ),
+            ((State(2), Action(0)), vec![(1.0, State(0), 1.0)]),
+        ]);
+
+        let terminal_states = vec![State(2)];
 
         Mdp {
             transitions: transition_probabilities,
+            terminal_states,
         }
     }
 }
