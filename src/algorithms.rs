@@ -1,38 +1,49 @@
 use std::collections::HashMap;
 
-use crate::{mdp::{Mdp, State, Action}, policies::epsilon_greedy_policy};
-
+use crate::{
+    mdp::{Action, Mdp, State},
+    policies::epsilon_greedy_policy,
+};
 
 pub fn sarsa(
     mdp: &Mdp,
     alpha: f64,
     gamma: f64,
     initial: (State, Action),
+    episodes: u64,
+    max_steps: u64,
 ) -> HashMap<(State, Action), f64> {
     let mut q_map: HashMap<(State, Action), f64> = HashMap::new();
-    let (mut current_state, mut current_action) = initial;
 
     // println!("Next state: {:?} and reward: {:?}", next_state, reward);
-    println!("Possible actions: {:?}", mdp.get_possible_actions(State(1)));
+    // println!("Possible actions: {:?}", mdp.get_possible_actions(State(1)));
     // println!("Selected next_action: {:?}", selected_action);
 
-    for _ in 0..100000 {
-        let (next_state, reward) = mdp.perform_action((current_state, current_action));
+    for episode in 1..=episodes {
+        let (mut current_state, mut current_action) = initial;
+        let mut steps = 0;
 
-        let next_action = epsilon_greedy_policy(mdp, &q_map, next_state, 0.1);
+        while !mdp.terminal_states.contains(&current_state) && steps < max_steps {
+            let (next_state, reward) = mdp.perform_action((current_state, current_action));
 
-        // println!(
-        //     "Quintuple: ({:?},{:?},{:?},{:?},{:?})",
-        //     current_state, current_action, reward, next_state, next_action
-        // );
+            let next_action = epsilon_greedy_policy(mdp, &q_map, next_state, 0.1);
 
-        // update q_map
-        let next_q = *q_map.get(&(next_state, next_action)).unwrap_or(&0.0);
-        let current_q = q_map.entry((current_state, current_action)).or_insert(0.0);
-        *current_q = *current_q + alpha * (reward + gamma * next_q - *current_q);
+            // println!(
+            //     "Quintuple: ({:?},{:?},{:?},{:?},{:?})",
+            //     current_state, current_action, reward, next_state, next_action
+            // );
 
-        current_state = next_state;
-        current_action = next_action;
+            // update q_map
+            let next_q = *q_map.get(&(next_state, next_action)).unwrap_or(&0.0);
+            let current_q = q_map.entry((current_state, current_action)).or_insert(0.0);
+            *current_q = *current_q + alpha * (reward + gamma * next_q - *current_q);
+
+            current_state = next_state;
+            current_action = next_action;
+
+            steps += 1;
+        }
+        println!("Terminated episode {} after {} steps!", episode, steps);
     }
 
     q_map

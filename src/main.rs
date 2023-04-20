@@ -16,12 +16,12 @@ fn main() {
         println!("State {:?} has value: {:.4}", state, value);
     }
 
-    let q_map = sarsa(&mdp, 0.5, 0.5, (State(0), Action(0)));
+    let q_map = sarsa(&mdp, 0.5, 0.5, (State(0), Action(0)), 10, 2000);
     println!("Q: {:?}", q_map);
-    let greedy_action = greedy_policy(&mdp, &q_map, State(0));
-    println!("Selected greedy_action for State 0: {:?}", greedy_action);
-    let greedy_action = greedy_policy(&mdp, &q_map, State(1));
-    println!("Selected greedy_action for State 1: {:?}", greedy_action);
+    // let greedy_action = greedy_policy(&mdp, &q_map, State(0));
+    // println!("Selected greedy_action for State 0: {:?}", greedy_action);
+    // let greedy_action = greedy_policy(&mdp, &q_map, State(1));
+    // println!("Selected greedy_action for State 1: {:?}", greedy_action);
 
     // for _ in 0..100 {
     //     println!("Result: {:?}", mdp.perform_action((State(1), Action(1))));
