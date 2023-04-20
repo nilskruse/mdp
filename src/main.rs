@@ -2,7 +2,7 @@ mod algorithms;
 mod mdp;
 mod policies;
 
-use crate::algorithms::{sarsa, value_iteration};
+use crate::algorithms::{q_learning, sarsa, value_iteration};
 use crate::mdp::*;
 use crate::policies::greedy_policy;
 
@@ -17,6 +17,9 @@ fn main() {
     }
 
     let q_map = sarsa(&mdp, 0.5, 0.5, (State(0), Action(0)), 10, 2000);
+    println!("Q: {:?}", q_map);
+
+    let q_map = q_learning(&mdp, 0.5, 0.5, (State(0), Action(0)), 10, 2000);
     println!("Q: {:?}", q_map);
     // let greedy_action = greedy_policy(&mdp, &q_map, State(0));
     // println!("Selected greedy_action for State 0: {:?}", greedy_action);

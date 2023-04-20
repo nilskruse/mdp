@@ -1,10 +1,11 @@
-
 use std::collections::HashMap;
 
 use rand::Rng;
 
-use crate::{Mdp, mdp::{State, Action, Reward}};
-
+use crate::{
+    mdp::{Action, Reward, State},
+    Mdp,
+};
 
 pub fn random_policy(mdp: &Mdp, current_state: State) -> Action {
     let mut rng = rand::thread_rng();

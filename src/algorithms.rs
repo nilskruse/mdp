@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     mdp::{Action, Mdp, State},
-    policies::epsilon_greedy_policy,
+    policies::{epsilon_greedy_policy, greedy_policy},
 };
 
 pub fn sarsa(
@@ -15,10 +15,6 @@ pub fn sarsa(
 ) -> HashMap<(State, Action), f64> {
     let mut q_map: HashMap<(State, Action), f64> = HashMap::new();
 
-    // println!("Next state: {:?} and reward: {:?}", next_state, reward);
-    // println!("Possible actions: {:?}", mdp.get_possible_actions(State(1)));
-    // println!("Selected next_action: {:?}", selected_action);
-
     for episode in 1..=episodes {
         let (mut current_state, mut current_action) = initial;
         let mut steps = 0;
@@ -28,11 +24,6 @@ pub fn sarsa(
 
             let next_action = epsilon_greedy_policy(mdp, &q_map, next_state, 0.1);
 
-            // println!(
-            //     "Quintuple: ({:?},{:?},{:?},{:?},{:?})",
-            //     current_state, current_action, reward, next_state, next_action
-            // );
-
             // update q_map
             let next_q = *q_map.get(&(next_state, next_action)).unwrap_or(&0.0);
             let current_q = q_map.entry((current_state, current_action)).or_insert(0.0);
@@ -40,6 +31,41 @@ pub fn sarsa(
 
             current_state = next_state;
             current_action = next_action;
+
+            steps += 1;
+        }
+        println!("Terminated episode {} after {} steps!", episode, steps);
+    }
+
+    q_map
+}
+
+pub fn q_learning(
+    mdp: &Mdp,
+    alpha: f64,
+    gamma: f64,
+    initial: (State, Action),
+    episodes: u64,
+    max_steps: u64,
+) -> HashMap<(State, Action), f64> {
+    let mut q_map: HashMap<(State, Action), f64> = HashMap::new();
+
+    for episode in 1..=episodes {
+        let (mut current_state, _) = initial;
+        let mut steps = 0;
+
+        while !mdp.terminal_states.contains(&current_state) && steps < max_steps {
+            let selected_action = epsilon_greedy_policy(mdp, &q_map, current_state, 0.1);
+            let (next_state, reward) = mdp.perform_action((current_state, selected_action));
+
+            // update q_map
+            let best_action = greedy_policy(mdp, &q_map, current_state);
+            let best_q = *q_map.get(&(next_state, best_action)).unwrap_or(&0.0);
+
+            let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
+            *current_q = *current_q + alpha * (reward + gamma * best_q - *current_q);
+
+            current_state = next_state;
 
             steps += 1;
         }
