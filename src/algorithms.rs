@@ -34,7 +34,7 @@ pub fn sarsa(
 
             steps += 1;
         }
-        println!("Terminated episode {} after {} steps!", episode, steps);
+        // println!("Terminated episode {} after {} steps!", episode, steps);
     }
 
     q_map
@@ -69,7 +69,7 @@ pub fn q_learning(
 
             steps += 1;
         }
-        println!("Terminated episode {} after {} steps!", episode, steps);
+        // println!("Terminated episode {} after {} steps!", episode, steps);
     }
 
     q_map

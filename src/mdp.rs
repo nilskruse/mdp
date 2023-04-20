@@ -15,6 +15,7 @@ pub type Transition = (Probability, State, Reward);
 pub struct Mdp {
     pub transitions: HashMap<(State, Action), Vec<Transition>>,
     pub terminal_states: Vec<State>,
+    pub initial_state: State,
 }
 
 impl Mdp {
@@ -71,6 +72,7 @@ impl Mdp {
         Mdp {
             transitions: transition_probabilities,
             terminal_states,
+            initial_state: State(0),
         }
     }
 }
