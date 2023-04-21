@@ -1,10 +1,12 @@
 mod algorithms;
 mod mdp;
 mod policies;
+mod generator;
 
 use std::collections::HashMap;
 
 use crate::algorithms::{q_learning, sarsa, value_iteration};
+use crate::generator::generate_random_mdp;
 use crate::mdp::*;
 use crate::policies::greedy_policy;
 
@@ -38,6 +40,8 @@ fn main() {
     //     println!("Result: {:?}", mdp.perform_action((State(1), Action(1))));
     // }
     // println!("{:?}", mdp.transitions);
+    let mdp = generate_random_mdp(3, 2, 1, 2, 1, 1, 2, -1.0, 10.0);
+    println!("Random generated mdp: {:?}", mdp.transitions);
 }
 
 fn evaluate_policy(mdp: &Mdp, q_map: HashMap<(State, Action), f64>, episodes: u64) -> f64 {
@@ -55,3 +59,4 @@ fn evaluate_policy(mdp: &Mdp, q_map: HashMap<(State, Action), f64>, episodes: u6
     }
     total_reward / episodes as f64
 }
+

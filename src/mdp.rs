@@ -2,10 +2,10 @@ use rand::distributions::{Distribution, WeightedIndex};
 use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct State(pub u32);
+pub struct State(pub usize);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct Action(pub u32);
+pub struct Action(pub usize);
 
 // some type aliases for readability
 pub type Probability = f64;
@@ -62,7 +62,7 @@ impl Mdp {
             ((State(1), Action(0)), vec![(1.0, State(1), -1.0)]),
             (
                 (State(1), Action(1)),
-                vec![(0.99, State(0), -2.0), (0.01, State(2), -1.0)],
+                vec![(0.99, State(0), -2.0), (0.01, State(2), 1000.0)],
             ),
             ((State(2), Action(0)), vec![(1.0, State(0), 1.0)]),
         ]);
