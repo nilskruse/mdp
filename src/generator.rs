@@ -2,8 +2,9 @@ use std::{collections::HashMap, hash::Hash, iter};
 
 use rand::{
     seq::{IteratorRandom, SliceRandom},
-    Rng,
+    Rng, rngs::ThreadRng,
 };
+use rand_chacha::ChaCha20Rng;
 
 use crate::mdp::{Action, Mdp, Probability, State, Transition};
 
@@ -15,8 +16,8 @@ pub fn generate_random_mdp(
     (min_actions, max_actions): (usize, usize),
     (min_transitions, max_transitions): (usize, usize),
     (min_reward, max_reward): (f64, f64),
+    rng: &mut ChaCha20Rng,
 ) -> Mdp {
-    let mut rng = rand::thread_rng();
     let mut states = vec![];
     let mut actions = vec![];
 
@@ -35,7 +36,7 @@ pub fn generate_random_mdp(
     for state in &states {
         let n_actions = rng.gen_range(min_actions..=max_actions);
         actions
-            .choose_multiple(&mut rng, n_actions)
+            .choose_multiple(rng, n_actions)
             .for_each(|action| {
                 states_actions.push((state, *action));
             });
@@ -49,7 +50,7 @@ pub fn generate_random_mdp(
 
             for probability in probabilities {
                 let reward = rng.gen_range(min_reward..=max_reward);
-                let next_state = states.choose(&mut rng).unwrap();
+                let next_state = states.choose(rng).unwrap();
                 outcomes.push((probability, *next_state, reward));
             }
             ((**state, *action), outcomes)
@@ -59,7 +60,7 @@ pub fn generate_random_mdp(
         .iter()
         .copied()
         .filter(|state| *state != initial_state)
-        .choose_multiple(&mut rng, n_terminal_states);
+        .choose_multiple(rng, n_terminal_states);
     Mdp {
         transitions,
         terminal_states,

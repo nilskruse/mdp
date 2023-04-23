@@ -50,7 +50,7 @@ pub fn q_learning(
 ) -> HashMap<(State, Action), f64> {
     let mut q_map: HashMap<(State, Action), f64> = HashMap::new();
 
-    for episode in 1..=episodes {
+    for _ in 1..=episodes {
         let (mut current_state, _) = initial;
         let mut steps = 0;
 
