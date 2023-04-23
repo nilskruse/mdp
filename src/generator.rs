@@ -1,19 +1,20 @@
 use std::{collections::HashMap, hash::Hash, iter};
 
-use rand::{seq::SliceRandom, Rng};
+use rand::{
+    seq::{IteratorRandom, SliceRandom},
+    Rng,
+};
 
-use crate::mdp::{Action, Mdp, State, Transition};
+use crate::mdp::{Action, Mdp, Probability, State, Transition};
 
+// TODO: Ensure at least one terminal state is reachable
 pub fn generate_random_mdp(
     n_states: usize,
     n_actions: usize,
-    min_actions: usize,
-    max_actions: usize,
     n_terminal_states: usize,
-    min_transitions: usize,
-    max_transitions: usize,
-    min_reward: f64,
-    max_reward: f64,
+    (min_actions, max_actions): (usize, usize),
+    (min_transitions, max_transitions): (usize, usize),
+    (min_reward, max_reward): (f64, f64),
 ) -> Mdp {
     let mut rng = rand::thread_rng();
     let mut states = vec![];
@@ -27,33 +28,42 @@ pub fn generate_random_mdp(
         actions.push(Action(i));
     }
 
+    let initial_state = State(0);
+
     let mut states_actions = vec![];
 
     for state in &states {
         let n_actions = rng.gen_range(min_actions..=max_actions);
-        for i in 0..max_actions {
-            states_actions.push((state, Action(i)));
-        }
+        actions
+            .choose_multiple(&mut rng, n_actions)
+            .for_each(|action| {
+                states_actions.push((state, *action));
+            });
     }
 
-    let transitions_map: HashMap<(State, Action), Vec<Transition>> =
+    let transitions: HashMap<(State, Action), Vec<Transition>> =
         HashMap::from_iter(states_actions.iter().map(|(state, action)| {
             let n_transitions = rng.gen_range(min_transitions..=max_transitions);
             let probabilities = random_probs(n_transitions);
             let mut outcomes = vec![];
 
-            for i in 0..n_transitions {
+            for probability in probabilities {
                 let reward = rng.gen_range(min_reward..=max_reward);
                 let next_state = states.choose(&mut rng).unwrap();
-                outcomes.push((probabilities[i], *next_state, reward));
+                outcomes.push((probability, *next_state, reward));
             }
             ((**state, *action), outcomes)
         }));
 
+    let terminal_states = states
+        .iter()
+        .copied()
+        .filter(|state| *state != initial_state)
+        .choose_multiple(&mut rng, n_terminal_states);
     Mdp {
-        transitions: transitions_map,
-        terminal_states: vec![State(0)],
-        initial_state: State(0),
+        transitions,
+        terminal_states,
+        initial_state,
     }
 }
 

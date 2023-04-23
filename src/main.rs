@@ -20,17 +20,17 @@ fn main() {
         println!("State {:?} has value: {:.4}", state, value);
     }
 
-    let q_map = sarsa(&mdp, 0.5, 0.5, (State(0), Action(0)), 1000, 2000);
-    println!("Q: {:?}", q_map);
+    // let q_map = sarsa(&mdp, 0.5, 0.5, (State(0), Action(0)), 10, 2000);
+    // println!("Q: {:?}", q_map);
 
-    let avg_reward = evaluate_policy(&mdp, q_map, 1000);
-    println!("sarsa average reward: {avg_reward}");
+    // let avg_reward = evaluate_policy(&mdp, q_map, 1000);
+    // println!("sarsa average reward: {avg_reward}");
 
-    let q_map = q_learning(&mdp, 0.5, 0.5, (State(0), Action(0)), 1000, 2000);
-    println!("Q: {:?}", q_map);
+    // let q_map = q_learning(&mdp, 0.5, 0.5, (State(0), Action(0)), 10, 2000);
+    // println!("Q: {:?}", q_map);
 
-    let avg_reward = evaluate_policy(&mdp, q_map, 1000);
-    println!("Q-learning average reward: {avg_reward}");
+    // let avg_reward = evaluate_policy(&mdp, q_map, 1000);
+    // println!("Q-learning average reward: {avg_reward}");
     // let greedy_action = greedy_policy(&mdp, &q_map, State(0));
     // println!("Selected greedy_action for State 0: {:?}", greedy_action);
     // let greedy_action = greedy_policy(&mdp, &q_map, State(1));
@@ -40,8 +40,26 @@ fn main() {
     //     println!("Result: {:?}", mdp.perform_action((State(1), Action(1))));
     // }
     // println!("{:?}", mdp.transitions);
-    let mdp = generate_random_mdp(3, 2, 1, 2, 1, 1, 2, -1.0, 10.0);
+
+    let learning_episodes = 1000;
+    let learning_max_steps = 2000;
+    let eval_episodes = 1000;
+    
+    let mdp = generate_random_mdp(5, 2, 1, (2, 2), (1, 3), (-1.0, 10.0));
     println!("Random generated mdp: {:?}", mdp.transitions);
+    println!("Terminal states: {:?}", mdp.terminal_states);
+    
+    let q_map = sarsa(&mdp, 0.5, 0.5, (State(0), Action(0)), learning_episodes, learning_max_steps);
+    println!("Q: {:?}", q_map);
+
+    let avg_reward = evaluate_policy(&mdp, q_map, eval_episodes);
+    println!("sarsa average reward: {avg_reward}");
+
+    let q_map = q_learning(&mdp, 0.5, 0.5, (State(0), Action(0)), learning_episodes, learning_max_steps);
+    println!("Q: {:?}", q_map);
+
+    let avg_reward = evaluate_policy(&mdp, q_map, eval_episodes);
+    println!("Q-learning average reward: {avg_reward}");
 }
 
 fn evaluate_policy(mdp: &Mdp, q_map: HashMap<(State, Action), f64>, episodes: u64) -> f64 {
@@ -49,6 +67,7 @@ fn evaluate_policy(mdp: &Mdp, q_map: HashMap<(State, Action), f64>, episodes: u6
     for _ in 1..=episodes {
         let mut current_state = mdp.initial_state;
         let mut episode_reward = 0.0;
+
         while !mdp.terminal_states.contains(&current_state) {
             let selected_action = greedy_policy(mdp, &q_map, current_state);
             let (next_state, reward) = mdp.perform_action((current_state, selected_action));
