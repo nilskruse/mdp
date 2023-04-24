@@ -26,7 +26,6 @@ impl Mdp {
         rng: &mut ChaCha20Rng,
     ) -> (State, Reward) {
         if let Some(transitions) = self.transitions.get(&state_action) {
-
             // extract probabilities, create distribution and sample
             let probs: Vec<_> = transitions
                 .iter()

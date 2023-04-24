@@ -2,10 +2,11 @@
 extern crate assert_float_eq;
 
 mod algorithms;
+mod benchmarks;
 mod generator;
 mod mdp;
 mod policies;
-mod benchmarks;
+mod utils;
 
 #[cfg(test)]
 mod tests;
@@ -23,7 +24,6 @@ use crate::policies::greedy_policy;
 fn main() {
     let mdp = Mdp::new_test_mdp();
     let value_map = value_iteration(&mdp, 0.01, 0.0);
-
 
     for (state, value) in value_map.iter() {
         println!("State {:?} has value: {:.4}", state, value);
@@ -67,7 +67,7 @@ fn main() {
         (State(0), Action(0)),
         learning_episodes,
         learning_max_steps,
-        &mut rng
+        &mut rng,
     );
     println!("Q: {:?}", q_map);
 
@@ -81,7 +81,7 @@ fn main() {
         (State(0), Action(0)),
         learning_episodes,
         learning_max_steps,
-        &mut rng
+        &mut rng,
     );
     println!("Q: {:?}", q_map);
 
@@ -105,10 +105,15 @@ fn evaluate_policy(
 
         while !mdp.terminal_states.contains(&current_state) && steps < max_steps {
             let selected_action = greedy_policy(mdp, &q_map, current_state, rng);
-            let (next_state, reward) = mdp.perform_action((current_state, selected_action), rng);
-            episode_reward += reward;
-            current_state = next_state;
-            steps += 1;
+            if let Some(selected_action) = selected_action {
+                let (next_state, reward) =
+                    mdp.perform_action((current_state, selected_action), rng);
+                episode_reward += reward;
+                current_state = next_state;
+                steps += 1;
+            } else {
+                break;
+            }
         }
         total_reward += episode_reward;
     }
