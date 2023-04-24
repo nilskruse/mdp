@@ -23,7 +23,7 @@ pub fn sarsa(
         q_map.insert(*state_action, 0.0);
     });
 
-    for _ in 1..=episodes {
+    for episode in 1..=episodes {
         let (mut current_state, mut current_action) = initial;
         let mut steps = 0;
 
@@ -60,6 +60,7 @@ pub fn q_learning(
     rng: &mut ChaCha20Rng,
 ) -> HashMap<(State, Action), f64> {
     let mut q_map: HashMap<(State, Action), f64> = HashMap::new();
+
     mdp.transitions.keys().for_each(|state_action| {
         q_map.insert(*state_action, 0.0);
     });
