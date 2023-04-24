@@ -5,7 +5,6 @@ use rand_chacha::ChaCha20Rng;
 use crate::{
     mdp::{Action, Mdp, State},
     policies::{epsilon_greedy_policy, greedy_policy},
-    utils::print_q_map,
 };
 
 pub fn sarsa(
@@ -23,7 +22,7 @@ pub fn sarsa(
         q_map.insert(*state_action, 0.0);
     });
 
-    for episode in 1..=episodes {
+    for _ in 1..=episodes {
         let (mut current_state, mut current_action) = initial;
         let mut steps = 0;
 
@@ -93,7 +92,6 @@ pub fn q_learning(
                 break;
             }
         }
-        // println!("Terminated episode {} after {} steps!", episode, steps);
     }
 
     q_map
