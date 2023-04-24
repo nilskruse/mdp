@@ -37,7 +37,6 @@ pub fn sarsa(
 
             steps += 1;
         }
-        // println!("Terminated episode {} after {} steps!", episode, steps);
     }
 
     q_map
@@ -53,6 +52,9 @@ pub fn q_learning(
     rng: &mut ChaCha20Rng,
 ) -> HashMap<(State, Action), f64> {
     let mut q_map: HashMap<(State, Action), f64> = HashMap::new();
+    mdp.transitions.keys().for_each(|state_action| {
+        q_map.insert(*state_action, 0.0);
+    });
 
     for _ in 1..=episodes {
         let (mut current_state, _) = initial;
@@ -61,7 +63,6 @@ pub fn q_learning(
         while !mdp.terminal_states.contains(&current_state) && steps < max_steps {
             let selected_action = epsilon_greedy_policy(mdp, &q_map, current_state, 0.1, rng);
             let (next_state, reward) = mdp.perform_action((current_state, selected_action), rng);
-            println!("went from {:?} with {:?} to {:?}", current_state, selected_action, next_state);
 
             // update q_map
             let best_action = greedy_policy(mdp, &q_map, current_state, rng);

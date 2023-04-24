@@ -9,10 +9,9 @@ use crate::{
 };
 
 pub fn random_policy(mdp: &Mdp, current_state: State, rng: &mut ChaCha20Rng) -> Action {
-    println!("selecting random");
     let mut possible_actions = mdp.get_possible_actions(current_state);
-    possible_actions.sort_by(|a1, a2| {
 
+    possible_actions.sort_by(|a1, a2| {
         if a1.0 > a2.0 {
             Ordering::Greater
         } else if a1.0 < a2.0 {
@@ -21,7 +20,6 @@ pub fn random_policy(mdp: &Mdp, current_state: State, rng: &mut ChaCha20Rng) -> 
             Ordering::Equal
         }
     });
-    println!("get_possible_actions={:?}", possible_actions);
     let selected_index = rng.gen_range(0..possible_actions.len());
 
     possible_actions[selected_index]
@@ -46,8 +44,10 @@ pub fn greedy_policy(
             if let Some((_, prev_reward)) = prev {
                 if current_reward > prev_reward {
                     Some((current_action, current_reward))
-                } else {
+                } else if current_reward < prev_reward {
                     prev
+                } else {
+                    None
                 }
             } else {
                 Some((current_action, current_reward))
@@ -65,9 +65,7 @@ pub fn epsilon_greedy_policy(
     rng: &mut ChaCha20Rng,
 ) -> Action {
     let random_value = rng.gen_range(0.0..1.0);
-    println!("epsilon_greedy random_value={random_value}");
     if random_value < (1.0 - epsilon) {
-        println!("going greedy");
         greedy_policy(mdp, q_map, current_state, rng)
     } else {
         random_policy(mdp, current_state, rng)
