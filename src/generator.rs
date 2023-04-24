@@ -1,8 +1,9 @@
 use std::{collections::HashMap, hash::Hash, iter};
 
 use rand::{
+    rngs::ThreadRng,
     seq::{IteratorRandom, SliceRandom},
-    Rng, rngs::ThreadRng,
+    Rng,
 };
 use rand_chacha::ChaCha20Rng;
 
@@ -35,11 +36,9 @@ pub fn generate_random_mdp(
 
     for state in &states {
         let n_actions = rng.gen_range(min_actions..=max_actions);
-        actions
-            .choose_multiple(rng, n_actions)
-            .for_each(|action| {
-                states_actions.push((state, *action));
-            });
+        actions.choose_multiple(rng, n_actions).for_each(|action| {
+            states_actions.push((state, *action));
+        });
     }
 
     let transitions: HashMap<(State, Action), Vec<Transition>> =

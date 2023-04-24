@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use rand_chacha::ChaCha20Rng;
+
 use crate::{
     mdp::{Action, Mdp, State},
     policies::{epsilon_greedy_policy, greedy_policy},
@@ -12,6 +14,7 @@ pub fn sarsa(
     initial: (State, Action),
     episodes: u64,
     max_steps: u64,
+    rng: &mut ChaCha20Rng,
 ) -> HashMap<(State, Action), f64> {
     let mut q_map: HashMap<(State, Action), f64> = HashMap::new();
 
@@ -20,9 +23,9 @@ pub fn sarsa(
         let mut steps = 0;
 
         while !mdp.terminal_states.contains(&current_state) && steps < max_steps {
-            let (next_state, reward) = mdp.perform_action((current_state, current_action));
+            let (next_state, reward) = mdp.perform_action((current_state, current_action), rng);
 
-            let next_action = epsilon_greedy_policy(mdp, &q_map, next_state, 0.1);
+            let next_action = epsilon_greedy_policy(mdp, &q_map, next_state, 0.1, rng);
 
             // update q_map
             let next_q = *q_map.get(&(next_state, next_action)).unwrap_or(&0.0);
@@ -47,6 +50,7 @@ pub fn q_learning(
     initial: (State, Action),
     episodes: u64,
     max_steps: u64,
+    rng: &mut ChaCha20Rng,
 ) -> HashMap<(State, Action), f64> {
     let mut q_map: HashMap<(State, Action), f64> = HashMap::new();
 
@@ -55,11 +59,12 @@ pub fn q_learning(
         let mut steps = 0;
 
         while !mdp.terminal_states.contains(&current_state) && steps < max_steps {
-            let selected_action = epsilon_greedy_policy(mdp, &q_map, current_state, 0.1);
-            let (next_state, reward) = mdp.perform_action((current_state, selected_action));
+            let selected_action = epsilon_greedy_policy(mdp, &q_map, current_state, 0.1, rng);
+            let (next_state, reward) = mdp.perform_action((current_state, selected_action), rng);
+            println!("went from {:?} with {:?} to {:?}", current_state, selected_action, next_state);
 
             // update q_map
-            let best_action = greedy_policy(mdp, &q_map, current_state);
+            let best_action = greedy_policy(mdp, &q_map, current_state, rng);
             let best_q = *q_map.get(&(next_state, best_action)).unwrap_or(&0.0);
 
             let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);

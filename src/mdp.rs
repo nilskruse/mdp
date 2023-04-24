@@ -1,4 +1,5 @@
 use rand::distributions::{Distribution, WeightedIndex};
+use rand_chacha::ChaCha20Rng;
 use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -19,9 +20,12 @@ pub struct Mdp {
 }
 
 impl Mdp {
-    pub fn perform_action(&self, state_action: (State, Action)) -> (State, Reward) {
+    pub fn perform_action(
+        &self,
+        state_action: (State, Action),
+        rng: &mut ChaCha20Rng,
+    ) -> (State, Reward) {
         if let Some(transitions) = self.transitions.get(&state_action) {
-            let mut rng = rand::thread_rng();
 
             // extract probabilities, create distribution and sample
             let probs: Vec<_> = transitions
@@ -29,7 +33,7 @@ impl Mdp {
                 .map(|(prob, _, _)| (prob * 100.0) as u32)
                 .collect();
             let dist = WeightedIndex::new(&probs).unwrap();
-            let state_index = dist.sample(&mut rng);
+            let state_index = dist.sample(rng);
 
             //return resulting state and reward
             (transitions[state_index].1, transitions[state_index].2)

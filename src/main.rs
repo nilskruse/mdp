@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate assert_float_eq;
+
 mod algorithms;
 mod generator;
 mod mdp;
@@ -10,6 +13,7 @@ mod tests;
 use std::collections::HashMap;
 
 use rand::SeedableRng;
+use rand_chacha::ChaCha20Rng;
 
 use crate::algorithms::{q_learning, sarsa, value_iteration};
 use crate::generator::generate_random_mdp;
@@ -20,7 +24,6 @@ fn main() {
     let mdp = Mdp::new_test_mdp();
     let value_map = value_iteration(&mdp, 0.01, 0.0);
 
-    mdp.perform_action((State(0), Action(0)));
 
     for (state, value) in value_map.iter() {
         println!("State {:?} has value: {:.4}", state, value);
@@ -64,10 +67,11 @@ fn main() {
         (State(0), Action(0)),
         learning_episodes,
         learning_max_steps,
+        &mut rng
     );
     println!("Q: {:?}", q_map);
 
-    let avg_reward = evaluate_policy(&mdp, q_map, eval_episodes, eval_max_steps);
+    let avg_reward = evaluate_policy(&mdp, q_map, eval_episodes, eval_max_steps, &mut rng);
     println!("sarsa average reward: {avg_reward}");
 
     let q_map = q_learning(
@@ -77,10 +81,11 @@ fn main() {
         (State(0), Action(0)),
         learning_episodes,
         learning_max_steps,
+        &mut rng
     );
     println!("Q: {:?}", q_map);
 
-    let avg_reward = evaluate_policy(&mdp, q_map, eval_episodes, eval_max_steps);
+    let avg_reward = evaluate_policy(&mdp, q_map, eval_episodes, eval_max_steps, &mut rng);
     println!("Q-learning average reward: {avg_reward}");
 }
 
@@ -89,6 +94,7 @@ fn evaluate_policy(
     q_map: HashMap<(State, Action), f64>,
     episodes: usize,
     max_steps: usize,
+    rng: &mut ChaCha20Rng,
 ) -> f64 {
     let mut total_reward = 0.0;
 
@@ -98,8 +104,8 @@ fn evaluate_policy(
         let mut steps = 0;
 
         while !mdp.terminal_states.contains(&current_state) && steps < max_steps {
-            let selected_action = greedy_policy(mdp, &q_map, current_state);
-            let (next_state, reward) = mdp.perform_action((current_state, selected_action));
+            let selected_action = greedy_policy(mdp, &q_map, current_state, rng);
+            let (next_state, reward) = mdp.perform_action((current_state, selected_action), rng);
             episode_reward += reward;
             current_state = next_state;
             steps += 1;

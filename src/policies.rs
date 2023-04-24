@@ -1,24 +1,37 @@
-use std::collections::HashMap;
+use std::{cmp::Ordering, collections::HashMap};
 
 use rand::Rng;
+use rand_chacha::ChaCha20Rng;
 
 use crate::{
     mdp::{Action, Reward, State},
     Mdp,
 };
 
-pub fn random_policy(mdp: &Mdp, current_state: State) -> Action {
-    let mut rng = rand::thread_rng();
-    let possible_states = mdp.get_possible_actions(current_state);
-    let selected_index = rng.gen_range(0..possible_states.len());
+pub fn random_policy(mdp: &Mdp, current_state: State, rng: &mut ChaCha20Rng) -> Action {
+    println!("selecting random");
+    let mut possible_actions = mdp.get_possible_actions(current_state);
+    possible_actions.sort_by(|a1, a2| {
 
-    possible_states[selected_index]
+        if a1.0 > a2.0 {
+            Ordering::Greater
+        } else if a1.0 < a2.0 {
+            Ordering::Less
+        } else {
+            Ordering::Equal
+        }
+    });
+    println!("get_possible_actions={:?}", possible_actions);
+    let selected_index = rng.gen_range(0..possible_actions.len());
+
+    possible_actions[selected_index]
 }
 
 pub fn greedy_policy(
     mdp: &Mdp,
     q_map: &HashMap<(State, Action), Reward>,
     current_state: State,
+    rng: &mut ChaCha20Rng,
 ) -> Action {
     q_map
         .iter()
@@ -40,7 +53,7 @@ pub fn greedy_policy(
                 Some((current_action, current_reward))
             }
         })
-        .unwrap_or((random_policy(mdp, current_state), 0.0)) // random when no entry
+        .unwrap_or((random_policy(mdp, current_state, rng), 0.0)) // random when no entry
         .0
 }
 
@@ -49,12 +62,14 @@ pub fn epsilon_greedy_policy(
     q_map: &HashMap<(State, Action), Reward>,
     current_state: State,
     epsilon: f64,
+    rng: &mut ChaCha20Rng,
 ) -> Action {
-    let mut rng = rand::thread_rng();
     let random_value = rng.gen_range(0.0..1.0);
+    println!("epsilon_greedy random_value={random_value}");
     if random_value < (1.0 - epsilon) {
-        greedy_policy(mdp, q_map, current_state)
+        println!("going greedy");
+        greedy_policy(mdp, q_map, current_state, rng)
     } else {
-        random_policy(mdp, current_state)
+        random_policy(mdp, current_state, rng)
     }
 }
