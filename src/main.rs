@@ -1,9 +1,9 @@
 #![feature(test)]
+
 #[macro_use]
 extern crate assert_float_eq;
 
 mod algorithms;
-mod benchmarks;
 mod generator;
 mod mdp;
 mod policies;
@@ -11,6 +11,9 @@ mod utils;
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod benchmarks;
 
 use std::collections::HashMap;
 

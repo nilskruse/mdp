@@ -8,23 +8,43 @@ use crate::{
 };
 
 extern crate test;
-// #[allow(soft_unstable)]
+
+const BENCH_EPISODES: usize = 2000;
+const BENCH_MAX_STEPS: usize = 2000; // max steps per episode
+const BENCH_ALPHA: f64 = 0.1; // learning rate
+const BENCH_GAMMA: f64 = 0.9; // discount factor
+const BENCH_SEED: u64 = 0;
+
 #[bench]
 fn bench_runtime_q_learning(b: &mut test::Bencher) {
-    let mut rng = ChaCha20Rng::seed_from_u64(1);
+    let mut rng = ChaCha20Rng::seed_from_u64(BENCH_SEED);
     let mdp = generate_random_mdp(5, 2, 1, (2, 2), (1, 3), (-1.0, 10.0), &mut rng);
     b.iter(|| {
-        let mut rng = ChaCha20Rng::seed_from_u64(1);
-        q_learning(&mdp, 0.1, 0.9, (State(0), Action(0)), 100, 2000, &mut rng);
+        q_learning(
+            &mdp,
+            BENCH_ALPHA,
+            BENCH_GAMMA,
+            (State(0), Action(0)),
+            BENCH_EPISODES,
+            BENCH_MAX_STEPS,
+            &mut rng,
+        );
     });
 }
 
 #[bench]
 fn bench_runtime_sarsa(b: &mut test::Bencher) {
-    let mut rng = ChaCha20Rng::seed_from_u64(1);
+    let mut rng = ChaCha20Rng::seed_from_u64(BENCH_SEED);
     let mdp = generate_random_mdp(5, 2, 1, (2, 2), (1, 3), (-1.0, 10.0), &mut rng);
     b.iter(|| {
-        let mut rng = ChaCha20Rng::seed_from_u64(1);
-        sarsa(&mdp, 0.1, 0.9, (State(0), Action(0)), 100, 2000, &mut rng)
+        sarsa(
+            &mdp,
+            BENCH_ALPHA,
+            BENCH_GAMMA,
+            (State(0), Action(0)),
+            BENCH_EPISODES,
+            BENCH_MAX_STEPS,
+            &mut rng,
+        )
     });
 }
