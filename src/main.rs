@@ -21,6 +21,7 @@ use crate::algorithms::{q_learning, sarsa, value_iteration};
 use crate::generator::generate_random_mdp;
 use crate::mdp::*;
 use crate::policies::greedy_policy;
+use crate::utils::print_transition_map;
 
 fn main() {
     let mdp = Mdp::new_test_mdp();
@@ -57,8 +58,9 @@ fn main() {
     let eval_max_steps = 2000;
 
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
-    let mdp = generate_random_mdp(5, 2, 1, (2, 2), (1, 3), (-1.0, 10.0), &mut rng);
-    println!("Random generated mdp: {:?}", mdp.transitions);
+    let mdp = generate_random_mdp(3, 2, 1, (2, 2), (1, 3), (-1.0, 10.0), &mut rng);
+    println!("Random generated mdp:");
+    print_transition_map(&mdp);
     println!("Terminal states: {:?}", mdp.terminal_states);
 
     let q_map = sarsa(

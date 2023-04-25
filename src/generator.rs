@@ -44,7 +44,7 @@ pub fn generate_random_mdp(
     let transitions: HashMap<(State, Action), Vec<Transition>> =
         HashMap::from_iter(states_actions.iter().map(|(state, action)| {
             let n_transitions = rng.gen_range(min_transitions..=max_transitions);
-            let probabilities = random_probs(n_transitions);
+            let probabilities = random_probs(n_transitions, rng);
             let mut outcomes = vec![];
 
             for probability in probabilities {
@@ -67,9 +67,7 @@ pub fn generate_random_mdp(
     }
 }
 
-fn random_probs(n: usize) -> Vec<f64> {
-    let mut rng = rand::thread_rng();
-
+fn random_probs(n: usize, rng: &mut ChaCha20Rng) -> Vec<f64> {
     // Generate n-1 random floats between 0 and 1
     let mut random_numbers: Vec<f64> = iter::repeat_with(|| rng.gen_range(0.0..1.0))
         .take(n - 1)
