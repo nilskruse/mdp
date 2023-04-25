@@ -31,7 +31,7 @@ impl Mdp {
                 .iter()
                 .map(|(prob, _, _)| (prob * 100.0) as u32)
                 .collect();
-            let dist = WeightedIndex::new(&probs).unwrap();
+            let dist = WeightedIndex::new(probs).unwrap();
             let state_index = dist.sample(rng);
 
             //return resulting state and reward

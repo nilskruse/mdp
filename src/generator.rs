@@ -1,13 +1,12 @@
-use std::{collections::HashMap, hash::Hash, iter};
+use std::{collections::HashMap, iter};
 
 use rand::{
-    rngs::ThreadRng,
     seq::{IteratorRandom, SliceRandom},
     Rng,
 };
 use rand_chacha::ChaCha20Rng;
 
-use crate::mdp::{Action, Mdp, Probability, State, Transition};
+use crate::mdp::{Action, Mdp, State, Transition};
 
 // TODO: Ensure at least one terminal state is reachable
 pub fn generate_random_mdp(

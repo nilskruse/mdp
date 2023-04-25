@@ -6,7 +6,6 @@ use rand::SeedableRng;
 use crate::{
     algorithms::{q_learning, sarsa},
     mdp::{Action, Mdp, State, Transition},
-    utils::print_q_map,
 };
 
 #[test]

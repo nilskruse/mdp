@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use std::{cmp::Ordering, collections::HashMap};
 
-use crate::mdp::{Action, Mdp, Reward, State, Transition};
+use crate::mdp::{Action, Mdp, Reward, State};
 
 // print q_map in order
 pub fn print_q_map(q_map: &HashMap<(State, Action), Reward>) {
@@ -16,21 +16,19 @@ pub fn print_q_map(q_map: &HashMap<(State, Action), Reward>) {
                 Ordering::Greater
             } else if state1 < state2 {
                 Ordering::Less
+            } else if action1 > action2 {
+                Ordering::Greater
+            } else if action1 < action2 {
+                Ordering::Less
             } else {
-                if action1 > action2 {
-                    Ordering::Greater
-                } else if action1 < action2 {
-                    Ordering::Less
-                } else {
-                    Ordering::Equal
-                }
+                Ordering::Equal
             }
         })
         .for_each(|q_entry| println!("{:?}", q_entry));
 }
 
 pub fn print_transition_map(mdp: &Mdp) {
-    let transitions = mdp.transitions.clone();
+    let _transitions = mdp.transitions.clone();
     mdp.transitions
         .iter()
         .sorted_by(|pair1, pair2| {
@@ -42,14 +40,12 @@ pub fn print_transition_map(mdp: &Mdp) {
                 Ordering::Greater
             } else if state1 < state2 {
                 Ordering::Less
+            } else if action1 > action2 {
+                Ordering::Greater
+            } else if action1 < action2 {
+                Ordering::Less
             } else {
-                if action1 > action2 {
-                    Ordering::Greater
-                } else if action1 < action2 {
-                    Ordering::Less
-                } else {
-                    Ordering::Equal
-                }
+                Ordering::Equal
             }
         })
         .for_each(|entry| println!("{:?}", entry));
