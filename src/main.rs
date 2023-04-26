@@ -1,9 +1,7 @@
 #![feature(test)]
-
 // disable these warnings for now
 #![allow(dead_code)]
 #![allow(unused_imports)]
-
 
 #[macro_use]
 extern crate assert_float_eq;
@@ -107,7 +105,7 @@ fn run_benchmarks() {
 
     println!("Benching Q-Learning...");
     bench_runtime_q_learning_2();
-    
+
     println!("Benching SARSA...");
     bench_runtime_sarsa_2();
 }

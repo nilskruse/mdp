@@ -11,15 +11,7 @@ use crate::{
 pub fn random_policy(mdp: &Mdp, current_state: State, rng: &mut ChaCha20Rng) -> Option<Action> {
     let mut possible_actions = mdp.get_possible_actions(current_state);
 
-    possible_actions.sort_by(|a1, a2| {
-        if a1.0 > a2.0 {
-            Ordering::Greater
-        } else if a1.0 < a2.0 {
-            Ordering::Less
-        } else {
-            Ordering::Equal
-        }
-    });
+    possible_actions.sort_by(|a1, a2| a1.0.cmp(&a2.0));
 
     if possible_actions.is_empty() {
         None
