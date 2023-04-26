@@ -7,6 +7,8 @@
 extern crate assert_float_eq;
 
 mod algorithms;
+mod envs;
+mod eval;
 mod generator;
 mod mdp;
 mod policies;
@@ -20,11 +22,13 @@ mod benchmarks;
 use std::collections::HashMap;
 
 use benchmarks::bench_runtime_sarsa_2;
+use policies::epsilon_greedy_policy;
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
 use crate::algorithms::{q_learning, sarsa, value_iteration};
 use crate::benchmarks::bench_runtime_q_learning_2;
+use crate::eval::evaluate_epsilon_greedy_policy;
 use crate::generator::generate_random_mdp;
 use crate::mdp::*;
 use crate::policies::greedy_policy;
@@ -97,7 +101,8 @@ fn main() {
 
     // let avg_reward = evaluate_policy(&mdp, q_map, eval_episodes, eval_max_steps, &mut rng);
     // println!("Q-learning average reward: {avg_reward}");
-    run_benchmarks();
+    // run_benchmarks();
+    run_cliff_walking();
 }
 
 fn run_benchmarks() {
@@ -110,33 +115,60 @@ fn run_benchmarks() {
     bench_runtime_sarsa_2();
 }
 
-fn evaluate_policy(
-    mdp: &Mdp,
-    q_map: HashMap<(State, Action), f64>,
-    episodes: usize,
-    max_steps: usize,
-    rng: &mut ChaCha20Rng,
-) -> f64 {
-    let mut total_reward = 0.0;
+fn run_cliff_walking() {
+    let cliff_walking_mdp = envs::cliff_walking::build_mdp();
+    // print_transition_map(&cliff_walking_mdp);
+    println!(
+        "Transition map length:{:?}",
+        cliff_walking_mdp.transitions.len()
+    );
+    println!("Initial state: {:?}", cliff_walking_mdp.initial_state);
+    println!("Terminal states: {:?}", cliff_walking_mdp.terminal_states);
 
-    for _episode in 1..=episodes {
-        let mut current_state = mdp.initial_state;
-        let mut episode_reward = 0.0;
-        let mut steps = 0;
+    let learning_episodes = 1000;
+    let eval_episodes = 1000;
 
-        while !mdp.terminal_states.contains(&current_state) && steps < max_steps {
-            let selected_action = greedy_policy(mdp, &q_map, current_state, rng);
-            if let Some(selected_action) = selected_action {
-                let (next_state, reward) =
-                    mdp.perform_action((current_state, selected_action), rng);
-                episode_reward += reward;
-                current_state = next_state;
-                steps += 1;
-            } else {
-                break;
-            }
-        }
-        total_reward += episode_reward;
-    }
-    total_reward / episodes as f64
+    // run "indefinitely"
+    let learning_max_steps = usize::MAX;
+    let eval_max_steps = usize::MAX;
+
+    let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
+
+    let q_map = q_learning(
+        &cliff_walking_mdp,
+        0.1,
+        0.9,
+        (cliff_walking_mdp.initial_state, Action(0)),
+        learning_episodes,
+        learning_max_steps,
+        &mut rng,
+    );
+
+    let avg_reward = evaluate_epsilon_greedy_policy(
+        &cliff_walking_mdp,
+        q_map,
+        eval_episodes,
+        eval_max_steps,
+        &mut rng,
+    );
+    println!("Q-learning average reward: {avg_reward}");
+
+    let q_map = sarsa(
+        &cliff_walking_mdp,
+        0.1,
+        0.9,
+        (cliff_walking_mdp.initial_state, Action(0)),
+        learning_episodes,
+        learning_max_steps,
+        &mut rng,
+    );
+
+    let avg_reward = evaluate_epsilon_greedy_policy(
+        &cliff_walking_mdp,
+        q_map,
+        eval_episodes,
+        eval_max_steps,
+        &mut rng,
+    );
+    println!("SARSA average reward: {avg_reward}");
 }
