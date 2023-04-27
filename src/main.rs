@@ -131,13 +131,16 @@ fn run_cliff_walking() {
     // run "indefinitely"
     let learning_max_steps = usize::MAX;
     let eval_max_steps = usize::MAX;
+    
+    let alpha = 0.1;
+    let gamma = 1.0;
 
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
 
     let q_map = q_learning(
         &cliff_walking_mdp,
-        0.1,
-        0.9,
+        alpha,
+        gamma,
         (cliff_walking_mdp.initial_state, Action(0)),
         learning_episodes,
         learning_max_steps,
@@ -155,8 +158,8 @@ fn run_cliff_walking() {
 
     let q_map = sarsa(
         &cliff_walking_mdp,
-        0.1,
-        0.9,
+        alpha,
+        gamma,
         (cliff_walking_mdp.initial_state, Action(0)),
         learning_episodes,
         learning_max_steps,

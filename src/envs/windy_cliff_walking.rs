@@ -1,28 +1,11 @@
 use std::collections::HashMap;
 
-use crate::mdp::{self, Mdp, Reward, State, Transition};
+use crate::{
+    envs::cliff_walking::{Action, Cell, CLIFF_REWARD, COLS, END_REWARD, ROWS, STEP_REWARD},
+    mdp::{self, Mdp, State, Transition},
+};
 
-#[derive(Copy, Clone, Debug)]
-pub(crate) enum Cell {
-    Start,
-    Regular,
-    Cliff,
-    End,
-}
-
-pub(crate) enum Action {
-    Up = 0,
-    Down = 1,
-    Left = 2,
-    Right = 3,
-}
-
-pub(crate) const ROWS: usize = 4;
-pub(crate) const COLS: usize = 12;
-pub(crate) const STEP_REWARD: f64 = -1.0;
-pub(crate) const CLIFF_REWARD: f64 = -100.0;
-pub(crate) const END_REWARD: f64 = 0.0;
-
+// cliff walking with a downward wind that pushes down the agent with a certain probability
 pub fn build_mdp() -> Mdp {
     let mut grid: [[Cell; ROWS]; COLS] = [[Cell::Regular; ROWS]; COLS];
 
@@ -111,21 +94,10 @@ pub fn build_mdp() -> Mdp {
 }
 
 fn build_transition(
-    from_state: State,
-    to_state: State,
+    from_state_1: State,
+    from_state_2: State,
     action: Action,
-    reward: Reward,
-) -> ((State, mdp::Action), Vec<Transition>) {
-    (
-        (from_state, mdp::Action(action as usize)),
-        vec![(1.0, to_state, reward)],
-    )
-}
-fn print_grid(grid: &[[Cell; ROWS]; COLS]) {
-    for y in 0..ROWS {
-        for x in 0..COLS {
-            print!("{:?}\t", grid[x][y]);
-        }
-        println!();
-    }
+    step_reward: f64,
+) -> ((State, mdp::Action), Vec<(f64, State, f64)>) {
+    todo!()
 }
