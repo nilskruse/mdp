@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use assert_float_eq::assert_f64_near;
 use rand::SeedableRng;
@@ -6,6 +6,7 @@ use rand::SeedableRng;
 use crate::{
     algorithms::{q_learning, sarsa},
     mdp::{Action, Mdp, State, Transition},
+    utils::print_q_map,
 };
 
 #[test]
@@ -17,11 +18,14 @@ fn test_q_learning() {
         &mdp,
         0.1,
         0.9,
+        0.1,
         (mdp.initial_state, Action(0)),
         1,
         5,
         &mut rng,
     );
+
+    print_q_map(&q_map);
 
     assert_f64_near!(*q_map.get(&(State(0), Action(0))).unwrap(), 0.181);
     assert_f64_near!(*q_map.get(&(State(0), Action(1))).unwrap(), -0.1);
@@ -37,6 +41,7 @@ fn test_sarsa() {
         &mdp,
         0.1,
         0.9,
+        0.1,
         (mdp.initial_state, Action(0)),
         1,
         5,
@@ -50,7 +55,7 @@ fn test_sarsa() {
 }
 
 fn create_test_mdp() -> Mdp {
-    let transition_probabilities: HashMap<(State, Action), Vec<Transition>> = HashMap::from([
+    let transition_probabilities: BTreeMap<(State, Action), Vec<Transition>> = BTreeMap::from([
         (
             (State(0), Action(0)),
             vec![(0.2, State(1), 1.0), (0.8, State(2), 10.0)],

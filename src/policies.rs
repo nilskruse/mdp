@@ -1,5 +1,6 @@
-use std::{cmp::Ordering, collections::HashMap};
+use std::{cmp::Ordering, collections::BTreeMap};
 
+use itertools::Itertools;
 use rand::Rng;
 use rand_chacha::ChaCha20Rng;
 
@@ -8,7 +9,7 @@ use crate::mdp::{Action, Mdp, Reward, State};
 pub fn random_policy(mdp: &Mdp, current_state: State, rng: &mut ChaCha20Rng) -> Option<Action> {
     let mut possible_actions = mdp.get_possible_actions(current_state);
 
-    possible_actions.sort_by(|a1, a2| a1.0.cmp(&a2.0));
+    // possible_actions.sort_by(|a1, a2| a1.0.cmp(&a2.0));
 
     if possible_actions.is_empty() {
         None
@@ -20,7 +21,7 @@ pub fn random_policy(mdp: &Mdp, current_state: State, rng: &mut ChaCha20Rng) -> 
 
 pub fn greedy_policy(
     mdp: &Mdp,
-    q_map: &HashMap<(State, Action), Reward>,
+    q_map: &BTreeMap<(State, Action), Reward>,
     current_state: State,
     rng: &mut ChaCha20Rng,
 ) -> Option<Action> {
@@ -52,14 +53,14 @@ pub fn greedy_policy(
     if let Some(action) = selected_action {
         Some(action)
     } else {
-        random_policy(mdp, current_state, rng)
+        let random_policy_action = random_policy(mdp, current_state, rng);
+        random_policy_action
     }
-    // .unwrap_or_else((random_policy(mdp, current_state, rng), 0.0)) // random when no entry
 }
 
 pub fn epsilon_greedy_policy(
     mdp: &Mdp,
-    q_map: &HashMap<(State, Action), Reward>,
+    q_map: &BTreeMap<(State, Action), Reward>,
     current_state: State,
     epsilon: f64,
     rng: &mut ChaCha20Rng,

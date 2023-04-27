@@ -1,4 +1,4 @@
-use std::{collections::HashMap, iter};
+use std::{collections::BTreeMap, iter};
 
 use rand::{
     seq::{IteratorRandom, SliceRandom},
@@ -40,8 +40,8 @@ pub fn generate_random_mdp(
         });
     }
 
-    let transitions: HashMap<(State, Action), Vec<Transition>> =
-        HashMap::from_iter(states_actions.iter().map(|(state, action)| {
+    let transitions: BTreeMap<(State, Action), Vec<Transition>> =
+        BTreeMap::from_iter(states_actions.iter().map(|(state, action)| {
             let n_transitions = rng.gen_range(min_transitions..=max_transitions);
             let probabilities = random_probs(n_transitions, rng);
             let mut outcomes = vec![];

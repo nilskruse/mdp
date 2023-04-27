@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::mdp::{self, Mdp, Reward, State, Transition};
 
@@ -33,7 +33,7 @@ pub fn build_mdp() -> Mdp {
     }
     grid[COLS - 1][ROWS - 1] = Cell::End;
 
-    let mut transitions: HashMap<(State, mdp::Action), Vec<Transition>> = HashMap::new();
+    let mut transitions: BTreeMap<(State, mdp::Action), Vec<Transition>> = BTreeMap::new();
 
     for row in 0..ROWS {
         for col in 0..COLS {

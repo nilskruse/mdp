@@ -1,11 +1,11 @@
 use rand::distributions::{Distribution, WeightedIndex};
 use rand_chacha::ChaCha20Rng;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct State(pub usize);
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Action(pub usize);
 
 // some type aliases for readability
@@ -14,7 +14,7 @@ pub type Reward = f64;
 pub type Transition = (Probability, State, Reward);
 
 pub struct Mdp {
-    pub transitions: HashMap<(State, Action), Vec<Transition>>,
+    pub transitions: BTreeMap<(State, Action), Vec<Transition>>,
     pub terminal_states: Vec<State>,
     pub initial_state: State,
 }
@@ -56,19 +56,20 @@ impl Mdp {
     }
 
     pub fn new_test_mdp() -> Mdp {
-        let transition_probabilities: HashMap<(State, Action), Vec<Transition>> = HashMap::from([
-            (
-                (State(0), Action(0)),
-                vec![(0.2, State(1), 1.0), (0.8, State(1), 10.0)],
-            ),
-            ((State(0), Action(1)), vec![(1.0, State(0), -1.0)]),
-            ((State(1), Action(0)), vec![(1.0, State(1), -1.0)]),
-            (
-                (State(1), Action(1)),
-                vec![(0.99, State(0), -2.0), (0.01, State(2), 1000.0)],
-            ),
-            ((State(2), Action(0)), vec![(1.0, State(0), 1.0)]),
-        ]);
+        let transition_probabilities: BTreeMap<(State, Action), Vec<Transition>> =
+            BTreeMap::from([
+                (
+                    (State(0), Action(0)),
+                    vec![(0.2, State(1), 1.0), (0.8, State(1), 10.0)],
+                ),
+                ((State(0), Action(1)), vec![(1.0, State(0), -1.0)]),
+                ((State(1), Action(0)), vec![(1.0, State(1), -1.0)]),
+                (
+                    (State(1), Action(1)),
+                    vec![(0.99, State(0), -2.0), (0.01, State(2), 1000.0)],
+                ),
+                ((State(2), Action(0)), vec![(1.0, State(0), 1.0)]),
+            ]);
 
         let terminal_states = vec![State(2)];
 

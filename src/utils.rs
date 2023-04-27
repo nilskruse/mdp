@@ -1,10 +1,10 @@
 use itertools::Itertools;
-use std::{cmp::Ordering, collections::HashMap};
+use std::{cmp::Ordering, collections::BTreeMap};
 
 use crate::mdp::{Action, Mdp, Reward, State};
 
 // print q_map in order
-pub fn print_q_map(q_map: &HashMap<(State, Action), Reward>) {
+pub fn print_q_map(q_map: &BTreeMap<(State, Action), Reward>) {
     q_map
         .iter()
         .sorted_by(|pair1, pair2| {

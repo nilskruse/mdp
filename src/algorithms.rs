@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use rand_chacha::ChaCha20Rng;
 
@@ -11,12 +11,13 @@ pub fn sarsa(
     mdp: &Mdp,
     alpha: f64,
     gamma: f64,
+    epsilon: f64,
     initial: (State, Action),
     episodes: usize,
     max_steps: usize,
     rng: &mut ChaCha20Rng,
-) -> HashMap<(State, Action), f64> {
-    let mut q_map: HashMap<(State, Action), f64> = HashMap::new();
+) -> BTreeMap<(State, Action), f64> {
+    let mut q_map: BTreeMap<(State, Action), f64> = BTreeMap::new();
 
     mdp.transitions.keys().for_each(|state_action| {
         q_map.insert(*state_action, 0.0);
@@ -29,7 +30,7 @@ pub fn sarsa(
         while !mdp.terminal_states.contains(&current_state) && steps < max_steps {
             let (next_state, reward) = mdp.perform_action((current_state, current_action), rng);
 
-            let next_action = epsilon_greedy_policy(mdp, &q_map, next_state, 0.1, rng);
+            let next_action = epsilon_greedy_policy(mdp, &q_map, next_state, epsilon, rng);
             if let Some(next_action) = next_action {
                 // update q_map
                 let next_q = *q_map.get(&(next_state, next_action)).unwrap_or(&0.0);
@@ -53,12 +54,13 @@ pub fn q_learning(
     mdp: &Mdp,
     alpha: f64,
     gamma: f64,
+    epsilon: f64,
     initial: (State, Action),
     episodes: usize,
     max_steps: usize,
     rng: &mut ChaCha20Rng,
-) -> HashMap<(State, Action), f64> {
-    let mut q_map: HashMap<(State, Action), f64> = HashMap::new();
+) -> BTreeMap<(State, Action), f64> {
+    let mut q_map: BTreeMap<(State, Action), f64> = BTreeMap::new();
 
     mdp.transitions.keys().for_each(|state_action| {
         q_map.insert(*state_action, 0.0);
@@ -69,7 +71,7 @@ pub fn q_learning(
         let mut steps = 0;
 
         while !mdp.terminal_states.contains(&current_state) && steps < max_steps {
-            let selected_action = epsilon_greedy_policy(mdp, &q_map, current_state, 0.1, rng);
+            let selected_action = epsilon_greedy_policy(mdp, &q_map, current_state, epsilon, rng);
             if let Some(selected_action) = selected_action {
                 let (next_state, reward) =
                     mdp.perform_action((current_state, selected_action), rng);
@@ -77,7 +79,9 @@ pub fn q_learning(
                 // update q_map
                 let best_action = greedy_policy(mdp, &q_map, next_state, rng);
                 if let Some(best_action) = best_action {
-                    let best_q = *q_map.get(&(next_state, best_action)).unwrap_or(&0.0);
+                    let best_q = *q_map
+                        .get(&(next_state, best_action))
+                        .expect("No qmap entry found");
 
                     let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
                     *current_q = *current_q + alpha * (reward + gamma * best_q - *current_q);
@@ -93,12 +97,11 @@ pub fn q_learning(
             }
         }
     }
-
     q_map
 }
 
-pub fn value_iteration(mdp: &Mdp, tolerance: f64, gamma: f64) -> HashMap<State, f64> {
-    let mut value_map: HashMap<State, f64> = HashMap::new();
+pub fn value_iteration(mdp: &Mdp, tolerance: f64, gamma: f64) -> BTreeMap<State, f64> {
+    let mut value_map: BTreeMap<State, f64> = BTreeMap::new();
     let mut delta = f64::MAX;
 
     while delta > tolerance {
@@ -116,7 +119,7 @@ pub fn value_iteration(mdp: &Mdp, tolerance: f64, gamma: f64) -> HashMap<State, 
     value_map
 }
 
-fn best_action_value(mdp: &Mdp, state: State, value_map: &HashMap<State, f64>, gamma: f64) -> f64 {
+fn best_action_value(mdp: &Mdp, state: State, value_map: &BTreeMap<State, f64>, gamma: f64) -> f64 {
     mdp.transitions
         .iter()
         .filter_map(|((s, _), transitions)| {

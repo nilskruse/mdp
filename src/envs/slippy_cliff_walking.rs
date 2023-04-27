@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::{
     envs::cliff_walking::{self, Action, Cell, CLIFF_REWARD, COLS, END_REWARD, ROWS, STEP_REWARD},

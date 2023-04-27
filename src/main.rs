@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use mdp::benchmarks::bench_runtime_sarsa_2;
 use mdp::policies::epsilon_greedy_policy;
@@ -84,9 +84,10 @@ fn main() {
 
     // let avg_reward = evaluate_policy(&mdp, q_map, eval_episodes, eval_max_steps, &mut rng);
     // println!("Q-learning average reward: {avg_reward}");
-    // run_benchmarks();
+    //    run_benchmarks();
     // run_cliff_walking();
     run_slippy_cliff_walking();
+    // test();
 }
 
 fn run_benchmarks() {
@@ -100,16 +101,17 @@ fn run_benchmarks() {
 }
 
 fn run_cliff_walking() {
+    println!("Running deterministic cliff walking!");
     let cliff_walking_mdp = mdp::envs::cliff_walking::build_mdp();
     // print_transition_map(&cliff_walking_mdp);
-    println!(
-        "Transition map length:{:?}",
-        cliff_walking_mdp.transitions.len()
-    );
-    println!("Initial state: {:?}", cliff_walking_mdp.initial_state);
-    println!("Terminal states: {:?}", cliff_walking_mdp.terminal_states);
+    // println!(
+    //     "Transition map length:{:?}",
+    //     cliff_walking_mdp.transitions.len()
+    // );
+    // println!("Initial state: {:?}", cliff_walking_mdp.initial_state);
+    // println!("Terminal states: {:?}", cliff_walking_mdp.terminal_states);
 
-    let learning_episodes = 1000;
+    let learning_episodes = 10000;
     let eval_episodes = 1000;
 
     // run "indefinitely"
@@ -118,6 +120,7 @@ fn run_cliff_walking() {
 
     let alpha = 0.1;
     let gamma = 1.0;
+    let epsilon = 0.1;
 
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
 
@@ -125,6 +128,7 @@ fn run_cliff_walking() {
         &cliff_walking_mdp,
         alpha,
         gamma,
+        epsilon,
         (cliff_walking_mdp.initial_state, Action(0)),
         learning_episodes,
         learning_max_steps,
@@ -138,12 +142,22 @@ fn run_cliff_walking() {
         eval_max_steps,
         &mut rng,
     );
-    println!("Q-learning average reward: {avg_reward}");
+    println!("Q-learning average reward with epsilon greedy: {avg_reward}");
+
+    let avg_reward = evaluate_greedy_policy(
+        &cliff_walking_mdp,
+        &q_map,
+        eval_episodes,
+        eval_max_steps,
+        &mut rng,
+    );
+    println!("Q-learning average reward with greedy: {avg_reward}");
 
     let q_map = sarsa(
         &cliff_walking_mdp,
         alpha,
         gamma,
+        epsilon,
         (cliff_walking_mdp.initial_state, Action(0)),
         learning_episodes,
         learning_max_steps,
@@ -157,26 +171,38 @@ fn run_cliff_walking() {
         eval_max_steps,
         &mut rng,
     );
-    println!("SARSA average reward: {avg_reward}");
+    println!("SARSA average reward with epsion greedy: {avg_reward}");
+
+    let avg_reward = evaluate_greedy_policy(
+        &cliff_walking_mdp,
+        &q_map,
+        eval_episodes,
+        eval_max_steps,
+        &mut rng,
+    );
+    println!("SARSA average reward with greedy: {avg_reward}");
+    println!();
 }
 
 fn run_slippy_cliff_walking() {
-    let slippy_cliff_walking_mdp = mdp::envs::slippy_cliff_walking::build_mdp(0.8);
-    print_transition_map(&slippy_cliff_walking_mdp);
-    println!(
-        "Transition map length:{:?}",
-        slippy_cliff_walking_mdp.transitions.len()
-    );
-    println!(
-        "Initial state: {:?}",
-        slippy_cliff_walking_mdp.initial_state
-    );
-    println!(
-        "Terminal states: {:?}",
-        slippy_cliff_walking_mdp.terminal_states
-    );
+    println!("Running slippy cliff walking!");
+    let slippy_cliff_walking_mdp = mdp::envs::slippy_cliff_walking::build_mdp(0.2);
+    // print_transition_map(&slippy_cliff_walking_mdp);
+    //
+    // println!(
+    //     "Transition map length:{:?}",
+    //     slippy_cliff_walking_mdp.transitions.len()
+    // );
+    // println!(
+    //     "Initial state: {:?}",
+    //     slippy_cliff_walking_mdp.initial_state
+    // );
+    // println!(
+    //     "Terminal states: {:?}",
+    //     slippy_cliff_walking_mdp.terminal_states
+    // );
 
-    let learning_episodes = 1000;
+    let learning_episodes = 10000;
     let eval_episodes = 1000;
 
     // run "indefinitely"
@@ -185,6 +211,7 @@ fn run_slippy_cliff_walking() {
 
     let alpha = 0.1;
     let gamma = 1.0;
+    let epsilon = 0.1;
 
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
 
@@ -192,11 +219,16 @@ fn run_slippy_cliff_walking() {
         &slippy_cliff_walking_mdp,
         alpha,
         gamma,
+        epsilon,
         (slippy_cliff_walking_mdp.initial_state, Action(0)),
         learning_episodes,
         learning_max_steps,
         &mut rng,
     );
+
+    let sum: f64 = q_map.values().sum();
+
+    println!("Sum = {sum}");
 
     let avg_reward = evaluate_epsilon_greedy_policy(
         &slippy_cliff_walking_mdp,
@@ -220,6 +252,7 @@ fn run_slippy_cliff_walking() {
         &slippy_cliff_walking_mdp,
         alpha,
         gamma,
+        epsilon,
         (slippy_cliff_walking_mdp.initial_state, Action(0)),
         learning_episodes,
         learning_max_steps,
@@ -243,4 +276,54 @@ fn run_slippy_cliff_walking() {
         &mut rng,
     );
     println!("SARSA average reward with greedy: {avg_reward}");
+    println!();
+}
+
+fn test() {
+    println!("Running slippy cliff walking!");
+    let slippy_cliff_walking_mdp = mdp::envs::slippy_cliff_walking::build_mdp(0.2);
+    // print_transition_map(&slippy_cliff_walking_mdp);
+    //
+    // println!(
+    //     "Transition map length:{:?}",
+    //     slippy_cliff_walking_mdp.transitions.len()
+    // );
+    // println!(
+    //     "Initial state: {:?}",
+    //     slippy_cliff_walking_mdp.initial_state
+    // );
+    // println!(
+    //     "Terminal states: {:?}",
+    //     slippy_cliff_walking_mdp.terminal_states
+    // );
+
+    let learning_episodes = 1;
+    let eval_episodes = 1;
+
+    // run "indefinitely"
+    let learning_max_steps = 5;
+    let eval_max_steps = 5;
+
+    let alpha = 0.1;
+    let gamma = 1.0;
+    let epsilon = 0.1;
+
+    let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
+
+    let q_map = q_learning(
+        &slippy_cliff_walking_mdp,
+        alpha,
+        gamma,
+        epsilon,
+        (slippy_cliff_walking_mdp.initial_state, Action(0)),
+        learning_episodes,
+        learning_max_steps,
+        &mut rng,
+    );
+
+    let sum: f64 = q_map.values().sum();
+
+    println!("Sum = {sum}");
+
+    println!();
 }

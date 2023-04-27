@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use rand_chacha::ChaCha20Rng;
 
@@ -9,7 +9,7 @@ use crate::{
 
 pub fn evaluate_epsilon_greedy_policy(
     mdp: &Mdp,
-    q_map: &HashMap<(State, Action), f64>,
+    q_map: &BTreeMap<(State, Action), f64>,
     episodes: usize,
     max_steps: usize,
     rng: &mut ChaCha20Rng,
@@ -40,7 +40,7 @@ pub fn evaluate_epsilon_greedy_policy(
 
 pub fn evaluate_greedy_policy(
     mdp: &Mdp,
-    q_map: &HashMap<(State, Action), f64>,
+    q_map: &BTreeMap<(State, Action), f64>,
     episodes: usize,
     max_steps: usize,
     rng: &mut ChaCha20Rng,
