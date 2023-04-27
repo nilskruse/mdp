@@ -3,10 +3,7 @@ use std::{cmp::Ordering, collections::HashMap};
 use rand::Rng;
 use rand_chacha::ChaCha20Rng;
 
-use crate::{
-    mdp::{Action, Reward, State},
-    Mdp,
-};
+use crate::mdp::{Action, Mdp, Reward, State};
 
 pub fn random_policy(mdp: &Mdp, current_state: State, rng: &mut ChaCha20Rng) -> Option<Action> {
     let mut possible_actions = mdp.get_possible_actions(current_state);

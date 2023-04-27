@@ -1,38 +1,21 @@
-#![feature(test)]
 // disable these warnings for now
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-#[macro_use]
-extern crate assert_float_eq;
-
-mod algorithms;
-mod envs;
-mod eval;
-mod generator;
-mod mdp;
-mod policies;
-mod utils;
-
-#[cfg(test)]
-mod tests;
-
-mod benchmarks;
-
 use std::collections::HashMap;
 
-use benchmarks::bench_runtime_sarsa_2;
-use policies::epsilon_greedy_policy;
+use mdp::benchmarks::bench_runtime_sarsa_2;
+use mdp::policies::epsilon_greedy_policy;
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
-use crate::algorithms::{q_learning, sarsa, value_iteration};
-use crate::benchmarks::bench_runtime_q_learning_2;
-use crate::eval::evaluate_epsilon_greedy_policy;
-use crate::generator::generate_random_mdp;
-use crate::mdp::*;
-use crate::policies::greedy_policy;
-use crate::utils::print_transition_map;
+use mdp::algorithms::{q_learning, sarsa, value_iteration};
+use mdp::benchmarks::bench_runtime_q_learning_2;
+use mdp::eval::evaluate_epsilon_greedy_policy;
+use mdp::generator::generate_random_mdp;
+use mdp::mdp::*;
+use mdp::policies::greedy_policy;
+use mdp::utils::print_transition_map;
 
 fn main() {
     // let mdp = Mdp::new_test_mdp();
@@ -116,7 +99,7 @@ fn run_benchmarks() {
 }
 
 fn run_cliff_walking() {
-    let cliff_walking_mdp = envs::cliff_walking::build_mdp();
+    let cliff_walking_mdp = mdp::envs::cliff_walking::build_mdp();
     // print_transition_map(&cliff_walking_mdp);
     println!(
         "Transition map length:{:?}",
@@ -131,7 +114,7 @@ fn run_cliff_walking() {
     // run "indefinitely"
     let learning_max_steps = usize::MAX;
     let eval_max_steps = usize::MAX;
-    
+
     let alpha = 0.1;
     let gamma = 1.0;
 

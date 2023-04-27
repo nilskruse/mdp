@@ -98,6 +98,6 @@ fn build_transition(
     from_state_2: State,
     action: Action,
     step_reward: f64,
-) -> ((State, mdp::Action), Vec<(f64, State, f64)>) {
+) -> ((State, mdp::Action), Vec<Transition>) {
     todo!()
 }
