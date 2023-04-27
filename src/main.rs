@@ -11,7 +11,7 @@ use rand_chacha::ChaCha20Rng;
 
 use mdp::algorithms::{q_learning, sarsa, value_iteration};
 use mdp::benchmarks::bench_runtime_q_learning_2;
-use mdp::eval::evaluate_epsilon_greedy_policy;
+use mdp::eval::{evaluate_epsilon_greedy_policy, evaluate_greedy_policy};
 use mdp::generator::generate_random_mdp;
 use mdp::mdp::*;
 use mdp::policies::greedy_policy;
@@ -85,7 +85,8 @@ fn main() {
     // let avg_reward = evaluate_policy(&mdp, q_map, eval_episodes, eval_max_steps, &mut rng);
     // println!("Q-learning average reward: {avg_reward}");
     // run_benchmarks();
-    run_cliff_walking();
+    // run_cliff_walking();
+    run_slippy_cliff_walking();
 }
 
 fn run_benchmarks() {
@@ -132,7 +133,7 @@ fn run_cliff_walking() {
 
     let avg_reward = evaluate_epsilon_greedy_policy(
         &cliff_walking_mdp,
-        q_map,
+        &q_map,
         eval_episodes,
         eval_max_steps,
         &mut rng,
@@ -151,10 +152,95 @@ fn run_cliff_walking() {
 
     let avg_reward = evaluate_epsilon_greedy_policy(
         &cliff_walking_mdp,
-        q_map,
+        &q_map,
         eval_episodes,
         eval_max_steps,
         &mut rng,
     );
     println!("SARSA average reward: {avg_reward}");
+}
+
+fn run_slippy_cliff_walking() {
+    let slippy_cliff_walking_mdp = mdp::envs::slippy_cliff_walking::build_mdp(0.8);
+    print_transition_map(&slippy_cliff_walking_mdp);
+    println!(
+        "Transition map length:{:?}",
+        slippy_cliff_walking_mdp.transitions.len()
+    );
+    println!(
+        "Initial state: {:?}",
+        slippy_cliff_walking_mdp.initial_state
+    );
+    println!(
+        "Terminal states: {:?}",
+        slippy_cliff_walking_mdp.terminal_states
+    );
+
+    let learning_episodes = 1000;
+    let eval_episodes = 1000;
+
+    // run "indefinitely"
+    let learning_max_steps = usize::MAX;
+    let eval_max_steps = usize::MAX;
+
+    let alpha = 0.1;
+    let gamma = 1.0;
+
+    let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
+
+    let q_map = q_learning(
+        &slippy_cliff_walking_mdp,
+        alpha,
+        gamma,
+        (slippy_cliff_walking_mdp.initial_state, Action(0)),
+        learning_episodes,
+        learning_max_steps,
+        &mut rng,
+    );
+
+    let avg_reward = evaluate_epsilon_greedy_policy(
+        &slippy_cliff_walking_mdp,
+        &q_map,
+        eval_episodes,
+        eval_max_steps,
+        &mut rng,
+    );
+    println!("Q-learning average reward with epsilon greedy: {avg_reward}");
+
+    let avg_reward = evaluate_greedy_policy(
+        &slippy_cliff_walking_mdp,
+        &q_map,
+        eval_episodes,
+        eval_max_steps,
+        &mut rng,
+    );
+    println!("Q-learning average reward with greedy: {avg_reward}");
+
+    let q_map = sarsa(
+        &slippy_cliff_walking_mdp,
+        alpha,
+        gamma,
+        (slippy_cliff_walking_mdp.initial_state, Action(0)),
+        learning_episodes,
+        learning_max_steps,
+        &mut rng,
+    );
+
+    let avg_reward = evaluate_epsilon_greedy_policy(
+        &slippy_cliff_walking_mdp,
+        &q_map,
+        eval_episodes,
+        eval_max_steps,
+        &mut rng,
+    );
+    println!("SARSA average reward with epsion greedy: {avg_reward}");
+
+    let avg_reward = evaluate_greedy_policy(
+        &slippy_cliff_walking_mdp,
+        &q_map,
+        eval_episodes,
+        eval_max_steps,
+        &mut rng,
+    );
+    println!("SARSA average reward with greedy: {avg_reward}");
 }
