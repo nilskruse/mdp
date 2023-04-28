@@ -24,6 +24,7 @@ pub(crate) const CLIFF_REWARD: f64 = -100.0;
 pub(crate) const END_REWARD: f64 = 0.0;
 
 pub fn build_mdp() -> Mdp {
+    // create grid of cells
     let mut grid: [[Cell; ROWS]; COLS] = [[Cell::Regular; ROWS]; COLS];
 
     //set lower row
@@ -35,6 +36,7 @@ pub fn build_mdp() -> Mdp {
 
     let mut transitions: BTreeMap<(State, mdp::Action), Vec<Transition>> = BTreeMap::new();
 
+    // fill transition map for every state and action
     for row in 0..ROWS {
         for col in 0..COLS {
             let from_state = State(row * COLS + col);
@@ -99,6 +101,7 @@ pub fn build_mdp() -> Mdp {
 
     let mut terminal_states = vec![];
 
+    // last row all terminal except first cell
     for col in 1..COLS {
         terminal_states.push(State((ROWS - 1) * COLS + col));
     }
@@ -121,6 +124,7 @@ fn build_transition(
         vec![(1.0, to_state, reward)],
     )
 }
+
 fn print_grid(grid: &[[Cell; ROWS]; COLS]) {
     for y in 0..ROWS {
         for x in 0..COLS {

@@ -53,8 +53,7 @@ pub fn greedy_policy(
     if let Some(action) = selected_action {
         Some(action)
     } else {
-        let random_policy_action = random_policy(mdp, current_state, rng);
-        random_policy_action
+        random_policy(mdp, current_state, rng)
     }
 }
 
