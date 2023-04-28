@@ -4,7 +4,11 @@ use assert_float_eq::assert_f64_near;
 use rand::SeedableRng;
 
 use crate::{
-    algorithms::{q_learning, sarsa},
+    algorithms::{
+        q_learning::{self, QLearning},
+        sarsa::{self, Sarsa},
+        TDAlgorithm,
+    },
     mdp::{Action, Mdp, State, Transition},
     utils::print_q_map,
 };
@@ -14,16 +18,8 @@ fn test_q_learning() {
     // this will select action 1 on first step and go to state 0
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(212);
     let mdp = create_test_mdp();
-    let q_map = q_learning(
-        &mdp,
-        0.1,
-        0.9,
-        0.1,
-        (mdp.initial_state, Action(0)),
-        1,
-        5,
-        &mut rng,
-    );
+    let algo = QLearning::new(0.1, 0.9, 0.1, 5);
+    let q_map = algo.run(&mdp, 1, &mut rng);
 
     print_q_map(&q_map);
 
@@ -33,25 +29,51 @@ fn test_q_learning() {
     assert_f64_near!(*q_map.get(&(State(1), Action(1))).unwrap(), -0.191);
 }
 
+// TODO: redo the manual calculations because the initial state handling has changed
 #[test]
 fn test_sarsa() {
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(8);
     let mdp = create_test_mdp();
-    let q_map = sarsa(
-        &mdp,
-        0.1,
-        0.9,
-        0.1,
-        (mdp.initial_state, Action(0)),
-        1,
-        5,
-        &mut rng,
-    );
+
+    let algo = Sarsa::new(0.1, 0.9, 0.1, 5);
+    let q_map = algo.run(&mdp, 1, &mut rng);
 
     assert_f64_near!(*q_map.get(&(State(0), Action(0))).unwrap(), 0.19);
     assert_f64_near!(*q_map.get(&(State(0), Action(1))).unwrap(), 0.0);
     assert_f64_near!(*q_map.get(&(State(1), Action(0))).unwrap(), -0.199);
     assert_f64_near!(*q_map.get(&(State(1), Action(1))).unwrap(), -0.191);
+}
+
+const EPISODES: usize = 1000;
+
+#[test]
+fn test_sarsa_equivalence() {
+    let mdp = create_test_mdp();
+    let algo = Sarsa::new(0.1, 0.9, 0.1, 1000);
+
+    let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(0);
+    let q_map_1 = algo.run(&mdp, EPISODES, &mut rng);
+
+    let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(0);
+    let mut q_map_2 = algo.run(&mdp, EPISODES / 2, &mut rng);
+    algo.run_with_q_map(&mdp, EPISODES / 2, &mut rng, &mut q_map_2);
+
+    assert_eq!(q_map_1, q_map_2);
+}
+
+#[test]
+fn test_q_learning_equivalence() {
+    let mdp = create_test_mdp();
+    let algo = QLearning::new(0.1, 0.9, 0.1, 1000);
+
+    let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(0);
+    let q_map_1 = algo.run(&mdp, EPISODES, &mut rng);
+
+    let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(0);
+    let mut q_map_2 = algo.run(&mdp, EPISODES / 2, &mut rng);
+    algo.run_with_q_map(&mdp, EPISODES / 2, &mut rng, &mut q_map_2);
+
+    assert_eq!(q_map_1, q_map_2);
 }
 
 fn create_test_mdp() -> Mdp {
