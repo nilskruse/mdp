@@ -1,19 +1,11 @@
-use std::{
-    f32::EPSILON,
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
 use crate::{
-    algorithms::{
-        q_learning::{self, QLearning},
-        sarsa::{self, Sarsa},
-        TDAlgorithm,
-    },
+    algorithms::{q_learning::QLearning, sarsa::Sarsa, TDAlgorithm},
     generator::generate_random_mdp,
-    mdp::{Action, State},
 };
 
 const BENCH_EPISODES: usize = 1000;

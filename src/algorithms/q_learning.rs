@@ -54,13 +54,13 @@ impl TDAlgorithm for QLearning {
 
             while !mdp.terminal_states.contains(&current_state) && steps < self.max_steps {
                 let selected_action =
-                    epsilon_greedy_policy(mdp, &q_map, current_state, self.epsilon, rng);
+                    epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng);
                 if let Some(selected_action) = selected_action {
                     let (next_state, reward) =
                         mdp.perform_action((current_state, selected_action), rng);
 
                     // update q_map
-                    let best_action = greedy_policy(mdp, &q_map, next_state, rng);
+                    let best_action = greedy_policy(mdp, q_map, next_state, rng);
                     if let Some(best_action) = best_action {
                         let best_q = *q_map
                             .get(&(next_state, best_action))

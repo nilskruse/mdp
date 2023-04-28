@@ -1,7 +1,5 @@
-use std::collections::BTreeMap;
-
 use crate::{
-    envs::cliff_walking::{self, Action, Cell, CLIFF_REWARD, COLS, END_REWARD, ROWS, STEP_REWARD},
+    envs::cliff_walking::{self, Action, CLIFF_REWARD, COLS, ROWS, STEP_REWARD},
     mdp::{self, Mdp, State, Transition},
 };
 
