@@ -85,9 +85,9 @@ fn main() {
 
     // let avg_reward = evaluate_policy(&mdp, q_map, eval_episodes, eval_max_steps, &mut rng);
     // println!("Q-learning average reward: {avg_reward}");
-    run_benchmarks();
-    // run_cliff_walking();
-    // run_slippy_cliff_walking();
+    // run_benchmarks();
+    run_cliff_walking();
+    run_slippery_cliff_walking();
     // test();
 }
 
@@ -159,9 +159,9 @@ fn run_cliff_walking() {
     println!();
 }
 
-fn run_slippy_cliff_walking() {
-    println!("Running slippy cliff walking!");
-    let slippy_cliff_walking_mdp = mdp::envs::slippy_cliff_walking::build_mdp(0.2);
+fn run_slippery_cliff_walking() {
+    println!("Running slippery cliff walking!");
+    let slippy_cliff_walking_mdp = mdp::envs::slippery_cliff_walking::build_mdp(0.2);
     // print_transition_map(&slippy_cliff_walking_mdp);
     //
     // println!(
@@ -240,7 +240,7 @@ fn run_slippy_cliff_walking() {
 
 fn test() {
     println!("Running slippy cliff walking!");
-    let slippy_cliff_walking_mdp = mdp::envs::slippy_cliff_walking::build_mdp(0.2);
+    let slippy_cliff_walking_mdp = mdp::envs::slippery_cliff_walking::build_mdp(0.2);
     // print_transition_map(&slippy_cliff_walking_mdp);
     //
     // println!(

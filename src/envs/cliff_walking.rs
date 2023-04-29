@@ -106,6 +106,7 @@ pub fn build_mdp() -> Mdp {
         terminal_states.push(State((ROWS - 1) * COLS + col));
     }
 
+    print_grid(&grid);
     Mdp {
         transitions,
         terminal_states,
@@ -125,6 +126,7 @@ fn build_transition(
     )
 }
 
+#[allow(clippy::needless_range_loop)]
 fn print_grid(grid: &[[Cell; ROWS]; COLS]) {
     for y in 0..ROWS {
         for x in 0..COLS {

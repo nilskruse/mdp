@@ -4,11 +4,7 @@ use assert_float_eq::assert_f64_near;
 use rand::SeedableRng;
 
 use crate::{
-    algorithms::{
-        q_learning::{self, QLearning},
-        sarsa::{self, Sarsa},
-        TDAlgorithm,
-    },
+    algorithms::{q_learning::QLearning, sarsa::Sarsa, TDAlgorithm},
     mdp::{Action, Mdp, State, Transition},
     utils::print_q_map,
 };
