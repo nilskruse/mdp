@@ -106,7 +106,8 @@ pub fn build_mdp() -> Mdp {
         terminal_states.push(State((ROWS - 1) * COLS + col));
     }
 
-    print_grid(&grid);
+    // print_grid(&grid);
+
     Mdp {
         transitions,
         terminal_states,
