@@ -12,6 +12,7 @@ pub fn evaluate_epsilon_greedy_policy(
     q_map: &BTreeMap<(State, Action), f64>,
     episodes: usize,
     max_steps: usize,
+    epsilon: f64,
     rng: &mut ChaCha20Rng,
 ) -> f64 {
     let mut total_reward = 0.0;
@@ -22,7 +23,7 @@ pub fn evaluate_epsilon_greedy_policy(
         let mut steps = 0;
 
         while !mdp.terminal_states.contains(&current_state) && steps < max_steps {
-            let selected_action = epsilon_greedy_policy(mdp, q_map, current_state, 0.1, rng);
+            let selected_action = epsilon_greedy_policy(mdp, q_map, current_state, epsilon, rng);
             if let Some(selected_action) = selected_action {
                 let (next_state, reward) =
                     mdp.perform_action((current_state, selected_action), rng);
