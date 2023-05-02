@@ -1,22 +1,16 @@
 // disable these warnings for now
 #![allow(dead_code)]
-#![allow(unused_imports)]
-
-use std::collections::BTreeMap;
+// #![allow(unused_imports)]
 
 use mdp::algorithms::q_learning::QLearning;
 use mdp::algorithms::sarsa::Sarsa;
-use mdp::benchmarks::run_benchmarks;
-use mdp::policies::epsilon_greedy_policy;
-use rand::SeedableRng;
-use rand_chacha::ChaCha20Rng;
 
-use mdp::algorithms::{q_learning, sarsa, value_iteration, TDAlgorithm};
-use mdp::eval::{evaluate_epsilon_greedy_policy, evaluate_greedy_policy};
-use mdp::generator::generate_random_mdp;
-use mdp::policies::greedy_policy;
-use mdp::utils::print_transition_map;
-use mdp::{experiments, mdp::*};
+use rand::SeedableRng;
+
+use mdp::algorithms::TDAlgorithm;
+use mdp::eval::evaluate_epsilon_greedy_policy;
+
+use mdp::experiments;
 
 fn main() {
     // run_benchmarks();
