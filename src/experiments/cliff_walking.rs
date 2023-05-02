@@ -156,34 +156,6 @@ pub fn run_cliff_walking_episodic() {
     let q_learning_algo = QLearning::new(alpha, gamma, epsilon, learning_max_steps);
 
     let mut q_map = q_learning_algo.run(&cliff_walking_mdp, 1, &mut rng);
-    let mut csv_writer = csv::Writer::from_path("sarsa.csv").expect("csv error");
-    csv_writer
-        .write_record(&["episode", "avg_reward"])
-        .expect("csv error");
-
-    for i in 2..500 {
-        q_learning_algo.run_with_q_map(&cliff_walking_mdp, 1, &mut rng, &mut q_map);
-
-        if i % 10 == 0 {
-            let avg_reward = evaluate_epsilon_greedy_policy(
-                &cliff_walking_mdp,
-                &q_map,
-                eval_episodes,
-                eval_max_steps,
-                epsilon,
-                &mut rng,
-            );
-            // println!("Average reward in episode {i}: {avg_reward}");
-            csv_writer.serialize((i, avg_reward)).expect("csv error");
-        }
-    }
-
-    let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
-
-    let sarsa_algo = Sarsa::new(alpha, gamma, epsilon, learning_max_steps);
-
-    let mut q_map = sarsa_algo.run(&cliff_walking_mdp, 1, &mut rng);
-
     let mut csv_writer = csv::Writer::from_path("q_learning.csv").expect("csv error");
     csv_writer
         .write_record(&["episode", "avg_reward"])
@@ -206,6 +178,33 @@ pub fn run_cliff_walking_episodic() {
         }
     }
 
+    let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
+
+    let sarsa_algo = Sarsa::new(alpha, gamma, epsilon, learning_max_steps);
+
+    let mut q_map = sarsa_algo.run(&cliff_walking_mdp, 1, &mut rng);
+
+    let mut csv_writer = csv::Writer::from_path("sarsa.csv").expect("csv error");
+    csv_writer
+        .write_record(&["episode", "avg_reward"])
+        .expect("csv error");
+
+    for i in 2..=500 {
+        sarsa_algo.run_with_q_map(&cliff_walking_mdp, 1, &mut rng, &mut q_map);
+
+        if i % 10 == 0 {
+            let avg_reward = evaluate_epsilon_greedy_policy(
+                &cliff_walking_mdp,
+                &q_map,
+                eval_episodes,
+                eval_max_steps,
+                epsilon,
+                &mut rng,
+            );
+            // println!("Average reward in episode {i}: {avg_reward}");
+            csv_writer.serialize((i, avg_reward)).expect("csv error");
+        }
+    }
 
     println!();
 }

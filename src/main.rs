@@ -14,19 +14,17 @@ use rand_chacha::ChaCha20Rng;
 use mdp::algorithms::{q_learning, sarsa, value_iteration, TDAlgorithm};
 use mdp::eval::{evaluate_epsilon_greedy_policy, evaluate_greedy_policy};
 use mdp::generator::generate_random_mdp;
-use mdp::{mdp::*, experiments};
 use mdp::policies::greedy_policy;
 use mdp::utils::print_transition_map;
+use mdp::{experiments, mdp::*};
 
 fn main() {
-
     // run_benchmarks();
-    experiments::cliff_walking::run_cliff_walking();
-    experiments::cliff_walking::run_slippery_cliff_walking();
-    // experiments::cliff_walking::run_cliff_walking_episodic();
+    // experiments::cliff_walking::run_cliff_walking();
+    // experiments::cliff_walking::run_slippery_cliff_walking();
+    experiments::cliff_walking::run_cliff_walking_episodic();
     // test();
 }
-
 
 fn test() {
     println!("Running slippy cliff walking!");
