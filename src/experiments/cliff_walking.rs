@@ -22,6 +22,11 @@ pub fn run_cliff_walking() {
     let gamma = 1.0;
     let epsilon = 0.1;
 
+    let mut csv_writer = csv::Writer::from_path("cliff_walking.csv").expect("csv error");
+    csv_writer
+        .write_record(["policy", "avg_reward"])
+        .expect("csv error");
+
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
 
     let q_learning_algo = QLearning::new(alpha, gamma, epsilon, learning_max_steps);
@@ -36,6 +41,9 @@ pub fn run_cliff_walking() {
         &mut rng,
     );
     println!("Q-learning average reward with epsilon greedy: {avg_reward}");
+    csv_writer
+        .serialize(("Q-Learning ε-greedy", avg_reward))
+        .expect("csv error");
 
     let avg_reward = evaluate_greedy_policy(
         &cliff_walking_mdp,
@@ -45,6 +53,9 @@ pub fn run_cliff_walking() {
         &mut rng,
     );
     println!("Q-learning average reward with greedy: {avg_reward}");
+    csv_writer
+        .serialize(("Q-Learning greedy", avg_reward))
+        .expect("csv error");
 
     let sarsa_algo = Sarsa::new(alpha, gamma, epsilon, learning_max_steps);
     let q_map = sarsa_algo.run(&cliff_walking_mdp, learning_episodes, &mut rng);
@@ -58,6 +69,9 @@ pub fn run_cliff_walking() {
         &mut rng,
     );
     println!("SARSA average reward with epsilon greedy: {avg_reward}");
+    csv_writer
+        .serialize(("SARSA ε-greedy", avg_reward))
+        .expect("csv error");
 
     let avg_reward = evaluate_greedy_policy(
         &cliff_walking_mdp,
@@ -67,6 +81,10 @@ pub fn run_cliff_walking() {
         &mut rng,
     );
     println!("SARSA average reward with greedy: {avg_reward}");
+    csv_writer
+        .serialize(("SARSA greedy", avg_reward))
+        .expect("csv error");
+
     println!();
 }
 
@@ -85,14 +103,15 @@ pub fn run_slippery_cliff_walking() {
     let gamma = 1.0;
     let epsilon = 0.1;
 
+    let mut csv_writer = csv::Writer::from_path("slippery_cliff_walking.csv").expect("csv error");
+    csv_writer
+        .write_record(["policy", "avg_reward"])
+        .expect("csv error");
+
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
 
     let q_learning_algo = QLearning::new(alpha, gamma, epsilon, learning_max_steps);
     let q_map = q_learning_algo.run(&slippy_cliff_walking_mdp, learning_episodes, &mut rng);
-
-    let sum: f64 = q_map.values().sum();
-
-    println!("Sum = {sum}");
 
     let avg_reward = evaluate_epsilon_greedy_policy(
         &slippy_cliff_walking_mdp,
@@ -103,6 +122,9 @@ pub fn run_slippery_cliff_walking() {
         &mut rng,
     );
     println!("Q-learning average reward with epsilon greedy: {avg_reward}");
+    csv_writer
+        .serialize(("Q-Learning ε-greedy", avg_reward))
+        .expect("csv error");
 
     let avg_reward = evaluate_greedy_policy(
         &slippy_cliff_walking_mdp,
@@ -112,6 +134,9 @@ pub fn run_slippery_cliff_walking() {
         &mut rng,
     );
     println!("Q-learning average reward with greedy: {avg_reward}");
+    csv_writer
+        .serialize(("Q-Learning greedy", avg_reward))
+        .expect("csv error");
 
     let sarsa_algo = Sarsa::new(alpha, gamma, epsilon, learning_max_steps);
     let q_map = sarsa_algo.run(&slippy_cliff_walking_mdp, learning_episodes, &mut rng);
@@ -125,6 +150,9 @@ pub fn run_slippery_cliff_walking() {
         &mut rng,
     );
     println!("SARSA average reward with epsilon greedy: {avg_reward}");
+    csv_writer
+        .serialize(("SARSA ε-greedy", avg_reward))
+        .expect("csv error");
 
     let avg_reward = evaluate_greedy_policy(
         &slippy_cliff_walking_mdp,
@@ -134,6 +162,9 @@ pub fn run_slippery_cliff_walking() {
         &mut rng,
     );
     println!("SARSA average reward with greedy: {avg_reward}");
+    csv_writer
+        .serialize(("SARSA greedy", avg_reward))
+        .expect("csv error");
     println!();
 }
 
@@ -158,7 +189,7 @@ pub fn run_cliff_walking_episodic() {
     let mut q_map = q_learning_algo.run(&cliff_walking_mdp, 1, &mut rng);
     let mut csv_writer = csv::Writer::from_path("q_learning.csv").expect("csv error");
     csv_writer
-        .write_record(&["episode", "avg_reward"])
+        .write_record(["episode", "avg_reward"])
         .expect("csv error");
 
     for i in 2..=500 {
@@ -186,7 +217,7 @@ pub fn run_cliff_walking_episodic() {
 
     let mut csv_writer = csv::Writer::from_path("sarsa.csv").expect("csv error");
     csv_writer
-        .write_record(&["episode", "avg_reward"])
+        .write_record(["episode", "avg_reward"])
         .expect("csv error");
 
     for i in 2..=500 {

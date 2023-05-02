@@ -20,9 +20,9 @@ use mdp::{experiments, mdp::*};
 
 fn main() {
     // run_benchmarks();
-    // experiments::cliff_walking::run_cliff_walking();
-    // experiments::cliff_walking::run_slippery_cliff_walking();
-    experiments::cliff_walking::run_cliff_walking_episodic();
+    experiments::cliff_walking::run_cliff_walking();
+    experiments::cliff_walking::run_slippery_cliff_walking();
+    // experiments::cliff_walking::run_cliff_walking_episodic();
     // test();
 }
 

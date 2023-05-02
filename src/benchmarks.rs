@@ -21,13 +21,25 @@ pub fn run_benchmarks() {
     println!("Starting Benchmarks...");
 
     println!("Benching Q-Learning...");
-    bench_runtime_q_learning();
+    let q_learning_time = bench_runtime_q_learning();
 
     println!("Benching SARSA...");
-    bench_runtime_sarsa();
+    let sarsa_time = bench_runtime_sarsa();
+
+    let mut csv_writer = csv::Writer::from_path("runtime.csv").expect("csv error");
+    csv_writer
+        .write_record(["algorithm", "runtime"])
+        .expect("csv error");
+
+    csv_writer
+        .serialize(("Q-Learning", q_learning_time.as_secs_f64()))
+        .expect("csv error");
+    csv_writer
+        .serialize(("SARSA", sarsa_time.as_secs_f64()))
+        .expect("csv error");
 }
 
-fn bench_runtime_q_learning() {
+fn bench_runtime_q_learning() -> Duration {
     let mut mdp_rng = ChaCha20Rng::seed_from_u64(BENCH_SEED);
     let mut total_duration: Duration = Duration::new(0, 0);
     let algo = QLearning::new(BENCH_ALPHA, BENCH_GAMMA, BENCH_EPSILON, BENCH_MAX_STEPS);
@@ -42,9 +54,10 @@ fn bench_runtime_q_learning() {
     }
 
     println!("q_learning total_duration: {:?}", total_duration);
+    total_duration
 }
 
-fn bench_runtime_sarsa() {
+fn bench_runtime_sarsa() -> Duration {
     let mut mdp_rng = ChaCha20Rng::seed_from_u64(BENCH_SEED);
     let mut total_duration: Duration = Duration::new(0, 0);
     let algo = Sarsa::new(BENCH_ALPHA, BENCH_GAMMA, BENCH_EPSILON, BENCH_MAX_STEPS);
@@ -58,4 +71,5 @@ fn bench_runtime_sarsa() {
     }
 
     println!("sarsa total_duration: {:?}", total_duration);
+    total_duration
 }
