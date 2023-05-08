@@ -87,6 +87,33 @@ pub fn run_cliff_walking() {
         .serialize(("SARSA greedy", avg_reward))
         .expect("csv error");
 
+    let mc_algo = MonteCarlo::new(epsilon, learning_max_steps);
+    let q_map = mc_algo.run(&cliff_walking_mdp, learning_episodes, &mut rng);
+
+    let avg_reward = evaluate_epsilon_greedy_policy(
+        &cliff_walking_mdp,
+        &q_map,
+        eval_episodes,
+        eval_max_steps,
+        epsilon,
+        &mut rng,
+    );
+    println!("MC average reward with epsilon greedy: {avg_reward}");
+    csv_writer
+        .serialize(("MC ε-greedy", avg_reward))
+        .expect("csv error");
+
+    let avg_reward = evaluate_greedy_policy(
+        &cliff_walking_mdp,
+        &q_map,
+        eval_episodes,
+        eval_max_steps,
+        &mut rng,
+    );
+    println!("MC average reward with greedy: {avg_reward}");
+    csv_writer
+        .serialize(("MC greedy", avg_reward))
+        .expect("csv error");
     println!();
 }
 
@@ -167,6 +194,34 @@ pub fn run_slippery_cliff_walking() {
     csv_writer
         .serialize(("SARSA greedy", avg_reward))
         .expect("csv error");
+
+    let mc_algo = MonteCarlo::new(epsilon, learning_max_steps);
+    let q_map = mc_algo.run(&slippy_cliff_walking_mdp, learning_episodes, &mut rng);
+
+    let avg_reward = evaluate_epsilon_greedy_policy(
+        &slippy_cliff_walking_mdp,
+        &q_map,
+        eval_episodes,
+        eval_max_steps,
+        epsilon,
+        &mut rng,
+    );
+    println!("MC average reward with epsilon greedy: {avg_reward}");
+    csv_writer
+        .serialize(("MC ε-greedy", avg_reward))
+        .expect("csv error");
+
+    let avg_reward = evaluate_greedy_policy(
+        &slippy_cliff_walking_mdp,
+        &q_map,
+        eval_episodes,
+        eval_max_steps,
+        &mut rng,
+    );
+    println!("MC average reward with greedy: {avg_reward}");
+    csv_writer
+        .serialize(("MC greedy", avg_reward))
+        .expect("csv error");
     println!();
 }
 
@@ -238,68 +293,6 @@ pub fn run_cliff_walking_episodic() {
             csv_writer.serialize((i, avg_reward)).expect("csv error");
         }
     }
-
-    println!();
-}
-
-pub fn run_cliff_walking_monte_carlo() {
-    println!("Running monte carlo cliff walking...");
-    let cliff_walking_mdp = envs::cliff_walking::build_mdp();
-
-    let eval_episodes = 1000;
-
-    // run "indefinitely"
-    let learning_max_steps = usize::MAX;
-    let eval_max_steps = usize::MAX;
-
-    // let gamma = 1.0;
-    let epsilon = 0.1;
-
-    let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
-
-    let mc_learning_algo = MonteCarlo::new(epsilon, learning_max_steps);
-
-    let mut q_map = mc_learning_algo.run(&cliff_walking_mdp, 1, &mut rng);
-    let mut csv_writer = csv::Writer::from_path("monte_carlo.csv").expect("csv error");
-    csv_writer
-        .write_record(["episode", "avg_reward"])
-        .expect("csv error");
-
-    for i in 2..=500 {
-        mc_learning_algo.run_with_q_map(&cliff_walking_mdp, 1, &mut rng, &mut q_map);
-
-        if i % 10 == 0 {
-            let avg_reward = evaluate_epsilon_greedy_policy(
-                &cliff_walking_mdp,
-                &q_map,
-                eval_episodes,
-                eval_max_steps,
-                epsilon,
-                &mut rng,
-            );
-            // println!("Average reward in episode {i}: {avg_reward}");
-            csv_writer.serialize((i, avg_reward)).expect("csv error");
-        }
-    }
-
-    let avg_reward = evaluate_epsilon_greedy_policy(
-        &cliff_walking_mdp,
-        &q_map,
-        eval_episodes,
-        eval_max_steps,
-        epsilon,
-        &mut rng,
-    );
-    println!("Monte carlo with epsilon greedy: {avg_reward}");
-
-    let avg_reward = evaluate_greedy_policy(
-        &cliff_walking_mdp,
-        &q_map,
-        eval_episodes,
-        eval_max_steps,
-        &mut rng,
-    );
-    println!("Monte carlo with greedy: {avg_reward}");
 
     println!();
 }
