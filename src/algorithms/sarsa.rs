@@ -5,7 +5,7 @@ use crate::{
     policies::epsilon_greedy_policy,
 };
 
-use super::TDAlgorithm;
+use super::StateActionAlgorithm;
 
 pub struct Sarsa {
     alpha: f64,
@@ -13,6 +13,7 @@ pub struct Sarsa {
     epsilon: f64,
     max_steps: usize,
 }
+
 impl Sarsa {
     pub fn new(alpha: f64, gamma: f64, epsilon: f64, max_steps: usize) -> Self {
         Sarsa {
@@ -23,24 +24,8 @@ impl Sarsa {
         }
     }
 }
-impl TDAlgorithm for Sarsa {
-    fn run(
-        &self,
-        mdp: &crate::mdp::Mdp,
-        episodes: usize,
-        rng: &mut rand_chacha::ChaCha20Rng,
-    ) -> std::collections::BTreeMap<(crate::mdp::State, crate::mdp::Action), f64> {
-        let mut q_map: BTreeMap<(State, Action), f64> = BTreeMap::new();
 
-        mdp.transitions.keys().for_each(|state_action| {
-            q_map.insert(*state_action, 0.0);
-        });
-
-        self.run_with_q_map(mdp, episodes, rng, &mut q_map);
-
-        q_map
-    }
-
+impl StateActionAlgorithm for Sarsa {
     fn run_with_q_map(
         &self,
         mdp: &crate::mdp::Mdp,

@@ -4,7 +4,7 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
 use crate::{
-    algorithms::{q_learning::QLearning, sarsa::Sarsa, TDAlgorithm},
+    algorithms::{q_learning::QLearning, sarsa::Sarsa, StateActionAlgorithm},
     generator::generate_random_mdp,
 };
 

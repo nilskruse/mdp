@@ -5,6 +5,15 @@ use rand_chacha::ChaCha20Rng;
 
 use crate::mdp::{Action, Mdp, Reward, State};
 
+trait Policy {
+    fn select_action(
+        &self,
+        mdp: &Mdp,
+        q_map: &BTreeMap<(State, Action), Reward>,
+        rng: &mut ChaCha20Rng,
+    );
+}
+
 pub fn random_policy(mdp: &Mdp, current_state: State, rng: &mut ChaCha20Rng) -> Option<Action> {
     let possible_actions = mdp.get_possible_actions(current_state);
 

@@ -7,7 +7,7 @@ use mdp::algorithms::sarsa::Sarsa;
 
 use rand::SeedableRng;
 
-use mdp::algorithms::TDAlgorithm;
+use mdp::algorithms::StateActionAlgorithm;
 use mdp::eval::evaluate_epsilon_greedy_policy;
 
 use mdp::experiments;
@@ -16,6 +16,7 @@ fn main() {
     // run_benchmarks();
     experiments::cliff_walking::run_cliff_walking();
     experiments::cliff_walking::run_slippery_cliff_walking();
+    experiments::cliff_walking::run_cliff_walking_monte_carlo();
     // experiments::cliff_walking::run_cliff_walking_episodic();
     // test();
 }

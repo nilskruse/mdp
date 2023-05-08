@@ -1,4 +1,6 @@
+pub mod monte_carlo;
 pub mod q_learning;
+pub mod q_learning_lambda;
 pub mod sarsa;
 
 use std::collections::BTreeMap;
@@ -7,13 +9,24 @@ use rand_chacha::ChaCha20Rng;
 
 use crate::mdp::{Action, Mdp, State};
 
-pub trait TDAlgorithm {
+pub trait StateActionAlgorithm {
+    // default implementation
     fn run(
         &self,
         mdp: &Mdp,
         episodes: usize,
         rng: &mut ChaCha20Rng,
-    ) -> BTreeMap<(State, Action), f64>;
+    ) -> BTreeMap<(State, Action), f64> {
+        let mut q_map: BTreeMap<(State, Action), f64> = BTreeMap::new();
+
+        mdp.transitions.keys().for_each(|state_action| {
+            q_map.insert(*state_action, 0.0);
+        });
+
+        self.run_with_q_map(mdp, episodes, rng, &mut q_map);
+
+        q_map
+    }
     fn run_with_q_map(
         &self,
         mdp: &Mdp,
