@@ -3,7 +3,8 @@ use std::io;
 
 use crate::{
     algorithms::{
-        monte_carlo::MonteCarlo, q_learning::QLearning, sarsa::Sarsa, StateActionAlgorithm,
+        monte_carlo::MonteCarlo, q_learning::QLearning, q_learning_lambda::SarsaLambda,
+        sarsa::Sarsa, StateActionAlgorithm,
     },
     envs,
     eval::{evaluate_epsilon_greedy_policy, evaluate_greedy_policy},
@@ -13,12 +14,12 @@ pub fn run_cliff_walking() {
     println!("Running deterministic cliff walking!");
     let cliff_walking_mdp = envs::cliff_walking::build_mdp();
 
-    let learning_episodes = 500;
-    let eval_episodes = 1000;
+    let learning_episodes = 1000;
+    let eval_episodes = 500;
 
     // run "indefinitely"
     let learning_max_steps = usize::MAX;
-    let eval_max_steps = usize::MAX;
+    let eval_max_steps = 2000;
 
     let alpha = 0.1;
     let gamma = 1.0;
@@ -29,7 +30,7 @@ pub fn run_cliff_walking() {
         .write_record(["policy", "avg_reward"])
         .expect("csv error");
 
-    let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
+    let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(0);
 
     let q_learning_algo = QLearning::new(alpha, gamma, epsilon, learning_max_steps);
     let q_map = q_learning_algo.run(&cliff_walking_mdp, learning_episodes, &mut rng);
@@ -113,6 +114,36 @@ pub fn run_cliff_walking() {
     println!("MC average reward with greedy: {avg_reward}");
     csv_writer
         .serialize(("MC greedy", avg_reward))
+        .expect("csv error");
+
+    // SARSA Lambda
+    let lambda = 0.1;
+    let sarsa_lambda_algo = SarsaLambda::new(alpha, gamma, epsilon, lambda, learning_max_steps);
+    let q_map = sarsa_lambda_algo.run(&cliff_walking_mdp, learning_episodes, &mut rng);
+
+    let avg_reward = evaluate_epsilon_greedy_policy(
+        &cliff_walking_mdp,
+        &q_map,
+        eval_episodes,
+        eval_max_steps,
+        epsilon,
+        &mut rng,
+    );
+    println!("SARSA lambda average reward with epsilon greedy: {avg_reward}");
+    csv_writer
+        .serialize(("SARSA lambda ε-greedy", avg_reward))
+        .expect("csv error");
+
+    let avg_reward = evaluate_greedy_policy(
+        &cliff_walking_mdp,
+        &q_map,
+        eval_episodes,
+        eval_max_steps,
+        &mut rng,
+    );
+    println!("SARSA lambda average reward with greedy: {avg_reward}");
+    csv_writer
+        .serialize(("SARSA lambda greedy", avg_reward))
         .expect("csv error");
     println!();
 }
