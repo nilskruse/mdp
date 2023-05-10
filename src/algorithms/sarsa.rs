@@ -44,20 +44,17 @@ impl StateActionAlgorithm for Sarsa {
                 let (next_state, reward) = mdp.perform_action((current_state, current_action), rng);
 
                 let next_action = epsilon_greedy_policy(mdp, q_map, next_state, self.epsilon, rng);
-                if let Some(next_action) = next_action {
-                    // update q_map
-                    let next_q = *q_map.get(&(next_state, next_action)).unwrap_or(&0.0);
-                    let current_q = q_map.entry((current_state, current_action)).or_insert(0.0);
-                    *current_q =
-                        *current_q + self.alpha * (reward + self.gamma * next_q - *current_q);
+                let Some(next_action) = next_action else {break};
 
-                    current_state = next_state;
-                    current_action = next_action;
+                // update q_map
+                let next_q = *q_map.get(&(next_state, next_action)).unwrap_or(&0.0);
+                let current_q = q_map.entry((current_state, current_action)).or_insert(0.0);
+                *current_q = *current_q + self.alpha * (reward + self.gamma * next_q - *current_q);
 
-                    steps += 1;
-                } else {
-                    break;
-                }
+                current_state = next_state;
+                current_action = next_action;
+
+                steps += 1;
             }
         }
     }

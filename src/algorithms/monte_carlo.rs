@@ -33,16 +33,12 @@ impl MonteCarlo {
             let selected_action =
                 epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng);
 
-            if let Some(selected_action) = selected_action {
-                let (next_state, reward) =
-                    mdp.perform_action((current_state, selected_action), rng);
+            let Some(selected_action) = selected_action else {break};
+            let (next_state, reward) = mdp.perform_action((current_state, selected_action), rng);
 
-                episode.push((current_state, selected_action, reward));
-                current_state = next_state;
-                steps += 1;
-            } else {
-                break;
-            }
+            episode.push((current_state, selected_action, reward));
+            current_state = next_state;
+            steps += 1;
         }
         episode
     }

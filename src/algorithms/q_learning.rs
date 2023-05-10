@@ -38,33 +38,22 @@ impl StateActionAlgorithm for QLearning {
             let mut steps = 0;
 
             while !mdp.terminal_states.contains(&current_state) && steps < self.max_steps {
-                let selected_action =
-                    epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng);
-                if let Some(selected_action) = selected_action {
-                    let (next_state, reward) =
-                        mdp.perform_action((current_state, selected_action), rng);
+                let Some(selected_action) = epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng) else {break};
+                let (next_state, reward) =
+                    mdp.perform_action((current_state, selected_action), rng);
 
-                    // update q_map
-                    let best_action = greedy_policy(mdp, q_map, next_state, rng);
-                    if let Some(best_action) = best_action {
-                        let best_q = *q_map
-                            .get(&(next_state, best_action))
-                            .expect("No qmap entry found");
+                // update q_map
+                let Some(best_action) = greedy_policy(mdp, q_map, next_state, rng) else {break};
+                let best_q = *q_map
+                    .get(&(next_state, best_action))
+                    .expect("No qmap entry found");
 
-                        let current_q =
-                            q_map.entry((current_state, selected_action)).or_insert(0.0);
-                        *current_q =
-                            *current_q + self.alpha * (reward + self.gamma * best_q - *current_q);
+                let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
+                *current_q = *current_q + self.alpha * (reward + self.gamma * best_q - *current_q);
 
-                        current_state = next_state;
+                current_state = next_state;
 
-                        steps += 1;
-                    } else {
-                        break;
-                    }
-                } else {
-                    break;
-                }
+                steps += 1;
             }
         }
     }

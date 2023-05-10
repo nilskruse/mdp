@@ -56,11 +56,7 @@ pub fn greedy_policy(
         .unzip()
         .0;
 
-    if let Some(action) = selected_action {
-        Some(action)
-    } else {
-        random_policy(mdp, current_state, rng)
-    }
+    selected_action.or_else(|| random_policy(mdp, current_state, rng))
 }
 
 pub fn epsilon_greedy_policy(
