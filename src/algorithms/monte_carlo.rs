@@ -25,7 +25,7 @@ impl MonteCarlo {
         q_map: &BTreeMap<(State, Action), Reward>,
         rng: &mut ChaCha20Rng,
     ) -> Vec<(State, Action, Reward)> {
-        let mut episode = Vec::with_capacity(self.max_steps + 1);
+        let mut episode = vec![];
 
         let mut current_state = mdp.initial_state;
         let mut steps = 0;

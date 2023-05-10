@@ -3,8 +3,8 @@ use std::io;
 
 use crate::{
     algorithms::{
-        monte_carlo::MonteCarlo, q_learning::QLearning, q_learning_lambda::SarsaLambda,
-        sarsa::Sarsa, StateActionAlgorithm,
+        monte_carlo::MonteCarlo, q_learning::QLearning, q_learning_lambda::QLearningLamda,
+        sarsa::Sarsa, sarsa_lambda::SarsaLambda, StateActionAlgorithm, Trace,
     },
     envs,
     eval::{evaluate_epsilon_greedy_policy, evaluate_greedy_policy},
@@ -118,7 +118,14 @@ pub fn run_cliff_walking() {
 
     // SARSA Lambda
     let lambda = 0.1;
-    let sarsa_lambda_algo = SarsaLambda::new(alpha, gamma, epsilon, lambda, learning_max_steps);
+    let sarsa_lambda_algo = SarsaLambda::new(
+        alpha,
+        gamma,
+        epsilon,
+        lambda,
+        learning_max_steps,
+        Trace::Accumulating,
+    );
     let q_map = sarsa_lambda_algo.run(&cliff_walking_mdp, learning_episodes, &mut rng);
 
     let avg_reward = evaluate_epsilon_greedy_policy(
@@ -144,6 +151,43 @@ pub fn run_cliff_walking() {
     println!("SARSA lambda average reward with greedy: {avg_reward}");
     csv_writer
         .serialize(("SARSA lambda greedy", avg_reward))
+        .expect("csv error");
+
+    // Q-Learning Lambda
+    let lambda = 0.1;
+    let q_learning_lambda_algo = QLearningLamda::new(
+        alpha,
+        gamma,
+        epsilon,
+        lambda,
+        learning_max_steps,
+        Trace::Accumulating,
+    );
+    let q_map = q_learning_lambda_algo.run(&cliff_walking_mdp, learning_episodes, &mut rng);
+
+    let avg_reward = evaluate_epsilon_greedy_policy(
+        &cliff_walking_mdp,
+        &q_map,
+        eval_episodes,
+        eval_max_steps,
+        epsilon,
+        &mut rng,
+    );
+    println!("Q-Learning lambda average reward with epsilon greedy: {avg_reward}");
+    csv_writer
+        .serialize(("Q-Learning lambda ε-greedy", avg_reward))
+        .expect("csv error");
+
+    let avg_reward = evaluate_greedy_policy(
+        &cliff_walking_mdp,
+        &q_map,
+        eval_episodes,
+        eval_max_steps,
+        &mut rng,
+    );
+    println!("Q-Learning lambda average reward with greedy: {avg_reward}");
+    csv_writer
+        .serialize(("Q-Learning lambda greedy", avg_reward))
         .expect("csv error");
     println!();
 }

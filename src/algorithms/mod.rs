@@ -2,6 +2,8 @@ pub mod monte_carlo;
 pub mod q_learning;
 pub mod q_learning_lambda;
 pub mod sarsa;
+pub mod sarsa_lambda;
+pub mod value_iteration;
 
 use std::collections::BTreeMap;
 
@@ -36,40 +38,19 @@ pub trait StateActionAlgorithm {
     );
 }
 
-pub fn value_iteration(mdp: &Mdp, tolerance: f64, gamma: f64) -> BTreeMap<State, f64> {
-    let mut value_map: BTreeMap<State, f64> = BTreeMap::new();
-    let mut delta = f64::MAX;
-
-    while delta > tolerance {
-        delta = 0.0;
-
-        for (state, _) in mdp.transitions.keys() {
-            let old_value = *value_map.get(state).unwrap_or(&0.0);
-            let new_value = best_action_value(mdp, *state, &value_map, gamma);
-
-            value_map.insert(*state, new_value);
-            delta = delta.max((old_value - new_value).abs());
-        }
-    }
-
-    value_map
+#[derive(Copy, Clone)]
+pub enum Trace {
+    Accumulating,
+    Replacing,
+    Dutch,
 }
 
-fn best_action_value(mdp: &Mdp, state: State, value_map: &BTreeMap<State, f64>, gamma: f64) -> f64 {
-    mdp.transitions
-        .iter()
-        .filter_map(|((s, _), transitions)| {
-            if *s == state {
-                let expected_value: f64 = transitions
-                    .iter()
-                    .map(|(prob, next_state, reward)| {
-                        prob * (reward + gamma * value_map.get(next_state).unwrap_or(&0.0))
-                    })
-                    .sum();
-                Some(expected_value)
-            } else {
-                None
-            }
-        })
-        .fold(f64::MIN, f64::max)
+impl Trace {
+    pub fn calculate(&self, value: f64, alpha: f64) -> f64 {
+        match &self {
+            Trace::Accumulating => value + 1.0,
+            Trace::Replacing => 1.0,
+            Trace::Dutch => (1.0 - alpha) * value + 1.0,
+        }
+    }
 }
