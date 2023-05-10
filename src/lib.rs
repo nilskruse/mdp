@@ -18,3 +18,5 @@ pub mod tests;
 pub mod benchmarks;
 
 pub mod experiments;
+
+pub mod visualisation;

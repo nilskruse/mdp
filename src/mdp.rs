@@ -13,6 +13,7 @@ pub type Probability = f64;
 pub type Reward = f64;
 pub type Transition = (Probability, State, Reward);
 
+#[derive(Clone)]
 pub struct Mdp {
     pub transitions: BTreeMap<(State, Action), Vec<Transition>>,
     pub terminal_states: Vec<State>,

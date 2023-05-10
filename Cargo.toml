@@ -8,6 +8,8 @@ edition = "2021"
 [dependencies]
 assert_float_eq = "1.1.3"
 csv = "1.2.1"
+eframe = "0.21.3"
+egui = "0.21.0"
 itertools = "0.10.5"
 rand = "0.8.5"
 rand_chacha = "0.3.1"
