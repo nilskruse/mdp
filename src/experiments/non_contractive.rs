@@ -1,5 +1,103 @@
-use crate::mdp::Mdp;
+use std::collections::BTreeMap;
 
-pub fn build_mdp() -> Mdp {
-    todo!();
+use rand::SeedableRng;
+use rand_chacha::ChaCha20Rng;
+
+use crate::{
+    algorithms::{q_learning::QLearning, StateActionAlgorithm},
+    mdp::{Action, Mdp, State, Transition},
+    utils::{print_q_map, print_transition_map}, policies::{epsilon_greedy_policy, greedy_policy},
+};
+
+fn build_mdp(p: f64) -> Mdp {
+    let transition_probabilities: BTreeMap<(State, Action), Vec<Transition>> = BTreeMap::from([
+        (
+            (State(0), Action(0)),
+            vec![(p, State(2), 1000.0), (1.0 - p, State(3), 1.0)],
+        ),
+        ((State(0), Action(1)), vec![(1.0, State(1), 0.0)]),
+        ((State(1), Action(1)), vec![(1.0, State(0), 0.0)]),
+        ((State(2), Action(0)), vec![(1.0, State(2), 0.0)]),
+        ((State(3), Action(0)), vec![(1.0, State(3), 0.0)]),
+    ]);
+
+    let terminal_states = vec![State(2), State(3)];
+
+    Mdp {
+        transitions: transition_probabilities,
+        terminal_states,
+        initial_state: State(0),
+    }
+}
+
+pub fn run_experiment() {
+    let mdp = build_mdp(0.001);
+
+    let q_algo = RiggedQLearning::new(0.1, 1.0, 0.3, 1000);
+    let mut rng = ChaCha20Rng::seed_from_u64(0);
+    let q_map = q_algo.run(&mdp, 100000, &mut rng);
+    println!("Q-Table");
+    print_q_map(&q_map);
+
+    println!("\nTransitions");
+    print_transition_map(&mdp);
+}
+
+pub struct RiggedQLearning {
+    alpha: f64,
+    gamma: f64,
+    epsilon: f64,
+    max_steps: usize,
+}
+
+impl RiggedQLearning {
+    pub fn new(alpha: f64, gamma: f64, epsilon: f64, max_steps: usize) -> Self {
+        RiggedQLearning {
+            alpha,
+            gamma,
+            epsilon,
+            max_steps,
+        }
+    }
+}
+
+impl StateActionAlgorithm for RiggedQLearning {
+    fn run_with_q_map(
+        &self,
+        mdp: &crate::mdp::Mdp,
+        episodes: usize,
+        rng: &mut rand_chacha::ChaCha20Rng,
+        q_map: &mut std::collections::BTreeMap<(crate::mdp::State, crate::mdp::Action), f64>,
+    ) {
+        for episode in 1..=episodes {
+            let mut current_state = mdp.initial_state;
+            let mut steps = 0;
+
+            while !mdp.terminal_states.contains(&current_state) && steps < self.max_steps {
+                let Some(mut selected_action) = epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng) else {break};
+                let (mut next_state, mut reward) =
+                    mdp.perform_action((current_state, selected_action), rng);
+
+                // get high, improbable reward on first episode 
+                if episode == 1 {
+                    selected_action = Action(0);
+                    next_state = State(2);
+                    reward = 1000.0;
+                }
+
+                // update q_map
+                let Some(best_action) = greedy_policy(mdp, q_map, next_state, rng) else {break};
+                let best_q = *q_map
+                    .get(&(next_state, best_action))
+                    .expect("No qmap entry found");
+
+                let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
+                *current_q = *current_q + self.alpha * (reward + self.gamma * best_q - *current_q);
+
+                current_state = next_state;
+
+                steps += 1;
+            }
+        }
+    }
 }
