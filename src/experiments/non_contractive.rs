@@ -4,9 +4,10 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
 use crate::{
-    algorithms::{q_learning::QLearning, StateActionAlgorithm},
+    algorithms::{q_learning::QLearning, value_iteration::value_iteration, StateActionAlgorithm, q_learning_beta::QLearningBeta},
     mdp::{Action, Mdp, State, Transition},
-    utils::{print_q_map, print_transition_map}, policies::{epsilon_greedy_policy, greedy_policy},
+    policies::{epsilon_greedy_policy, greedy_policy},
+    utils::{print_q_map, print_transition_map},
 };
 
 fn build_mdp(p: f64) -> Mdp {
@@ -33,14 +34,28 @@ fn build_mdp(p: f64) -> Mdp {
 pub fn run_experiment() {
     let mdp = build_mdp(0.001);
 
-    let q_algo = RiggedQLearning::new(0.1, 1.0, 0.3, 1000);
+
+    println!("Q-Learning");
+    let q_algo = RiggedQLearning::new(0.1, 1.0, 0.2, usize::MAX);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
-    let q_map = q_algo.run(&mdp, 100000, &mut rng);
-    println!("Q-Table");
+    let q_map = q_algo.run(&mdp, 1000000, &mut rng);
+    println!("Q-Table:");
     print_q_map(&q_map);
+    println!();
+
+    println!("Q-Learning Beta");
+    let q_beta_algo = QLearningBeta::new(0.1, 1.0, 0.2, usize::MAX);
+    let mut rng = ChaCha20Rng::seed_from_u64(0);
+    let q_map = q_beta_algo.run(&mdp, 1000000, &mut rng);
+    println!("Q-Table:");
+    print_q_map(&q_map);
+    println!();
 
     println!("\nTransitions");
     print_transition_map(&mdp);
+    let values = value_iteration(&mdp, 0.001, 1.0);
+    println!("{:?}", values);
+    println!();
 }
 
 pub struct RiggedQLearning {
@@ -77,9 +92,11 @@ impl StateActionAlgorithm for RiggedQLearning {
                 let Some(mut selected_action) = epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng) else {break};
                 let (mut next_state, mut reward) =
                     mdp.perform_action((current_state, selected_action), rng);
+                // println!("{:?}, {:?}, {:?}", current_state, selected_action, next_state);
 
-                // get high, improbable reward on first episode 
-                if episode == 1 {
+                // get high, improbable reward on first episode and first step
+                if episode == 1 && steps == 0 {
+                    println!("Rigging first action selection!!!");
                     selected_action = Action(0);
                     next_state = State(2);
                     reward = 1000.0;
