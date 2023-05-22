@@ -95,7 +95,7 @@ impl StateActionAlgorithm for RiggedQLearning {
                 // println!("{:?}, {:?}, {:?}", current_state, selected_action, next_state);
 
                 // get high, improbable reward on first episode and first step
-                if episode == 1 && steps == 0 {
+                if episode == 2 && steps == 0 {
                     println!("Rigging first action selection!!!");
                     selected_action = Action(0);
                     next_state = State(2);

@@ -42,7 +42,7 @@ impl StateActionAlgorithm for QLearningBeta {
                 let (mut next_state, mut reward) =
                     mdp.perform_action((current_state, selected_action), rng);
                 
-                if episode == 1 && steps == 0 {
+                if episode == 2 && steps == 0 {
                     println!("Rigging first action selection!!!");
                     selected_action = Action(0);
                     next_state = State(2);
@@ -56,7 +56,8 @@ impl StateActionAlgorithm for QLearningBeta {
                     .expect("No qmap entry found");
 
                 let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
-                *current_q = *current_q + (self.alpha * (reward + self.gamma * best_q - *current_q)) * (1.0 - (1.0 / (episode * episode + 1) as f64));
+                let beta = 1.0 / episode as f64;
+                *current_q = *current_q + (self.alpha * (reward + self.gamma * best_q - *current_q)) * (1.0 - beta);
 
                 current_state = next_state;
 
