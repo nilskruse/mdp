@@ -1,0 +1,100 @@
+use std::{collections::BTreeMap, iter::zip};
+
+use crate::{
+    mdp::{Action, State},
+    policies::{epsilon_greedy_policy, greedy_policy},
+    utils::print_q_map,
+};
+
+use super::StateActionAlgorithm;
+
+pub struct QLearningDynamic {
+    alpha: f64,
+    gamma: f64,
+    epsilon: f64,
+    max_steps: usize,
+}
+
+impl QLearningDynamic {
+    pub fn new(alpha: f64, gamma: f64, epsilon: f64, max_steps: usize) -> Self {
+        QLearningDynamic {
+            alpha,
+            gamma,
+            epsilon,
+            max_steps,
+        }
+    }
+}
+
+impl StateActionAlgorithm for QLearningDynamic {
+    fn run_with_q_map(
+        &self,
+        mdp: &crate::mdp::Mdp,
+        episodes: usize,
+        rng: &mut rand_chacha::ChaCha20Rng,
+        q_map: &mut std::collections::BTreeMap<(crate::mdp::State, crate::mdp::Action), f64>,
+    ) {
+        let mut prev_q_map: BTreeMap<(State, Action), f64> = BTreeMap::new();
+
+        mdp.transitions.keys().for_each(|state_action| {
+            prev_q_map.insert(*state_action, 0.0);
+        });
+
+        for episode in 1..=episodes {
+            let mut alpha = self.alpha;
+            if episode > 1 {
+                // calculate the mean squared error
+                let mut acc = 0.0;
+                let mut max = f64::MIN;
+                let non_zero = q_map
+                    .values()
+                    .fold(0, |acc, elem| if *elem != 0.0 { acc + 1 } else { acc });
+
+                for (entry1, entry2) in zip(prev_q_map.iter(), q_map.iter()) {
+                    acc += (*entry1.1 - *entry2.1).powi(2);
+                    if *entry2.1 > max {
+                        max = *entry2.1;
+                    }
+                }
+                acc /= q_map.len() as f64;
+                // acc = acc / (max + 0.0001);
+
+                println!("max = {max}");
+                println!("acc = {acc}");
+                println!("Non-zero = {non_zero}");
+                alpha += acc;
+                alpha = alpha.clamp(self.alpha / 2.0, self.alpha * 2.0);
+            }
+            println!("alpha = {alpha}");
+
+            // prev_q_map.extend(q_map.iter());
+            prev_q_map = q_map.clone();
+            // println!("q_map:");
+            // print_q_map(q_map);
+            // println!("prev_q_map:");
+            // print_q_map(&prev_q_map);
+
+            let mut current_state = mdp.initial_state;
+            let mut steps = 0;
+
+            while !mdp.terminal_states.contains(&current_state) && steps < self.max_steps {
+                let Some(selected_action) = epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng) else {break};
+                let (next_state, reward) =
+                    mdp.perform_action((current_state, selected_action), rng);
+
+                // update q_map
+                let Some(best_action) = greedy_policy(mdp, q_map, next_state, rng) else {break};
+                let best_q = *q_map
+                    .get(&(next_state, best_action))
+                    .expect("No qmap entry found");
+
+                let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
+                *current_q = *current_q + alpha * (reward + self.gamma * best_q - *current_q);
+
+                current_state = next_state;
+
+                steps += 1;
+            }
+        }
+    }
+}

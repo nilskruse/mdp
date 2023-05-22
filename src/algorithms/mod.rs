@@ -1,7 +1,8 @@
 pub mod monte_carlo;
 pub mod q_learning;
-pub mod q_learning_lambda;
 pub mod q_learning_beta;
+pub mod q_learning_dynamic;
+pub mod q_learning_lambda;
 pub mod sarsa;
 pub mod sarsa_lambda;
 pub mod value_iteration;

@@ -4,7 +4,10 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
 use crate::{
-    algorithms::{q_learning::QLearning, value_iteration::value_iteration, StateActionAlgorithm, q_learning_beta::QLearningBeta},
+    algorithms::{
+        q_learning::QLearning, q_learning_beta::QLearningBeta, value_iteration::value_iteration,
+        StateActionAlgorithm,
+    },
     mdp::{Action, Mdp, State, Transition},
     policies::{epsilon_greedy_policy, greedy_policy},
     utils::{print_q_map, print_transition_map},
@@ -33,7 +36,6 @@ fn build_mdp(p: f64) -> Mdp {
 
 pub fn run_experiment() {
     let mdp = build_mdp(0.001);
-
 
     println!("Q-Learning");
     let q_algo = RiggedQLearning::new(0.1, 1.0, 0.2, usize::MAX);

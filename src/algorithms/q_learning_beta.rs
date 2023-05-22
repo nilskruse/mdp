@@ -41,7 +41,7 @@ impl StateActionAlgorithm for QLearningBeta {
                 let Some(mut selected_action) = epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng) else {break};
                 let (mut next_state, mut reward) =
                     mdp.perform_action((current_state, selected_action), rng);
-                
+
                 if episode == 2 && steps == 0 {
                     println!("Rigging first action selection!!!");
                     selected_action = Action(0);
@@ -57,7 +57,8 @@ impl StateActionAlgorithm for QLearningBeta {
 
                 let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
                 let beta = 1.0 / episode as f64;
-                *current_q = *current_q + (self.alpha * (reward + self.gamma * best_q - *current_q)) * (1.0 - beta);
+                *current_q = *current_q
+                    + (self.alpha * (reward + self.gamma * best_q - *current_q)) * (1.0 - beta);
 
                 current_state = next_state;
 
