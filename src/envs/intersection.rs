@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use crate::mdp::{self, State, Transition};
+use crate::mdp::{self, Probability, Reward, State, Transition};
 
 enum IntersectionAction {
     Stay = 0,
@@ -8,7 +8,7 @@ enum IntersectionAction {
 }
 
 #[derive(Debug)]
-enum IntersectionState {
+enum TrafficSignalState {
     NorthSouthOpen = 0,
     EastWestOpen = 1,
 }
@@ -42,21 +42,73 @@ pub fn build_mdp(max_cars: usize) {
     println!("{:?}", states);
 }
 
-fn reconstruct_state(state: State, max_cars: usize) -> (IntersectionState, usize, usize) {
+type IntersectionState = (TrafficSignalState, usize, usize);
+
+fn reconstruct_state(state: State, max_cars: usize) -> IntersectionState {
     let mut index = state.0;
 
     let combinations = (max_cars + 1).pow(2);
     let intersection_state = if index < combinations {
-        IntersectionState::NorthSouthOpen
+        TrafficSignalState::NorthSouthOpen
     } else {
         index -= combinations;
-        IntersectionState::EastWestOpen
+        TrafficSignalState::EastWestOpen
     };
 
     let ew_cars = index % (max_cars + 1);
     let ns_cars = index / (max_cars + 1);
 
-    println!("function, ns_cars: {:?}, ew_cars: {:?}, intersection_state: {:?}", ns_cars, ew_cars, intersection_state);
+    println!(
+        "function, ns_cars: {:?}, ew_cars: {:?}, intersection_state: {:?}",
+        ns_cars, ew_cars, intersection_state
+    );
 
     return (intersection_state, ns_cars, ew_cars);
+}
+
+fn calculate_reward(action: IntersectionAction, intersection_state: IntersectionState) -> Reward {
+    let (state, ns_cars, ew_cars) = intersection_state;
+    match (action, state) {
+        (IntersectionAction::Change, TrafficSignalState::NorthSouthOpen) => {
+            if ew_cars >= 2 * ns_cars {
+                1.0
+            } else {
+                -1.0
+            }
+        }
+        (IntersectionAction::Change, TrafficSignalState::EastWestOpen) => {
+            if ns_cars >= 2 * ew_cars {
+                1.0
+            } else {
+                -1.0
+            }
+        }
+        (IntersectionAction::Stay, TrafficSignalState::NorthSouthOpen) => {
+            if ew_cars >= 2 * ns_cars {
+                0.0
+            } else {
+                1.0
+            }
+        }
+        (IntersectionAction::Stay, TrafficSignalState::EastWestOpen) => {
+            if ns_cars >= 2 * ew_cars {
+                0.0
+            } else {
+                1.0
+            }
+        }
+    }
+}
+
+fn calc_change_prob(cars: usize, car_change: usize) -> Probability {
+    let new_cars = cars + car_change;
+
+    if new_cars == cars {
+        1.0 / 2.0_f64.sqrt()
+    } else if new_cars == cars + 1 || new_cars == cars - 1 {
+        let divisor = if cars == 0 { 1.0 } else { 2.0 };
+        (1.0 - (1.0 / 2.0_f64.sqrt())) * (1.0 / divisor)
+    } else {
+        0.0
+    }
 }
