@@ -48,13 +48,16 @@ pub fn run_experiment() {
     println!("Q-Learning Beta");
     let q_beta_algo = QLearningBeta::new(0.1, 1.0, 0.2, usize::MAX);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
-    let q_map = q_beta_algo.run(&mdp, 1000000, &mut rng);
+    let q_map = q_beta_algo.run(&mdp, 2000000, &mut rng);
     println!("Q-Table:");
     print_q_map(&q_map);
     println!();
 
     println!("\nTransitions");
     print_transition_map(&mdp);
+    println!();
+
+    println!("Value iteration:");
     let values = value_iteration(&mdp, 0.001, 1.0);
     println!("{:?}", values);
     println!();

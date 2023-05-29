@@ -1,4 +1,4 @@
-use mdp::{experiments, visualisation};
+use mdp::{experiments, visualisation, envs};
 
 fn main() {
     // run_benchmarks();
@@ -8,5 +8,6 @@ fn main() {
     // test();
     // visualisation::vis_test();
     // experiments::non_contractive::run_experiment();
-    experiments::q_learning_dynamic::run_experiment();
+    // experiments::q_learning_dynamic::run_experiment();
+    envs::intersection::build_mdp(3);
 }
