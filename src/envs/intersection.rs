@@ -63,7 +63,7 @@ fn reconstruct_state(state: State, max_cars: usize) -> IntersectionState {
         ns_cars, ew_cars, intersection_state
     );
 
-    return (intersection_state, ns_cars, ew_cars);
+    (intersection_state, ns_cars, ew_cars)
 }
 
 fn calculate_reward(action: IntersectionAction, intersection_state: IntersectionState) -> Reward {
@@ -100,7 +100,7 @@ fn calculate_reward(action: IntersectionAction, intersection_state: Intersection
     }
 }
 
-fn calc_change_prob(cars: usize, car_change: usize) -> Probability {
+fn calc_change_prob(cars: isize, car_change: isize) -> Probability {
     let new_cars = cars + car_change;
 
     if new_cars == cars {
@@ -110,5 +110,25 @@ fn calc_change_prob(cars: usize, car_change: usize) -> Probability {
         (1.0 - (1.0 / 2.0_f64.sqrt())) * (1.0 / divisor)
     } else {
         0.0
+    }
+}
+
+fn calc_stay_prob_open_road(car_change: isize) -> Probability {
+    match car_change {
+        -2 => 3.0 / 16.0,
+        -1 | 0 => 9.0 / 32.0,
+        2 => 1.0 / 12.0,
+        1 => 1.0 / 6.0,
+        _ => 0.0,
+    }
+}
+
+fn calc_stay_prob_closed_road(car_change: isize) -> Probability {
+    match car_change {
+        -2 => 1.0 / 60.0,
+        -1 => 1.0 / 30.0,
+        2 => 19.0 / 80.0,
+        1 | 0 => 57.0 / 160.0,
+        _ => 0.0,
     }
 }

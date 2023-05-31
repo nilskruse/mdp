@@ -1,4 +1,4 @@
-use mdp::{experiments, visualisation, envs};
+use mdp::{envs, experiments, visualisation};
 
 fn main() {
     // run_benchmarks();
