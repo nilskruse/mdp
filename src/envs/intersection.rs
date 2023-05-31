@@ -1,19 +1,25 @@
 use std::collections::BTreeMap;
 
-use crate::mdp::{self, Probability, Reward, State, Transition};
+use crate::{
+    mdp::{self, Probability, Reward, State, Transition},
+    utils::print_transition_map,
+};
 
 enum IntersectionAction {
     Stay = 0,
     Change = 1,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 enum TrafficSignalState {
     NorthSouthOpen = 0,
     EastWestOpen = 1,
 }
 
-pub fn build_mdp(max_cars: usize) {
+pub fn build_mdp(max_cars: isize) {
+    if max_cars < 1 {
+        panic!("max_cars needs to be at least 1");
+    }
     let mut transitions: BTreeMap<(State, mdp::Action), Vec<Transition>> = BTreeMap::new();
 
     let mut states = vec![];
@@ -21,9 +27,14 @@ pub fn build_mdp(max_cars: usize) {
     let car_combinations = (max_cars + 1).pow(2);
     for ns_cars in 0..=max_cars {
         for ew_cars in 0..=max_cars {
-
-            let ns_state = build_state(TrafficSignalState::NorthSouthOpen, ns_cars, ew_cars, max_cars);
-            let ew_state = build_state(TrafficSignalState::EastWestOpen, ns_cars, ew_cars, max_cars);
+            let ns_state = build_state(
+                TrafficSignalState::NorthSouthOpen,
+                ns_cars,
+                ew_cars,
+                max_cars,
+            );
+            let ew_state =
+                build_state(TrafficSignalState::EastWestOpen, ns_cars, ew_cars, max_cars);
 
             states.push(ns_state);
             println!(
@@ -41,24 +52,24 @@ pub fn build_mdp(max_cars: usize) {
     u(3, 3);
 }
 
-type IntersectionState = (TrafficSignalState, usize, usize);
+type IntersectionState = (TrafficSignalState, isize, isize);
 
 fn build_state(
     traffic_signal_state: TrafficSignalState,
-    ns_cars: usize,
-    ew_cars: usize,
-    max_cars: usize,
+    ns_cars: isize,
+    ew_cars: isize,
+    max_cars: isize,
 ) -> State {
     match traffic_signal_state {
-        TrafficSignalState::NorthSouthOpen => State(ns_cars * (max_cars + 1) + ew_cars),
+        TrafficSignalState::NorthSouthOpen => State((ns_cars * (max_cars + 1) + ew_cars) as usize),
         TrafficSignalState::EastWestOpen => {
-            State(ns_cars * (max_cars + 1) + ew_cars + (max_cars + 1).pow(2))
+            State((ns_cars * (max_cars + 1) + ew_cars + (max_cars + 1).pow(2)) as usize)
         }
     }
 }
 
-fn reconstruct_state(state: State, max_cars: usize) -> IntersectionState {
-    let mut index = state.0;
+fn reconstruct_state(state: State, max_cars: isize) -> IntersectionState {
+    let mut index = state.0 as isize;
 
     let combinations = (max_cars + 1).pow(2);
     let intersection_state = if index < combinations {
@@ -168,13 +179,46 @@ fn u(ns_cars: isize, ew_cars: isize) {
 
 fn build_transitions(
     intersection_state: IntersectionState,
-    action: IntersectionAction,
+    intersection_action: IntersectionAction,
+    max_cars: isize,
 ) -> Vec<Transition> {
-    let (state, ns_cars, ew_cars) = intersection_state;
+    let (traffic_signal_state, ns_cars, ew_cars) = intersection_state;
+    let mut transitions = vec![];
+
+    let new_traffic_signal_state = match intersection_action {
+        IntersectionAction::Stay => traffic_signal_state,
+        IntersectionAction::Change => match traffic_signal_state {
+            TrafficSignalState::NorthSouthOpen => TrafficSignalState::EastWestOpen,
+            TrafficSignalState::EastWestOpen => TrafficSignalState::NorthSouthOpen,
+        },
+    };
 
     for ns_car_change in -2..=2 {
-        for ew_car_change in -2..=2 {}
+        for ew_car_change in -2..=2 {
+            let new_state = build_state(
+                new_traffic_signal_state,
+                ns_cars + ns_car_change,
+                ew_cars + ew_car_change,
+                max_cars,
+            );
+            let prob = match intersection_action {
+                IntersectionAction::Stay => match traffic_signal_state {
+                    TrafficSignalState::NorthSouthOpen => {
+                        calc_stay_prob_open_road(ns_car_change)
+                            * calc_stay_prob_closed_road(ew_car_change)
+                    }
+                    TrafficSignalState::EastWestOpen => {
+                        calc_stay_prob_open_road(ew_car_change)
+                            * calc_stay_prob_closed_road(ns_car_change)
+                    }
+                },
+                IntersectionAction::Change => {
+                    calc_change_prob(ns_cars, ns_car_change)
+                        * calc_change_prob(ew_cars, ew_car_change)
+                }
+            };
+        }
     }
 
-    todo!()
+    transitions
 }
