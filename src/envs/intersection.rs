@@ -21,28 +21,41 @@ pub fn build_mdp(max_cars: usize) {
     let car_combinations = (max_cars + 1).pow(2);
     for ns_cars in 0..=max_cars {
         for ew_cars in 0..=max_cars {
-            let index = ns_cars * (max_cars + 1) + ew_cars;
 
-            let ns_state = State(index);
+            let ns_state = build_state(TrafficSignalState::NorthSouthOpen, ns_cars, ew_cars, max_cars);
+            let ew_state = build_state(TrafficSignalState::EastWestOpen, ns_cars, ew_cars, max_cars);
+
             states.push(ns_state);
-
-            let ew_index = index + car_combinations;
-
             println!(
                 "State: {:?}, ns_cars: {:?}, ew_cars: {:?}",
                 ns_state, ns_cars, ew_cars
             );
             reconstruct_state(ns_state, max_cars);
-            let ew_state = State(ew_index);
             reconstruct_state(ew_state, max_cars);
             states.push(ew_state);
         }
     }
 
     println!("{:?}", states);
+    println!("{:?}", f(3, 3));
+    u(3, 3);
 }
 
 type IntersectionState = (TrafficSignalState, usize, usize);
+
+fn build_state(
+    traffic_signal_state: TrafficSignalState,
+    ns_cars: usize,
+    ew_cars: usize,
+    max_cars: usize,
+) -> State {
+    match traffic_signal_state {
+        TrafficSignalState::NorthSouthOpen => State(ns_cars * (max_cars + 1) + ew_cars),
+        TrafficSignalState::EastWestOpen => {
+            State(ns_cars * (max_cars + 1) + ew_cars + (max_cars + 1).pow(2))
+        }
+    }
+}
 
 fn reconstruct_state(state: State, max_cars: usize) -> IntersectionState {
     let mut index = state.0;
@@ -131,4 +144,37 @@ fn calc_stay_prob_closed_road(car_change: isize) -> Probability {
         1 | 0 => 57.0 / 160.0,
         _ => 0.0,
     }
+}
+
+fn f(ns_cars: isize, ew_cars: isize) {
+    let mut total_prob: f64 = 0.0;
+    for i in -2..=2 {
+        for j in -2..=2 {
+            total_prob += calc_change_prob(ns_cars, i) * calc_change_prob(ew_cars, j);
+        }
+    }
+    println!("total_prob: {total_prob}");
+}
+
+fn u(ns_cars: isize, ew_cars: isize) {
+    let mut total_prob: f64 = 0.0;
+    for i in -2..=2 {
+        for j in -2..=2 {
+            total_prob += calc_stay_prob_open_road(i) * calc_stay_prob_closed_road(j);
+        }
+    }
+    println!("total_prob: {total_prob}");
+}
+
+fn build_transitions(
+    intersection_state: IntersectionState,
+    action: IntersectionAction,
+) -> Vec<Transition> {
+    let (state, ns_cars, ew_cars) = intersection_state;
+
+    for ns_car_change in -2..=2 {
+        for ew_car_change in -2..=2 {}
+    }
+
+    todo!()
 }
