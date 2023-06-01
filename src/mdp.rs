@@ -1,6 +1,9 @@
 use rand::distributions::{Distribution, WeightedIndex};
 use rand_chacha::ChaCha20Rng;
-use std::collections::BTreeMap;
+use std::{
+    collections::{BTreeMap, HashSet},
+    hash::Hash,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct State(pub usize);
@@ -79,5 +82,78 @@ impl Mdp {
             terminal_states,
             initial_state: State(0),
         }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct GenericMdp<S: GenericState, A: GenericAction> {
+    pub transitions: BTreeMap<(S, A), Vec<(Probability, S, Reward)>>,
+    pub terminal_states: std::collections::HashSet<S>,
+    pub initial_state: S,
+}
+
+pub trait GenericState: Ord + Clone + Hash + Copy {}
+impl<T: Ord + Clone + Hash + Copy> GenericState for T {}
+pub trait GenericAction: Ord + Copy + Clone {}
+
+impl<T: Ord + Copy + Clone> GenericAction for T {}
+
+impl<S: GenericState, A: GenericAction> GenericMdp<S, A> {
+    pub fn new(initial_state: S) -> GenericMdp<S, A> {
+        let transitions: BTreeMap<(S, A), Vec<(Probability, S, Reward)>> = BTreeMap::new();
+        let terminal_states: HashSet<S> = HashSet::new();
+
+        GenericMdp {
+            transitions,
+            terminal_states,
+            initial_state,
+        }
+    }
+
+    pub fn add_transition_vector(
+        &mut self,
+        sa: (S, A),
+        transition: Vec<(Probability, S, Reward)>,
+    ) -> anyhow::Result<()> {
+        if self.transitions.contains_key(&sa) {
+            return Err(anyhow::anyhow!("Duplicate state insert"));
+        }
+        self.transitions.insert(sa, transition);
+        Ok(())
+    }
+
+    pub fn add_terminal_state(&mut self, state: S) {
+        self.terminal_states.insert(state);
+    }
+
+    pub fn perform_action(&self, state_action: (S, A), rng: &mut ChaCha20Rng) -> (S, Reward) {
+        if let Some(transitions) = self.transitions.get(&state_action) {
+            // extract probabilities, create distribution and sample
+            let probs: Vec<_> = transitions
+                .iter()
+                .map(|(prob, _, _)| (prob * 100.0) as u32)
+                .collect();
+            let dist = WeightedIndex::new(probs).unwrap();
+            let state_index = dist.sample(rng);
+
+            //return resulting state and reward
+            (transitions[state_index].1, transitions[state_index].2)
+        } else {
+            // you don't want to be here
+            panic!("something went very wrong");
+        }
+    }
+
+    pub fn get_possible_actions(&self, current_state: S) -> Vec<A> {
+        self.transitions
+            .iter()
+            .filter_map(|((state, action), _)| {
+                if state.eq(&current_state) {
+                    Some(*action)
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 }

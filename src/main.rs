@@ -9,5 +9,7 @@ fn main() {
     // visualisation::vis_test();
     // experiments::non_contractive::run_experiment();
     // experiments::q_learning_dynamic::run_experiment();
-    envs::intersection::build_mdp(3);
+    // envs::intersection::build_mdp(3);
+    let generic_mdp = envs::cliff_walking::build_generic_mdp().unwrap();
+    println!("{:#?}", generic_mdp);
 }

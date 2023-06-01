@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use crate::mdp::{self, Mdp, Reward, State, Transition};
+use crate::mdp::{self, GenericMdp, GenericState, Mdp, Probability, Reward, State, Transition};
 
 #[derive(Copy, Clone, Debug)]
 pub(crate) enum Cell {
@@ -135,4 +135,128 @@ fn print_grid(grid: &[[Cell; ROWS]; COLS]) {
         }
         println!();
     }
+}
+
+#[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Copy)]
+pub struct CliffWalkingState(usize, usize);
+
+#[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Copy)]
+pub enum CliffWalkingAction {
+    Up = 0,
+    Down = 1,
+    Left = 2,
+    Right = 3,
+}
+
+type CliffWalkingTransition = (Probability, CliffWalkingState, Reward);
+
+pub fn build_generic_mdp() -> anyhow::Result<GenericMdp<CliffWalkingState, CliffWalkingAction>> {
+    // create grid of cells
+    let mut grid: [[Cell; ROWS]; COLS] = [[Cell::Regular; ROWS]; COLS];
+
+    //set lower row
+    grid[0][ROWS - 1] = Cell::Start;
+    for cell in grid.iter_mut().take(COLS - 1).skip(1) {
+        cell[ROWS - 1] = Cell::Cliff;
+    }
+    grid[COLS - 1][ROWS - 1] = Cell::End;
+
+    let mut mdp =
+        GenericMdp::<CliffWalkingState, CliffWalkingAction>::new(CliffWalkingState(ROWS - 1, 0));
+
+    // fill transition map for every state and action
+    for row in 0..ROWS {
+        for col in 0..COLS {
+            let from_state = CliffWalkingState(row, col);
+
+            // Up action
+            // can only run into wall with up
+            let action = CliffWalkingAction::Up;
+            let (key, value) = if row as isize - 1 < 0 {
+                build_transition_for_generic(from_state, from_state, action, STEP_REWARD)
+            } else {
+                let to_state = CliffWalkingState(row - 1, col);
+                build_transition_for_generic(from_state, to_state, action, STEP_REWARD)
+            };
+            mdp.add_transition_vector(key, value)?;
+
+            // Left action
+            // can only run into wall with left
+            let action = CliffWalkingAction::Left;
+            let (key, value) = if col as isize - 1 < 0 {
+                build_transition_for_generic(from_state, from_state, action, STEP_REWARD)
+            } else {
+                let to_state = CliffWalkingState(row, col - 1);
+                build_transition_for_generic(from_state, to_state, action, STEP_REWARD)
+            };
+            mdp.add_transition_vector(key, value)?;
+
+            //Right action
+            let action = CliffWalkingAction::Right;
+            let (key, value) = if col + 1 == COLS {
+                build_transition_for_generic(from_state, from_state, action, STEP_REWARD)
+            } else {
+                let to_state = CliffWalkingState(row, col + 1);
+                match grid[col + 1][row] {
+                    Cell::Start => {
+                        build_transition_for_generic(from_state, to_state, action, STEP_REWARD)
+                    }
+                    Cell::Regular => {
+                        build_transition_for_generic(from_state, to_state, action, STEP_REWARD)
+                    }
+                    Cell::Cliff => {
+                        build_transition_for_generic(from_state, to_state, action, CLIFF_REWARD)
+                    }
+                    Cell::End => {
+                        build_transition_for_generic(from_state, to_state, action, END_REWARD)
+                    }
+                }
+            };
+            mdp.add_transition_vector(key, value)?;
+
+            //Down action
+            let action = CliffWalkingAction::Down;
+            let (key, value) = if row + 1 == ROWS {
+                build_transition_for_generic(from_state, from_state, action, STEP_REWARD)
+            } else {
+                let to_state = CliffWalkingState(row + 1, col);
+                match grid[col][row + 1] {
+                    Cell::Start => {
+                        build_transition_for_generic(from_state, to_state, action, STEP_REWARD)
+                    }
+                    Cell::Regular => {
+                        build_transition_for_generic(from_state, to_state, action, STEP_REWARD)
+                    }
+                    Cell::Cliff => {
+                        build_transition_for_generic(from_state, to_state, action, CLIFF_REWARD)
+                    }
+                    Cell::End => {
+                        build_transition_for_generic(from_state, to_state, action, END_REWARD)
+                    }
+                }
+            };
+            mdp.add_transition_vector(key, value)?;
+        }
+    }
+
+    // last row all terminal except first cell
+    for col in 1..COLS {
+        mdp.add_terminal_state(CliffWalkingState(ROWS - 1, col));
+    }
+
+    // print_grid(&grid);
+
+    Ok(mdp)
+}
+
+fn build_transition_for_generic(
+    from_state: CliffWalkingState,
+    to_state: CliffWalkingState,
+    action: CliffWalkingAction,
+    reward: Reward,
+) -> (
+    (CliffWalkingState, CliffWalkingAction),
+    Vec<CliffWalkingTransition>,
+) {
+    ((from_state, action), vec![(1.0, to_state, reward)])
 }
