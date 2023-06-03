@@ -11,7 +11,7 @@ use std::collections::BTreeMap;
 
 use rand_chacha::ChaCha20Rng;
 
-use crate::mdp::{Action, Mdp, State};
+use crate::mdp::{Action, GenericAction, GenericMdp, GenericState, Mdp, State};
 
 pub trait StateActionAlgorithm {
     // default implementation
@@ -37,6 +37,33 @@ pub trait StateActionAlgorithm {
         episodes: usize,
         rng: &mut ChaCha20Rng,
         q_map: &mut BTreeMap<(State, Action), f64>,
+    );
+}
+
+pub trait GenericStateActionAlgorithm {
+    // default implementation
+    fn run<S: GenericState, A: GenericAction>(
+        &self,
+        mdp: &GenericMdp<S, A>,
+        episodes: usize,
+        rng: &mut ChaCha20Rng,
+    ) -> BTreeMap<(S, A), f64> {
+        let mut q_map: BTreeMap<(S, A), f64> = BTreeMap::new();
+
+        mdp.transitions.keys().for_each(|state_action| {
+            q_map.insert(*state_action, 0.0);
+        });
+
+        self.run_with_q_map(mdp, episodes, rng, &mut q_map);
+
+        q_map
+    }
+    fn run_with_q_map<S: GenericState, A: GenericAction>(
+        &self,
+        mdp: &GenericMdp<S, A>,
+        episodes: usize,
+        rng: &mut ChaCha20Rng,
+        q_map: &mut BTreeMap<(S, A), f64>,
     );
 }
 
