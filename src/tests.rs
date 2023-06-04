@@ -1,4 +1,5 @@
-use std::collections::BTreeMap;
+use crate::algorithms::GenericStateActionAlgorithm;
+use std::collections::{BTreeMap, HashSet};
 
 use assert_float_eq::assert_f64_near;
 use rand::SeedableRng;
@@ -102,7 +103,8 @@ fn create_test_mdp() -> IndexMdp {
             ),
         ]);
 
-    let terminal_states = vec![IndexState(2)];
+    let terminal_states_vec = vec![IndexState(2)];
+    let terminal_states = HashSet::from_iter(terminal_states_vec.iter().copied());
 
     IndexMdp {
         transitions: transition_probabilities,
