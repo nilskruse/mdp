@@ -1,7 +1,8 @@
+use crate::mdp::GenericMdp;
 use std::collections::BTreeMap;
 
 use crate::{
-    mdp::{Action, State},
+    mdp::{IndexAction, IndexState},
     policies::{epsilon_greedy_policy, greedy_policy},
 };
 
@@ -28,10 +29,13 @@ impl QLearningBeta {
 impl StateActionAlgorithm for QLearningBeta {
     fn run_with_q_map(
         &self,
-        mdp: &crate::mdp::Mdp,
+        mdp: &crate::mdp::IndexMdp,
         episodes: usize,
         rng: &mut rand_chacha::ChaCha20Rng,
-        q_map: &mut std::collections::BTreeMap<(crate::mdp::State, crate::mdp::Action), f64>,
+        q_map: &mut std::collections::BTreeMap<
+            (crate::mdp::IndexState, crate::mdp::IndexAction),
+            f64,
+        >,
     ) {
         for episode in 1..=episodes {
             let mut current_state = mdp.initial_state;
@@ -44,8 +48,8 @@ impl StateActionAlgorithm for QLearningBeta {
 
                 if episode == 2 && steps == 0 {
                     println!("Rigging first action selection!!!");
-                    selected_action = Action(0);
-                    next_state = State(2);
+                    selected_action = IndexAction(0);
+                    next_state = IndexState(2);
                     reward = 1000.0;
                 }
 

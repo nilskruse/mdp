@@ -5,7 +5,7 @@ use rand::SeedableRng;
 
 use crate::{
     algorithms::{q_learning::QLearning, sarsa::Sarsa, StateActionAlgorithm},
-    mdp::{Action, Mdp, State, Transition},
+    mdp::{IndexAction, IndexMdp, IndexState, Transition},
     utils::print_q_map,
 };
 
@@ -19,10 +19,13 @@ fn test_q_learning() {
 
     print_q_map(&q_map);
 
-    assert_f64_near!(*q_map.get(&(State(0), Action(0))).unwrap(), 0.181);
-    assert_f64_near!(*q_map.get(&(State(0), Action(1))).unwrap(), -0.1);
-    assert_f64_near!(*q_map.get(&(State(1), Action(0))).unwrap(), -0.1);
-    assert_f64_near!(*q_map.get(&(State(1), Action(1))).unwrap(), -0.191);
+    assert_f64_near!(*q_map.get(&(IndexState(0), IndexAction(0))).unwrap(), 0.181);
+    assert_f64_near!(*q_map.get(&(IndexState(0), IndexAction(1))).unwrap(), -0.1);
+    assert_f64_near!(*q_map.get(&(IndexState(1), IndexAction(0))).unwrap(), -0.1);
+    assert_f64_near!(
+        *q_map.get(&(IndexState(1), IndexAction(1))).unwrap(),
+        -0.191
+    );
 }
 
 // TODO: redo the manual calculations because the initial state handling has changed
@@ -34,10 +37,16 @@ fn test_sarsa() {
     let algo = Sarsa::new(0.1, 0.9, 0.1, 5);
     let q_map = algo.run(&mdp, 1, &mut rng);
 
-    assert_f64_near!(*q_map.get(&(State(0), Action(0))).unwrap(), 0.19);
-    assert_f64_near!(*q_map.get(&(State(0), Action(1))).unwrap(), 0.0);
-    assert_f64_near!(*q_map.get(&(State(1), Action(0))).unwrap(), -0.199);
-    assert_f64_near!(*q_map.get(&(State(1), Action(1))).unwrap(), -0.191);
+    assert_f64_near!(*q_map.get(&(IndexState(0), IndexAction(0))).unwrap(), 0.19);
+    assert_f64_near!(*q_map.get(&(IndexState(0), IndexAction(1))).unwrap(), 0.0);
+    assert_f64_near!(
+        *q_map.get(&(IndexState(1), IndexAction(0))).unwrap(),
+        -0.199
+    );
+    assert_f64_near!(
+        *q_map.get(&(IndexState(1), IndexAction(1))).unwrap(),
+        -0.191
+    );
 }
 
 const EPISODES: usize = 1000;
@@ -72,25 +81,32 @@ fn test_q_learning_equivalence() {
     assert_eq!(q_map_1, q_map_2);
 }
 
-fn create_test_mdp() -> Mdp {
-    let transition_probabilities: BTreeMap<(State, Action), Vec<Transition>> = BTreeMap::from([
-        (
-            (State(0), Action(0)),
-            vec![(0.2, State(1), 1.0), (0.8, State(2), 10.0)],
-        ),
-        ((State(0), Action(1)), vec![(1.0, State(0), -1.0)]),
-        ((State(1), Action(0)), vec![(1.0, State(1), -1.0)]),
-        (
-            (State(1), Action(1)),
-            vec![(0.99, State(0), -2.0), (0.01, State(2), 1000.0)],
-        ),
-    ]);
+fn create_test_mdp() -> IndexMdp {
+    let transition_probabilities: BTreeMap<(IndexState, IndexAction), Vec<Transition>> =
+        BTreeMap::from([
+            (
+                (IndexState(0), IndexAction(0)),
+                vec![(0.2, IndexState(1), 1.0), (0.8, IndexState(2), 10.0)],
+            ),
+            (
+                (IndexState(0), IndexAction(1)),
+                vec![(1.0, IndexState(0), -1.0)],
+            ),
+            (
+                (IndexState(1), IndexAction(0)),
+                vec![(1.0, IndexState(1), -1.0)],
+            ),
+            (
+                (IndexState(1), IndexAction(1)),
+                vec![(0.99, IndexState(0), -2.0), (0.01, IndexState(2), 1000.0)],
+            ),
+        ]);
 
-    let terminal_states = vec![State(2)];
+    let terminal_states = vec![IndexState(2)];
 
-    Mdp {
+    IndexMdp {
         transitions: transition_probabilities,
         terminal_states,
-        initial_state: State(0),
+        initial_state: IndexState(0),
     }
 }

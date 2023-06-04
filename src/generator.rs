@@ -1,4 +1,7 @@
-use std::{collections::BTreeMap, iter};
+use std::{
+    collections::{BTreeMap, HashSet},
+    iter,
+};
 
 use rand::{
     seq::{IteratorRandom, SliceRandom},
@@ -6,7 +9,7 @@ use rand::{
 };
 use rand_chacha::ChaCha20Rng;
 
-use crate::mdp::{Action, Mdp, State, Transition};
+use crate::mdp::{IndexAction, IndexMdp, IndexState, MapMdp, Transition};
 
 // TODO: Ensure at least one terminal state is reachable
 pub fn generate_random_mdp(
@@ -17,19 +20,19 @@ pub fn generate_random_mdp(
     (min_transitions, max_transitions): (usize, usize),
     (min_reward, max_reward): (f64, f64),
     rng: &mut ChaCha20Rng,
-) -> Mdp {
+) -> MapMdp<IndexState, IndexAction> {
     let mut states = vec![];
     let mut actions = vec![];
 
     // create states
     for i in 0..n_states {
-        states.push(State(i));
+        states.push(IndexState(i));
     }
     for i in 0..n_actions {
-        actions.push(Action(i));
+        actions.push(IndexAction(i));
     }
 
-    let initial_state = State(0);
+    let initial_state = IndexState(0);
 
     let mut states_actions = vec![];
 
@@ -40,7 +43,7 @@ pub fn generate_random_mdp(
         });
     }
 
-    let transitions: BTreeMap<(State, Action), Vec<Transition>> =
+    let transitions: BTreeMap<(IndexState, IndexAction), Vec<Transition>> =
         BTreeMap::from_iter(states_actions.iter().map(|(state, action)| {
             let n_transitions = rng.gen_range(min_transitions..=max_transitions);
             let probabilities = random_probs(n_transitions, rng);
@@ -54,12 +57,15 @@ pub fn generate_random_mdp(
             ((**state, *action), outcomes)
         }));
 
-    let terminal_states = states
+    let terminal_states_vec = states
         .iter()
         .copied()
         .filter(|state| *state != initial_state)
         .choose_multiple(rng, n_terminal_states);
-    Mdp {
+    let terminal_states: HashSet<IndexState> =
+        HashSet::from_iter(terminal_states_vec.iter().copied());
+
+    MapMdp {
         transitions,
         terminal_states,
         initial_state,

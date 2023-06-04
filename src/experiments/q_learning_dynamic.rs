@@ -1,3 +1,7 @@
+use crate::{
+    algorithms::GenericStateActionAlgorithm,
+    eval::{evaluate_epsilon_greedy_policy, evaluate_greedy_policy},
+};
 use rand::SeedableRng;
 
 use crate::{
@@ -5,13 +9,12 @@ use crate::{
         q_learning::QLearning, q_learning_dynamic::QLearningDynamic, StateActionAlgorithm,
     },
     envs,
-    eval::{evaluate_epsilon_greedy_policy, evaluate_greedy_policy},
     utils::print_q_map,
 };
 
 pub fn run_experiment() {
     println!("Running deterministic cliff walking with q_learning_dynamic!");
-    let cliff_walking_mdp = envs::cliff_walking::build_mdp();
+    let cliff_walking_mdp = envs::cliff_walking::build_mdp().unwrap();
 
     let learning_episodes = 310;
     let eval_episodes = 500;

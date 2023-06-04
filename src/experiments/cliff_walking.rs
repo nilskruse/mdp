@@ -1,3 +1,7 @@
+use crate::{
+    algorithms::GenericStateActionAlgorithm,
+    eval::{evaluate_epsilon_greedy_policy, evaluate_greedy_policy},
+};
 use rand::SeedableRng;
 use std::io;
 
@@ -7,12 +11,11 @@ use crate::{
         sarsa::Sarsa, sarsa_lambda::SarsaLambda, StateActionAlgorithm, Trace,
     },
     envs,
-    eval::{evaluate_epsilon_greedy_policy, evaluate_greedy_policy},
 };
 
 pub fn run_cliff_walking() {
     println!("Running deterministic cliff walking!");
-    let cliff_walking_mdp = envs::cliff_walking::build_mdp();
+    let cliff_walking_mdp = envs::cliff_walking::build_mdp().unwrap();
 
     let learning_episodes = 1000;
     let eval_episodes = 500;
@@ -194,7 +197,7 @@ pub fn run_cliff_walking() {
 
 pub fn run_slippery_cliff_walking() {
     println!("Running slippery cliff walking!");
-    let slippy_cliff_walking_mdp = envs::slippery_cliff_walking::build_mdp(0.2);
+    let slippy_cliff_walking_mdp = envs::slippery_cliff_walking::build_mdp(0.2).unwrap();
 
     let learning_episodes = 1000;
     let eval_episodes = 500;
@@ -302,7 +305,7 @@ pub fn run_slippery_cliff_walking() {
 
 pub fn run_cliff_walking_episodic() {
     println!("Try replicating book results...");
-    let cliff_walking_mdp = envs::cliff_walking::build_mdp();
+    let cliff_walking_mdp = envs::cliff_walking::build_mdp().unwrap();
 
     let eval_episodes = 1000;
 

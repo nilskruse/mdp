@@ -1,4 +1,5 @@
-use std::collections::BTreeMap;
+use crate::mdp::GenericMdp;
+use std::collections::{BTreeMap, HashSet};
 
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
@@ -8,29 +9,45 @@ use crate::{
         q_learning::QLearning, q_learning_beta::QLearningBeta, value_iteration::value_iteration,
         StateActionAlgorithm,
     },
-    mdp::{Action, Mdp, State, Transition},
+    mdp::{IndexAction, IndexMdp, IndexState, Transition},
     policies::{epsilon_greedy_policy, greedy_policy},
     utils::{print_q_map, print_transition_map},
 };
 
-fn build_mdp(p: f64) -> Mdp {
-    let transition_probabilities: BTreeMap<(State, Action), Vec<Transition>> = BTreeMap::from([
-        (
-            (State(0), Action(0)),
-            vec![(p, State(2), 1000.0), (1.0 - p, State(3), 1.0)],
-        ),
-        ((State(0), Action(1)), vec![(1.0, State(1), 0.0)]),
-        ((State(1), Action(1)), vec![(1.0, State(0), 0.0)]),
-        ((State(2), Action(0)), vec![(1.0, State(2), 0.0)]),
-        ((State(3), Action(0)), vec![(1.0, State(3), 0.0)]),
-    ]);
+fn build_mdp(p: f64) -> IndexMdp {
+    let transition_probabilities: BTreeMap<(IndexState, IndexAction), Vec<Transition>> =
+        BTreeMap::from([
+            (
+                (IndexState(0), IndexAction(0)),
+                vec![(p, IndexState(2), 1000.0), (1.0 - p, IndexState(3), 1.0)],
+            ),
+            (
+                (IndexState(0), IndexAction(1)),
+                vec![(1.0, IndexState(1), 0.0)],
+            ),
+            (
+                (IndexState(1), IndexAction(1)),
+                vec![(1.0, IndexState(0), 0.0)],
+            ),
+            (
+                (IndexState(2), IndexAction(0)),
+                vec![(1.0, IndexState(2), 0.0)],
+            ),
+            (
+                (IndexState(3), IndexAction(0)),
+                vec![(1.0, IndexState(3), 0.0)],
+            ),
+        ]);
 
-    let terminal_states = vec![State(2), State(3)];
+    let terminal_states_vec = vec![IndexState(2), IndexState(3)];
 
-    Mdp {
+    let terminal_states: HashSet<IndexState> =
+        HashSet::from_iter(terminal_states_vec.iter().copied());
+
+    IndexMdp {
         transitions: transition_probabilities,
         terminal_states,
-        initial_state: State(0),
+        initial_state: IndexState(0),
     }
 }
 
@@ -84,10 +101,13 @@ impl RiggedQLearning {
 impl StateActionAlgorithm for RiggedQLearning {
     fn run_with_q_map(
         &self,
-        mdp: &crate::mdp::Mdp,
+        mdp: &crate::mdp::IndexMdp,
         episodes: usize,
         rng: &mut rand_chacha::ChaCha20Rng,
-        q_map: &mut std::collections::BTreeMap<(crate::mdp::State, crate::mdp::Action), f64>,
+        q_map: &mut std::collections::BTreeMap<
+            (crate::mdp::IndexState, crate::mdp::IndexAction),
+            f64,
+        >,
     ) {
         for episode in 1..=episodes {
             let mut current_state = mdp.initial_state;
@@ -102,8 +122,8 @@ impl StateActionAlgorithm for RiggedQLearning {
                 // get high, improbable reward on first episode and first step
                 if episode == 2 && steps == 0 {
                     println!("Rigging first action selection!!!");
-                    selected_action = Action(0);
-                    next_state = State(2);
+                    selected_action = IndexAction(0);
+                    next_state = IndexState(2);
                     reward = 1000.0;
                 }
 

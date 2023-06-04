@@ -1,10 +1,10 @@
 use itertools::Itertools;
 use std::{cmp::Ordering, collections::BTreeMap};
 
-use crate::mdp::{Action, Mdp, Reward, State};
+use crate::mdp::{IndexAction, IndexMdp, IndexState, Reward};
 
 // print q_map in order
-pub fn print_q_map(q_map: &BTreeMap<(State, Action), Reward>) {
+pub fn print_q_map(q_map: &BTreeMap<(IndexState, IndexAction), Reward>) {
     q_map
         .iter()
         .sorted_by(|pair1, pair2| {
@@ -27,7 +27,7 @@ pub fn print_q_map(q_map: &BTreeMap<(State, Action), Reward>) {
         .for_each(|q_entry| println!("{:?}", q_entry));
 }
 
-pub fn print_transition_map(mdp: &Mdp) {
+pub fn print_transition_map(mdp: &IndexMdp) {
     let _transitions = mdp.transitions.clone();
     mdp.transitions
         .iter()

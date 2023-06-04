@@ -1,12 +1,15 @@
+use crate::algorithms::GenericStateActionAlgorithm;
 use std::time::{Duration, Instant};
 
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
 use crate::{
-    algorithms::{q_learning::QLearning, sarsa::Sarsa, StateActionAlgorithm},
+    algorithms::{sarsa::Sarsa, StateActionAlgorithm},
     generator::generate_random_mdp,
 };
+
+use crate::algorithms::q_learning::QLearning;
 
 const BENCH_EPISODES: usize = 1000;
 const BENCH_MAX_STEPS: usize = 2000; // max steps per episode

@@ -1,9 +1,9 @@
 use std::collections::BTreeMap;
 
-use crate::mdp::{Mdp, State};
+use crate::mdp::{IndexMdp, IndexState};
 
-pub fn value_iteration(mdp: &Mdp, tolerance: f64, gamma: f64) -> BTreeMap<State, f64> {
-    let mut value_map: BTreeMap<State, f64> = BTreeMap::new();
+pub fn value_iteration(mdp: &IndexMdp, tolerance: f64, gamma: f64) -> BTreeMap<IndexState, f64> {
+    let mut value_map: BTreeMap<IndexState, f64> = BTreeMap::new();
     let mut delta = f64::MAX;
 
     while delta > tolerance {
@@ -21,7 +21,12 @@ pub fn value_iteration(mdp: &Mdp, tolerance: f64, gamma: f64) -> BTreeMap<State,
     value_map
 }
 
-fn best_action_value(mdp: &Mdp, state: State, value_map: &BTreeMap<State, f64>, gamma: f64) -> f64 {
+fn best_action_value(
+    mdp: &IndexMdp,
+    state: IndexState,
+    value_map: &BTreeMap<IndexState, f64>,
+    gamma: f64,
+) -> f64 {
     mdp.transitions
         .iter()
         .filter_map(|((s, _), transitions)| {

@@ -1,12 +1,12 @@
 use std::{collections::BTreeMap, iter::zip};
 
 use crate::{
-    mdp::{Action, State},
+    mdp::{GenericAction, GenericMdp, GenericState, IndexAction, IndexState},
     policies::{epsilon_greedy_policy, greedy_policy},
     utils::print_q_map,
 };
 
-use super::StateActionAlgorithm;
+use super::{GenericStateActionAlgorithm, StateActionAlgorithm};
 
 pub struct QLearningDynamic {
     alpha: f64,
@@ -26,17 +26,17 @@ impl QLearningDynamic {
     }
 }
 
-impl StateActionAlgorithm for QLearningDynamic {
-    fn run_with_q_map(
+impl GenericStateActionAlgorithm for QLearningDynamic {
+    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
         &self,
-        mdp: &crate::mdp::Mdp,
+        mdp: &M,
         episodes: usize,
         rng: &mut rand_chacha::ChaCha20Rng,
-        q_map: &mut std::collections::BTreeMap<(crate::mdp::State, crate::mdp::Action), f64>,
+        q_map: &mut BTreeMap<(S, A), f64>,
     ) {
-        let mut prev_q_map: BTreeMap<(State, Action), f64> = BTreeMap::new();
+        let mut prev_q_map: BTreeMap<(S, A), f64> = BTreeMap::new();
 
-        mdp.transitions.keys().for_each(|state_action| {
+        mdp.get_all_state_actions_iter().for_each(|state_action| {
             prev_q_map.insert(*state_action, 0.0);
         });
 
@@ -74,10 +74,10 @@ impl StateActionAlgorithm for QLearningDynamic {
             // println!("prev_q_map:");
             // print_q_map(&prev_q_map);
 
-            let mut current_state = mdp.initial_state;
+            let mut current_state = mdp.get_initial_state();
             let mut steps = 0;
 
-            while !mdp.terminal_states.contains(&current_state) && steps < self.max_steps {
+            while !mdp.is_terminal(current_state) && steps < self.max_steps {
                 let Some(selected_action) = epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng) else {break};
                 let (next_state, reward) =
                     mdp.perform_action((current_state, selected_action), rng);

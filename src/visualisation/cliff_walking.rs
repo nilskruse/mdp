@@ -6,14 +6,14 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
 use crate::{
-    envs::cliff_walking::{COLS, ROWS},
-    mdp::{Action, Mdp, State},
+    envs::cliff_walking::{CliffWalkingAction, CliffWalkingState, COLS, ROWS},
+    mdp::{GenericAction, GenericMdp, GenericState, IndexMdp, MapMdp},
     policies::greedy_policy,
 };
 
 pub fn show_strategy(
-    mdp: &Mdp,
-    q_map: &BTreeMap<(State, Action), f64>,
+    mdp: &MapMdp<CliffWalkingState, CliffWalkingAction>,
+    q_map: &BTreeMap<(CliffWalkingState, CliffWalkingAction), f64>,
 ) -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         // initial_window_size: Some(egui::vec2(320.0, 240.0)),
@@ -25,12 +25,15 @@ pub fn show_strategy(
 }
 
 struct MyApp {
-    mdp: Mdp,
-    q_map: BTreeMap<(State, Action), f64>,
+    mdp: MapMdp<CliffWalkingState, CliffWalkingAction>,
+    q_map: BTreeMap<(CliffWalkingState, CliffWalkingAction), f64>,
 }
 
 impl MyApp {
-    fn new(mdp: Mdp, q_map: BTreeMap<(State, Action), f64>) -> Self {
+    fn new(
+        mdp: MapMdp<CliffWalkingState, CliffWalkingAction>,
+        q_map: BTreeMap<(CliffWalkingState, CliffWalkingAction), f64>,
+    ) -> Self {
         // Customize egui here with cc.egui_ctx.set_fonts and cc.egui_ctx.set_visuals.
         // Restore app state using cc.storage (requires the "persistence" feature).
         // Use the cc.gl (a glow::Context) to create graphics shaders and buffers that you can use
@@ -59,14 +62,18 @@ impl eframe::App for MyApp {
                 for row in 0..ROWS {
                     for col in 0..COLS {
                         let state_index = row * COLS + col;
-                        let action =
-                            greedy_policy(&self.mdp, &self.q_map, State(state_index), &mut rng);
+                        let action = greedy_policy(
+                            &self.mdp,
+                            &self.q_map,
+                            CliffWalkingState(row, col),
+                            &mut rng,
+                        );
                         let label = match action {
-                            Some(Action(0)) => "⬆",
-                            Some(Action(1)) => "⬇",
-                            Some(Action(2)) => "⬅",
-                            Some(Action(3)) => "➡",
-                            _ => "none",
+                            Some(CliffWalkingAction::Up) => "⬆",
+                            Some(CliffWalkingAction::Down) => "⬇",
+                            Some(CliffWalkingAction::Left) => "⬅",
+                            Some(CliffWalkingAction::Right) => "➡",
+                            None => panic!("you fucked up"),
                         };
                         // let label = format!("{}", state_index);
                         let color = match state_index {

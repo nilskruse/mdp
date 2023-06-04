@@ -1,14 +1,14 @@
 use rand::SeedableRng;
 
 use crate::{
-    algorithms::{sarsa::Sarsa, StateActionAlgorithm},
+    algorithms::{sarsa::Sarsa, GenericStateActionAlgorithm, StateActionAlgorithm},
     envs,
 };
 
 pub mod cliff_walking;
 
 pub fn vis_test() {
-    let cliff_walking_mdp = envs::cliff_walking::build_mdp();
+    let cliff_walking_mdp = envs::cliff_walking::build_mdp().unwrap();
 
     let learning_episodes = 500;
 
@@ -26,8 +26,8 @@ pub fn vis_test() {
 
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(0);
 
-    let q_learning_algo = Sarsa::new(alpha, gamma, epsilon, learning_max_steps);
-    let q_map = q_learning_algo.run(&cliff_walking_mdp, learning_episodes, &mut rng);
+    let algo = Sarsa::new(alpha, gamma, epsilon, learning_max_steps);
+    let q_map = algo.run(&cliff_walking_mdp, learning_episodes, &mut rng);
 
     cliff_walking::show_strategy(&cliff_walking_mdp, &q_map).expect("some gui error");
 }

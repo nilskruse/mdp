@@ -1,7 +1,9 @@
+#![allow(unused_variables)]
+#![allow(unused_mut)]
 use std::collections::BTreeMap;
 
 use crate::{
-    mdp::{self, Probability, Reward, State, Transition},
+    mdp::{self, IndexState, Probability, Reward, Transition},
     utils::print_transition_map,
 };
 
@@ -20,7 +22,8 @@ pub fn build_mdp(max_cars: isize) {
     if max_cars < 1 {
         panic!("max_cars needs to be at least 1");
     }
-    let mut transitions: BTreeMap<(State, mdp::Action), Vec<Transition>> = BTreeMap::new();
+    let mut transitions: BTreeMap<(IndexState, mdp::IndexAction), Vec<Transition>> =
+        BTreeMap::new();
 
     let mut states = vec![];
 
@@ -59,16 +62,18 @@ fn build_state(
     ns_cars: isize,
     ew_cars: isize,
     max_cars: isize,
-) -> State {
+) -> IndexState {
     match traffic_signal_state {
-        TrafficSignalState::NorthSouthOpen => State((ns_cars * (max_cars + 1) + ew_cars) as usize),
+        TrafficSignalState::NorthSouthOpen => {
+            IndexState((ns_cars * (max_cars + 1) + ew_cars) as usize)
+        }
         TrafficSignalState::EastWestOpen => {
-            State((ns_cars * (max_cars + 1) + ew_cars + (max_cars + 1).pow(2)) as usize)
+            IndexState((ns_cars * (max_cars + 1) + ew_cars + (max_cars + 1).pow(2)) as usize)
         }
     }
 }
 
-fn reconstruct_state(state: State, max_cars: isize) -> IntersectionState {
+fn reconstruct_state(state: IndexState, max_cars: isize) -> IntersectionState {
     let mut index = state.0 as isize;
 
     let combinations = (max_cars + 1).pow(2);

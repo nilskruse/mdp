@@ -3,11 +3,13 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use rand_chacha::ChaCha20Rng;
 
 use crate::{
-    mdp::{self, Action, Mdp, Reward, State},
+    mdp::{
+        self, GenericAction, GenericMdp, GenericState, IndexAction, IndexMdp, IndexState, Reward,
+    },
     policies::epsilon_greedy_policy,
 };
 
-use super::StateActionAlgorithm;
+use super::{GenericStateActionAlgorithm, StateActionAlgorithm};
 
 pub struct MonteCarlo {
     epsilon: f64,
@@ -19,17 +21,17 @@ impl MonteCarlo {
         MonteCarlo { max_steps, epsilon }
     }
 
-    fn generate_episode(
+    fn generate_episode<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
         &self,
-        mdp: &Mdp,
-        q_map: &BTreeMap<(State, Action), Reward>,
+        mdp: &M,
+        q_map: &BTreeMap<(S, A), Reward>,
         rng: &mut ChaCha20Rng,
-    ) -> Vec<(State, Action, Reward)> {
+    ) -> Vec<(S, A, Reward)> {
         let mut episode = vec![];
 
-        let mut current_state = mdp.initial_state;
+        let mut current_state = mdp.get_initial_state();
         let mut steps = 0;
-        while !mdp.terminal_states.contains(&current_state) && steps < self.max_steps {
+        while !mdp.is_terminal(current_state) && steps < self.max_steps {
             let selected_action =
                 epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng);
 
@@ -44,19 +46,19 @@ impl MonteCarlo {
     }
 }
 
-impl StateActionAlgorithm for MonteCarlo {
-    fn run_with_q_map(
+impl GenericStateActionAlgorithm for MonteCarlo {
+    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
         &self,
-        mdp: &crate::mdp::Mdp,
+        mdp: &M,
         episodes: usize,
         rng: &mut rand_chacha::ChaCha20Rng,
-        q_map: &mut std::collections::BTreeMap<(crate::mdp::State, crate::mdp::Action), f64>,
+        q_map: &mut BTreeMap<(S, A), f64>,
     ) {
-        let mut returns: BTreeMap<(State, Action), Vec<f64>> = BTreeMap::new();
+        let mut returns: BTreeMap<(S, A), Vec<f64>> = BTreeMap::new();
         for _ in 0..episodes {
             // generate episode
             let episode = self.generate_episode(mdp, q_map, rng);
-            let mut g: HashMap<(State, Action), f64> = HashMap::new();
+            let mut g: HashMap<(S, A), f64> = HashMap::new();
             let mut visited_states = HashSet::new();
 
             // get first-visit returns

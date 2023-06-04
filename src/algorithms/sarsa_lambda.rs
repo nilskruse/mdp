@@ -1,11 +1,11 @@
 use std::collections::BTreeMap;
 
 use crate::{
-    mdp::{Action, State},
+    mdp::{GenericAction, GenericMdp, GenericState, IndexAction, IndexState},
     policies::epsilon_greedy_policy,
 };
 
-use super::{StateActionAlgorithm, Trace};
+use super::{GenericStateActionAlgorithm, StateActionAlgorithm, Trace};
 
 pub struct SarsaLambda {
     alpha: f64,
@@ -36,24 +36,25 @@ impl SarsaLambda {
     }
 }
 
-impl StateActionAlgorithm for SarsaLambda {
-    fn run_with_q_map(
+impl GenericStateActionAlgorithm for SarsaLambda {
+    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
         &self,
-        mdp: &crate::mdp::Mdp,
+        mdp: &M,
         episodes: usize,
         rng: &mut rand_chacha::ChaCha20Rng,
-        q_map: &mut std::collections::BTreeMap<(crate::mdp::State, crate::mdp::Action), f64>,
+        q_map: &mut BTreeMap<(S, A), f64>,
     ) {
         for _ in 0..episodes {
-            let mut e_map: BTreeMap<(State, Action), f64> = BTreeMap::new();
+            let mut e_map: BTreeMap<(S, A), f64> = BTreeMap::new();
 
             let (mut current_state, mut current_action) = (
-                mdp.initial_state,
-                epsilon_greedy_policy(mdp, q_map, mdp.initial_state, self.epsilon, rng).unwrap(),
+                mdp.get_initial_state(),
+                epsilon_greedy_policy(mdp, q_map, mdp.get_initial_state(), self.epsilon, rng)
+                    .unwrap(),
             );
             let mut steps = 0;
 
-            while !mdp.terminal_states.contains(&current_state) && steps < self.max_steps {
+            while !mdp.is_terminal(current_state) && steps < self.max_steps {
                 let (next_state, reward) = mdp.perform_action((current_state, current_action), rng);
 
                 // select action epsilon greedy and break if no action is possible (episode ends)
@@ -69,7 +70,7 @@ impl StateActionAlgorithm for SarsaLambda {
                     .and_modify(|entry| *entry = self.trace.calculate(*entry, self.alpha));
 
                 // update q and e for all (state, action) pairs
-                mdp.transitions.keys().for_each(|key| {
+                mdp.get_all_state_actions_iter().for_each(|key| {
                     let e_entry = e_map.entry(*key).or_default();
                     q_map.entry(*key).and_modify(|q_entry| {
                         *q_entry += self.alpha * delta * *e_entry;
