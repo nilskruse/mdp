@@ -1,9 +1,10 @@
+use crate::mdp::GenericMdp;
 use std::collections::BTreeMap;
 
 use rand_chacha::ChaCha20Rng;
 
 use crate::{
-    mdp::{Action, GenericAction, GenericMdp, GenericState, Mdp, State},
+    mdp::{Action, GenericAction, GenericState, MapMdp, Mdp, State},
     policies::{
         epsilon_greedy_policy, epsilon_greedy_policy_generic, greedy_policy, greedy_policy_generic,
     },
@@ -73,7 +74,7 @@ pub fn evaluate_greedy_policy(
 }
 
 pub fn evaluate_epsilon_greedy_policy_generic<S: GenericState, A: GenericAction>(
-    mdp: &GenericMdp<S, A>,
+    mdp: &MapMdp<S, A>,
     q_map: &BTreeMap<(S, A), f64>,
     episodes: usize,
     max_steps: usize,
@@ -106,7 +107,7 @@ pub fn evaluate_epsilon_greedy_policy_generic<S: GenericState, A: GenericAction>
 }
 
 pub fn evaluate_greedy_policy_generic<S: GenericState, A: GenericAction>(
-    mdp: &GenericMdp<S, A>,
+    mdp: &MapMdp<S, A>,
     q_map: &BTreeMap<(S, A), f64>,
     episodes: usize,
     max_steps: usize,

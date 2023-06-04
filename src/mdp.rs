@@ -86,10 +86,23 @@ impl Mdp {
 }
 
 #[derive(Debug, Clone)]
-pub struct GenericMdp<S: GenericState, A: GenericAction> {
+pub struct MapMdp<S: GenericState, A: GenericAction> {
     pub transitions: BTreeMap<(S, A), Vec<(Probability, S, Reward)>>,
     pub terminal_states: std::collections::HashSet<S>,
     pub initial_state: S,
+}
+
+impl<S: GenericState, A: GenericAction> MapMdp<S, A> {
+    pub fn new(initial_state: S) -> MapMdp<S, A> {
+        let transitions: BTreeMap<(S, A), Vec<(Probability, S, Reward)>> = BTreeMap::new();
+        let terminal_states: HashSet<S> = HashSet::new();
+
+        MapMdp {
+            transitions,
+            terminal_states,
+            initial_state,
+        }
+    }
 }
 
 pub trait GenericState: Ord + Clone + Hash + Copy {}
@@ -98,19 +111,28 @@ pub trait GenericAction: Ord + Copy + Clone {}
 
 impl<T: Ord + Copy + Clone> GenericAction for T {}
 
-impl<S: GenericState, A: GenericAction> GenericMdp<S, A> {
-    pub fn new(initial_state: S) -> GenericMdp<S, A> {
-        let transitions: BTreeMap<(S, A), Vec<(Probability, S, Reward)>> = BTreeMap::new();
-        let terminal_states: HashSet<S> = HashSet::new();
+pub trait GenericMdp<S: GenericState, A: GenericAction> {
+    fn add_transition_vector(
+        &mut self,
+        sa: (S, A),
+        transition: Vec<(Probability, S, Reward)>,
+    ) -> anyhow::Result<()>;
 
-        GenericMdp {
-            transitions,
-            terminal_states,
-            initial_state,
-        }
-    }
+    fn add_terminal_state(&mut self, state: S);
 
-    pub fn add_transition_vector(
+    fn perform_action(&self, state_action: (S, A), rng: &mut ChaCha20Rng) -> (S, Reward);
+
+    fn get_possible_actions(&self, current_state: S) -> Vec<A>;
+
+    fn get_all_state_actions(&self) -> Vec<(S, A)>;
+
+    fn is_terminal(&self, state: S) -> bool;
+
+    fn get_initial_sate(&self) -> S;
+}
+
+impl<S: GenericState, A: GenericAction> GenericMdp<S, A> for MapMdp<S, A> {
+    fn add_transition_vector(
         &mut self,
         sa: (S, A),
         transition: Vec<(Probability, S, Reward)>,
@@ -122,11 +144,11 @@ impl<S: GenericState, A: GenericAction> GenericMdp<S, A> {
         Ok(())
     }
 
-    pub fn add_terminal_state(&mut self, state: S) {
+    fn add_terminal_state(&mut self, state: S) {
         self.terminal_states.insert(state);
     }
 
-    pub fn perform_action(&self, state_action: (S, A), rng: &mut ChaCha20Rng) -> (S, Reward) {
+    fn perform_action(&self, state_action: (S, A), rng: &mut ChaCha20Rng) -> (S, Reward) {
         if let Some(transitions) = self.transitions.get(&state_action) {
             // extract probabilities, create distribution and sample
             let probs: Vec<_> = transitions
@@ -144,7 +166,7 @@ impl<S: GenericState, A: GenericAction> GenericMdp<S, A> {
         }
     }
 
-    pub fn get_possible_actions(&self, current_state: S) -> Vec<A> {
+    fn get_possible_actions(&self, current_state: S) -> Vec<A> {
         self.transitions
             .iter()
             .filter_map(|((state, action), _)| {
@@ -155,5 +177,17 @@ impl<S: GenericState, A: GenericAction> GenericMdp<S, A> {
                 }
             })
             .collect()
+    }
+
+    fn get_all_state_actions(&self) -> Vec<(S, A)> {
+        self.transitions.keys().cloned().collect()
+    }
+
+    fn is_terminal(&self, state: S) -> bool {
+        self.terminal_states.contains(&state)
+    }
+
+    fn get_initial_sate(&self) -> S {
+        self.initial_state
     }
 }

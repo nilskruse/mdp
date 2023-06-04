@@ -1,7 +1,8 @@
+use crate::mdp::GenericMdp;
 use std::collections::BTreeMap;
 
 use crate::{
-    mdp::{Action, GenericAction, GenericMdp, GenericState, State},
+    mdp::{Action, GenericAction, GenericState, MapMdp, State},
     policies::{
         epsilon_greedy_policy, epsilon_greedy_policy_generic, greedy_policy, greedy_policy_generic,
     },
@@ -80,18 +81,18 @@ impl QLearningGeneric {
 }
 
 impl GenericStateActionAlgorithm for QLearningGeneric {
-    fn run_with_q_map<S: GenericState, A: GenericAction>(
+    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
         &self,
-        mdp: &GenericMdp<S, A>,
+        mdp: &M,
         episodes: usize,
         rng: &mut rand_chacha::ChaCha20Rng,
         q_map: &mut BTreeMap<(S, A), f64>,
     ) {
         for _ in 1..=episodes {
-            let mut current_state = mdp.initial_state;
+            let mut current_state = mdp.get_initial_sate();
             let mut steps = 0;
 
-            while !mdp.terminal_states.contains(&current_state) && steps < self.max_steps {
+            while !mdp.is_terminal(current_state) && steps < self.max_steps {
                 let Some(selected_action) = epsilon_greedy_policy_generic(mdp, q_map, current_state, self.epsilon, rng) else {break};
                 let (next_state, reward) =
                     mdp.perform_action((current_state, selected_action), rng);

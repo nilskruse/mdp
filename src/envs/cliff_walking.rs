@@ -1,6 +1,7 @@
+use crate::mdp::GenericMdp;
 use std::collections::BTreeMap;
 
-use crate::mdp::{self, GenericMdp, GenericState, Mdp, Probability, Reward, State, Transition};
+use crate::mdp::{self, GenericState, MapMdp, Mdp, Probability, Reward, State, Transition};
 
 #[derive(Copy, Clone, Debug)]
 pub(crate) enum Cell {
@@ -138,7 +139,7 @@ fn print_grid(grid: &[[Cell; ROWS]; COLS]) {
 }
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Copy)]
-pub struct CliffWalkingState(usize, usize);
+pub struct CliffWalkingState(pub usize, pub usize);
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Copy)]
 pub enum CliffWalkingAction {
@@ -148,9 +149,9 @@ pub enum CliffWalkingAction {
     Right = 3,
 }
 
-type CliffWalkingTransition = (Probability, CliffWalkingState, Reward);
+pub type CliffWalkingTransition = (Probability, CliffWalkingState, Reward);
 
-pub fn build_generic_mdp() -> anyhow::Result<GenericMdp<CliffWalkingState, CliffWalkingAction>> {
+pub fn build_generic_mdp() -> anyhow::Result<MapMdp<CliffWalkingState, CliffWalkingAction>> {
     // create grid of cells
     let mut grid: [[Cell; ROWS]; COLS] = [[Cell::Regular; ROWS]; COLS];
 
@@ -162,7 +163,7 @@ pub fn build_generic_mdp() -> anyhow::Result<GenericMdp<CliffWalkingState, Cliff
     grid[COLS - 1][ROWS - 1] = Cell::End;
 
     let mut mdp =
-        GenericMdp::<CliffWalkingState, CliffWalkingAction>::new(CliffWalkingState(ROWS - 1, 0));
+        MapMdp::<CliffWalkingState, CliffWalkingAction>::new(CliffWalkingState(ROWS - 1, 0));
 
     // fill transition map for every state and action
     for row in 0..ROWS {

@@ -196,8 +196,8 @@ pub fn run_slippery_cliff_walking() {
     println!("Running slippery cliff walking!");
     let slippy_cliff_walking_mdp = envs::slippery_cliff_walking::build_mdp(0.2);
 
-    let learning_episodes = 500;
-    let eval_episodes = 1000;
+    let learning_episodes = 1000;
+    let eval_episodes = 500;
 
     // run "indefinitely"
     let learning_max_steps = usize::MAX;
