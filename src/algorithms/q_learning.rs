@@ -1,3 +1,5 @@
+use rand::{Rng, SeedableRng};
+
 use crate::mdp::GenericMdp;
 use std::collections::BTreeMap;
 
@@ -6,20 +8,18 @@ use crate::{
     policies::{epsilon_greedy_policy, greedy_policy},
 };
 
-use super::{GenericStateActionAlgorithm, StateActionAlgorithm};
+use super::GenericStateActionAlgorithm;
 
 pub struct QLearning {
     alpha: f64,
-    gamma: f64,
     epsilon: f64,
     max_steps: usize,
 }
 
 impl QLearning {
-    pub fn new(alpha: f64, gamma: f64, epsilon: f64, max_steps: usize) -> Self {
+    pub fn new(alpha: f64, epsilon: f64, max_steps: usize) -> Self {
         QLearning {
             alpha,
-            gamma,
             epsilon,
             max_steps,
         }
@@ -27,11 +27,16 @@ impl QLearning {
 }
 
 impl GenericStateActionAlgorithm for QLearning {
-    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
+    fn run_with_q_map<
+        M: GenericMdp<S, A>,
+        S: GenericState,
+        A: GenericAction,
+        R: Rng + SeedableRng,
+    >(
         &self,
         mdp: &M,
         episodes: usize,
-        rng: &mut rand_chacha::ChaCha20Rng,
+        rng: &mut R,
         q_map: &mut BTreeMap<(S, A), f64>,
     ) {
         for _ in 1..=episodes {
@@ -50,7 +55,8 @@ impl GenericStateActionAlgorithm for QLearning {
                     .expect("No qmap entry found");
 
                 let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
-                *current_q = *current_q + self.alpha * (reward + self.gamma * best_q - *current_q);
+                *current_q = *current_q
+                    + self.alpha * (reward + mdp.get_discount_factor() * best_q - *current_q);
 
                 current_state = next_state;
 

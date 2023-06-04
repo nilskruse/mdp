@@ -1,4 +1,7 @@
-use rand::distributions::{Distribution, WeightedIndex};
+use rand::{
+    distributions::{Distribution, WeightedIndex},
+    Rng, SeedableRng,
+};
 use rand_chacha::ChaCha20Rng;
 use std::{
     collections::{btree_map::Keys, BTreeMap, HashSet},
@@ -23,10 +26,11 @@ pub struct MapMdp<S: GenericState, A: GenericAction> {
     pub transitions: BTreeMap<(S, A), Vec<(Probability, S, Reward)>>,
     pub terminal_states: std::collections::HashSet<S>,
     pub initial_state: S,
+    pub discount_factor: f64,
 }
 
 impl<S: GenericState, A: GenericAction> MapMdp<S, A> {
-    pub fn new(initial_state: S) -> MapMdp<S, A> {
+    pub fn new(discount_factor: f64, initial_state: S) -> MapMdp<S, A> {
         let transitions: BTreeMap<(S, A), Vec<(Probability, S, Reward)>> = BTreeMap::new();
         let terminal_states: HashSet<S> = HashSet::new();
 
@@ -34,6 +38,7 @@ impl<S: GenericState, A: GenericAction> MapMdp<S, A> {
             transitions,
             terminal_states,
             initial_state,
+            discount_factor,
         }
     }
 }
@@ -53,7 +58,11 @@ pub trait GenericMdp<S: GenericState, A: GenericAction> {
 
     fn add_terminal_state(&mut self, state: S);
 
-    fn perform_action(&self, state_action: (S, A), rng: &mut ChaCha20Rng) -> (S, Reward);
+    fn perform_action<R: SeedableRng + Rng>(
+        &self,
+        state_action: (S, A),
+        rng: &mut R,
+    ) -> (S, Reward);
 
     fn get_possible_actions(&self, current_state: S) -> Vec<A>;
 
@@ -62,6 +71,8 @@ pub trait GenericMdp<S: GenericState, A: GenericAction> {
     fn is_terminal(&self, state: S) -> bool;
 
     fn get_initial_state(&self) -> S;
+
+    fn get_discount_factor(&self) -> f64;
 }
 
 impl<S: GenericState, A: GenericAction> GenericMdp<S, A> for MapMdp<S, A> {
@@ -81,7 +92,11 @@ impl<S: GenericState, A: GenericAction> GenericMdp<S, A> for MapMdp<S, A> {
         self.terminal_states.insert(state);
     }
 
-    fn perform_action(&self, state_action: (S, A), rng: &mut ChaCha20Rng) -> (S, Reward) {
+    fn perform_action<R: SeedableRng + Rng>(
+        &self,
+        state_action: (S, A),
+        rng: &mut R,
+    ) -> (S, Reward) {
         if let Some(transitions) = self.transitions.get(&state_action) {
             // extract probabilities, create distribution and sample
             let probs: Vec<_> = transitions
@@ -122,5 +137,9 @@ impl<S: GenericState, A: GenericAction> GenericMdp<S, A> for MapMdp<S, A> {
 
     fn get_initial_state(&self) -> S {
         self.initial_state
+    }
+
+    fn get_discount_factor(&self) -> f64 {
+        self.discount_factor
     }
 }

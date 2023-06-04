@@ -1,8 +1,8 @@
 use std::collections::BTreeMap;
 
-use crate::mdp::{IndexMdp, IndexState};
+use crate::mdp::{GenericMdp, IndexMdp, IndexState};
 
-pub fn value_iteration(mdp: &IndexMdp, tolerance: f64, gamma: f64) -> BTreeMap<IndexState, f64> {
+pub fn value_iteration(mdp: &IndexMdp, tolerance: f64) -> BTreeMap<IndexState, f64> {
     let mut value_map: BTreeMap<IndexState, f64> = BTreeMap::new();
     let mut delta = f64::MAX;
 
@@ -11,7 +11,7 @@ pub fn value_iteration(mdp: &IndexMdp, tolerance: f64, gamma: f64) -> BTreeMap<I
 
         for (state, _) in mdp.transitions.keys() {
             let old_value = *value_map.get(state).unwrap_or(&0.0);
-            let new_value = best_action_value(mdp, *state, &value_map, gamma);
+            let new_value = best_action_value(mdp, *state, &value_map);
 
             value_map.insert(*state, new_value);
             delta = delta.max((old_value - new_value).abs());
@@ -25,7 +25,6 @@ fn best_action_value(
     mdp: &IndexMdp,
     state: IndexState,
     value_map: &BTreeMap<IndexState, f64>,
-    gamma: f64,
 ) -> f64 {
     mdp.transitions
         .iter()
@@ -34,7 +33,8 @@ fn best_action_value(
                 let expected_value: f64 = transitions
                     .iter()
                     .map(|(prob, next_state, reward)| {
-                        prob * (reward + gamma * value_map.get(next_state).unwrap_or(&0.0))
+                        prob * (reward
+                            + mdp.get_discount_factor() * value_map.get(next_state).unwrap_or(&0.0))
                     })
                     .sum();
                 Some(expected_value)

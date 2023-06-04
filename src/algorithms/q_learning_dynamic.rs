@@ -1,25 +1,25 @@
 use std::{collections::BTreeMap, iter::zip};
 
+use rand::{Rng, SeedableRng};
+
 use crate::{
     mdp::{GenericAction, GenericMdp, GenericState, IndexAction, IndexState},
     policies::{epsilon_greedy_policy, greedy_policy},
     utils::print_q_map,
 };
 
-use super::{GenericStateActionAlgorithm, StateActionAlgorithm};
+use super::GenericStateActionAlgorithm;
 
 pub struct QLearningDynamic {
     alpha: f64,
-    gamma: f64,
     epsilon: f64,
     max_steps: usize,
 }
 
 impl QLearningDynamic {
-    pub fn new(alpha: f64, gamma: f64, epsilon: f64, max_steps: usize) -> Self {
+    pub fn new(alpha: f64, epsilon: f64, max_steps: usize) -> Self {
         QLearningDynamic {
             alpha,
-            gamma,
             epsilon,
             max_steps,
         }
@@ -27,11 +27,16 @@ impl QLearningDynamic {
 }
 
 impl GenericStateActionAlgorithm for QLearningDynamic {
-    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
+    fn run_with_q_map<
+        M: GenericMdp<S, A>,
+        S: GenericState,
+        A: GenericAction,
+        R: Rng + SeedableRng,
+    >(
         &self,
         mdp: &M,
         episodes: usize,
-        rng: &mut rand_chacha::ChaCha20Rng,
+        rng: &mut R,
         q_map: &mut BTreeMap<(S, A), f64>,
     ) {
         let mut prev_q_map: BTreeMap<(S, A), f64> = BTreeMap::new();
@@ -89,7 +94,8 @@ impl GenericStateActionAlgorithm for QLearningDynamic {
                     .expect("No qmap entry found");
 
                 let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
-                *current_q = *current_q + alpha * (reward + self.gamma * best_q - *current_q);
+                *current_q =
+                    *current_q + alpha * (reward + mdp.get_discount_factor() * best_q - *current_q);
 
                 current_state = next_state;
 

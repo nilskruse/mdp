@@ -1,15 +1,16 @@
 use std::collections::BTreeMap;
 
+use rand::{Rng, SeedableRng};
+
 use crate::{
     mdp::{GenericAction, GenericMdp, GenericState, IndexAction, IndexState},
     policies::{epsilon_greedy_policy, greedy_policy},
 };
 
-use super::{GenericStateActionAlgorithm, StateActionAlgorithm, Trace};
+use super::{GenericStateActionAlgorithm, Trace};
 
 pub struct QLearningLamda {
     alpha: f64,
-    gamma: f64,
     epsilon: f64,
     lambda: f64,
     max_steps: usize,
@@ -17,17 +18,9 @@ pub struct QLearningLamda {
 }
 
 impl QLearningLamda {
-    pub fn new(
-        alpha: f64,
-        gamma: f64,
-        epsilon: f64,
-        lambda: f64,
-        max_steps: usize,
-        trace: Trace,
-    ) -> Self {
+    pub fn new(alpha: f64, epsilon: f64, lambda: f64, max_steps: usize, trace: Trace) -> Self {
         QLearningLamda {
             alpha,
-            gamma,
             epsilon,
             lambda,
             max_steps,
@@ -37,11 +30,16 @@ impl QLearningLamda {
 }
 
 impl GenericStateActionAlgorithm for QLearningLamda {
-    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
+    fn run_with_q_map<
+        M: GenericMdp<S, A>,
+        S: GenericState,
+        A: GenericAction,
+        R: Rng + SeedableRng,
+    >(
         &self,
         mdp: &M,
         episodes: usize,
-        rng: &mut rand_chacha::ChaCha20Rng,
+        rng: &mut R,
         q_map: &mut BTreeMap<(S, A), f64>,
     ) {
         for _ in 0..episodes {
@@ -65,7 +63,7 @@ impl GenericStateActionAlgorithm for QLearningLamda {
                 let next_q = *q_map.get(&(next_state, best_action)).unwrap();
                 let current_q = *q_map.get(&(current_state, current_action)).unwrap();
 
-                let delta = reward + self.gamma * next_q - current_q;
+                let delta = reward + mdp.get_discount_factor() * next_q - current_q;
 
                 e_map
                     .entry((current_state, current_action))
@@ -79,7 +77,7 @@ impl GenericStateActionAlgorithm for QLearningLamda {
                         *q_entry += self.alpha * delta * *e_entry;
                     });
                     if next_action == best_action {
-                        *e_entry *= self.gamma * self.lambda;
+                        *e_entry *= mdp.get_discount_factor() * self.lambda;
                     } else {
                         *e_entry = 0.0;
                     }

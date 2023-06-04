@@ -1,7 +1,7 @@
 use crate::mdp::GenericMdp;
 use std::collections::BTreeMap;
 
-use rand::Rng;
+use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 
 use crate::mdp::{GenericAction, GenericState, IndexAction, IndexMdp, IndexState, MapMdp, Reward};
@@ -15,12 +15,17 @@ trait Policy {
     );
 }
 
-pub fn epsilon_greedy_policy<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
+pub fn epsilon_greedy_policy<
+    M: GenericMdp<S, A>,
+    S: GenericState,
+    A: GenericAction,
+    R: Rng + SeedableRng,
+>(
     mdp: &M,
     q_map: &BTreeMap<(S, A), Reward>,
     current_state: S,
     epsilon: f64,
-    rng: &mut ChaCha20Rng,
+    rng: &mut R,
 ) -> Option<A> {
     let random_value = rng.gen_range(0.0..1.0);
     if random_value < (1.0 - epsilon) {
@@ -30,11 +35,16 @@ pub fn epsilon_greedy_policy<M: GenericMdp<S, A>, S: GenericState, A: GenericAct
     }
 }
 
-pub fn greedy_policy<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
+pub fn greedy_policy<
+    M: GenericMdp<S, A>,
+    S: GenericState,
+    A: GenericAction,
+    R: Rng + SeedableRng,
+>(
     mdp: &M,
     q_map: &BTreeMap<(S, A), Reward>,
     current_state: S,
-    rng: &mut ChaCha20Rng,
+    rng: &mut R,
 ) -> Option<A> {
     let selected_action = q_map
         .iter()
@@ -64,10 +74,15 @@ pub fn greedy_policy<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
     selected_action.or_else(|| random_policy(mdp, current_state, rng))
 }
 
-pub fn random_policy<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
+pub fn random_policy<
+    M: GenericMdp<S, A>,
+    S: GenericState,
+    A: GenericAction,
+    R: Rng + SeedableRng,
+>(
     mdp: &M,
     current_state: S,
-    rng: &mut ChaCha20Rng,
+    rng: &mut R,
 ) -> Option<A> {
     let possible_actions = mdp.get_possible_actions(current_state);
 

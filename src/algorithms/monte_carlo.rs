@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
 
+use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 
 use crate::{
@@ -9,7 +10,7 @@ use crate::{
     policies::epsilon_greedy_policy,
 };
 
-use super::{GenericStateActionAlgorithm, StateActionAlgorithm};
+use super::GenericStateActionAlgorithm;
 
 pub struct MonteCarlo {
     epsilon: f64,
@@ -21,11 +22,16 @@ impl MonteCarlo {
         MonteCarlo { max_steps, epsilon }
     }
 
-    fn generate_episode<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
+    fn generate_episode<
+        M: GenericMdp<S, A>,
+        S: GenericState,
+        A: GenericAction,
+        R: Rng + SeedableRng,
+    >(
         &self,
         mdp: &M,
         q_map: &BTreeMap<(S, A), Reward>,
-        rng: &mut ChaCha20Rng,
+        rng: &mut R,
     ) -> Vec<(S, A, Reward)> {
         let mut episode = vec![];
 
@@ -47,11 +53,16 @@ impl MonteCarlo {
 }
 
 impl GenericStateActionAlgorithm for MonteCarlo {
-    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
+    fn run_with_q_map<
+        M: GenericMdp<S, A>,
+        S: GenericState,
+        A: GenericAction,
+        R: Rng + SeedableRng,
+    >(
         &self,
         mdp: &M,
         episodes: usize,
-        rng: &mut rand_chacha::ChaCha20Rng,
+        rng: &mut R,
         q_map: &mut BTreeMap<(S, A), f64>,
     ) {
         let mut returns: BTreeMap<(S, A), Vec<f64>> = BTreeMap::new();

@@ -48,6 +48,7 @@ pub enum CliffWalkingAction {
 }
 
 pub type CliffWalkingTransition = (Probability, CliffWalkingState, Reward);
+type CliffWalkingMdp = MapMdp<CliffWalkingState, CliffWalkingAction>;
 
 pub fn build_mdp() -> anyhow::Result<MapMdp<CliffWalkingState, CliffWalkingAction>> {
     // create grid of cells
@@ -60,8 +61,7 @@ pub fn build_mdp() -> anyhow::Result<MapMdp<CliffWalkingState, CliffWalkingActio
     }
     grid[COLS - 1][ROWS - 1] = Cell::End;
 
-    let mut mdp =
-        MapMdp::<CliffWalkingState, CliffWalkingAction>::new(CliffWalkingState(ROWS - 1, 0));
+    let mut mdp = CliffWalkingMdp::new(1.0, CliffWalkingState(ROWS - 1, 0));
 
     // fill transition map for every state and action
     for row in 0..ROWS {

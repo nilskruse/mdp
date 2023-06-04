@@ -4,10 +4,7 @@ use std::time::{Duration, Instant};
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
-use crate::{
-    algorithms::{sarsa::Sarsa, StateActionAlgorithm},
-    generator::generate_random_mdp,
-};
+use crate::{algorithms::sarsa::Sarsa, generator::generate_random_mdp};
 
 use crate::algorithms::q_learning::QLearning;
 
@@ -45,7 +42,7 @@ pub fn run_benchmarks() {
 fn bench_runtime_q_learning() -> Duration {
     let mut mdp_rng = ChaCha20Rng::seed_from_u64(BENCH_SEED);
     let mut total_duration: Duration = Duration::new(0, 0);
-    let algo = QLearning::new(BENCH_ALPHA, BENCH_GAMMA, BENCH_EPSILON, BENCH_MAX_STEPS);
+    let algo = QLearning::new(BENCH_ALPHA, BENCH_EPSILON, BENCH_MAX_STEPS);
 
     for _ in 0..BENCH_ITERATIONS {
         let mdp = generate_random_mdp(5, 2, 1, (2, 2), (1, 3), (-1.0, 10.0), &mut mdp_rng);
@@ -63,7 +60,7 @@ fn bench_runtime_q_learning() -> Duration {
 fn bench_runtime_sarsa() -> Duration {
     let mut mdp_rng = ChaCha20Rng::seed_from_u64(BENCH_SEED);
     let mut total_duration: Duration = Duration::new(0, 0);
-    let algo = Sarsa::new(BENCH_ALPHA, BENCH_GAMMA, BENCH_EPSILON, BENCH_MAX_STEPS);
+    let algo = Sarsa::new(BENCH_ALPHA, BENCH_EPSILON, BENCH_MAX_STEPS);
 
     for _ in 0..BENCH_ITERATIONS {
         let mdp = generate_random_mdp(5, 2, 1, (2, 2), (1, 3), (-1.0, 10.0), &mut mdp_rng);

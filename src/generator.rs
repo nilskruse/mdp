@@ -64,11 +64,13 @@ pub fn generate_random_mdp(
         .choose_multiple(rng, n_terminal_states);
     let terminal_states: HashSet<IndexState> =
         HashSet::from_iter(terminal_states_vec.iter().copied());
+    let discount_factor = 1.0;
 
     MapMdp {
         transitions,
         terminal_states,
         initial_state,
+        discount_factor,
     }
 }
 

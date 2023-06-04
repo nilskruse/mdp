@@ -5,9 +5,7 @@ use crate::{
 use rand::SeedableRng;
 
 use crate::{
-    algorithms::{
-        q_learning::QLearning, q_learning_dynamic::QLearningDynamic, StateActionAlgorithm,
-    },
+    algorithms::{q_learning::QLearning, q_learning_dynamic::QLearningDynamic},
     envs,
     utils::print_q_map,
 };
@@ -24,12 +22,11 @@ pub fn run_experiment() {
     let eval_max_steps = 2000;
 
     let alpha = 0.1;
-    let gamma = 1.0;
     let epsilon = 0.1;
 
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(0);
 
-    let q_learning_algo = QLearningDynamic::new(alpha, gamma, epsilon, learning_max_steps);
+    let q_learning_algo = QLearningDynamic::new(alpha, epsilon, learning_max_steps);
     let q_map = q_learning_algo.run(&cliff_walking_mdp, learning_episodes, &mut rng);
 
     let avg_reward = evaluate_epsilon_greedy_policy(
@@ -53,7 +50,7 @@ pub fn run_experiment() {
 
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(0);
 
-    let q_learning_algo = QLearning::new(alpha, gamma, epsilon, learning_max_steps);
+    let q_learning_algo = QLearning::new(alpha, epsilon, learning_max_steps);
     let q_map = q_learning_algo.run(&cliff_walking_mdp, learning_episodes, &mut rng);
 
     let avg_reward = evaluate_epsilon_greedy_policy(

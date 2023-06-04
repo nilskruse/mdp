@@ -8,7 +8,7 @@ use std::io;
 use crate::{
     algorithms::{
         monte_carlo::MonteCarlo, q_learning::QLearning, q_learning_lambda::QLearningLamda,
-        sarsa::Sarsa, sarsa_lambda::SarsaLambda, StateActionAlgorithm, Trace,
+        sarsa::Sarsa, sarsa_lambda::SarsaLambda, Trace,
     },
     envs,
 };
@@ -25,7 +25,6 @@ pub fn run_cliff_walking() {
     let eval_max_steps = 2000;
 
     let alpha = 0.1;
-    let gamma = 1.0;
     let epsilon = 0.1;
 
     let mut csv_writer = csv::Writer::from_path("cliff_walking.csv").expect("csv error");
@@ -35,7 +34,7 @@ pub fn run_cliff_walking() {
 
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(0);
 
-    let q_learning_algo = QLearning::new(alpha, gamma, epsilon, learning_max_steps);
+    let q_learning_algo = QLearning::new(alpha, epsilon, learning_max_steps);
     let q_map = q_learning_algo.run(&cliff_walking_mdp, learning_episodes, &mut rng);
 
     let avg_reward = evaluate_epsilon_greedy_policy(
@@ -63,7 +62,7 @@ pub fn run_cliff_walking() {
         .serialize(("Q-Learning greedy", avg_reward))
         .expect("csv error");
 
-    let sarsa_algo = Sarsa::new(alpha, gamma, epsilon, learning_max_steps);
+    let sarsa_algo = Sarsa::new(alpha, epsilon, learning_max_steps);
     let q_map = sarsa_algo.run(&cliff_walking_mdp, learning_episodes, &mut rng);
 
     let avg_reward = evaluate_epsilon_greedy_policy(
@@ -123,7 +122,6 @@ pub fn run_cliff_walking() {
     let lambda = 0.1;
     let sarsa_lambda_algo = SarsaLambda::new(
         alpha,
-        gamma,
         epsilon,
         lambda,
         learning_max_steps,
@@ -160,7 +158,6 @@ pub fn run_cliff_walking() {
     let lambda = 0.1;
     let q_learning_lambda_algo = QLearningLamda::new(
         alpha,
-        gamma,
         epsilon,
         lambda,
         learning_max_steps,
@@ -207,7 +204,6 @@ pub fn run_slippery_cliff_walking() {
     let eval_max_steps = usize::MAX;
 
     let alpha = 0.1;
-    let gamma = 1.0;
     let epsilon = 0.1;
 
     let mut csv_writer = csv::Writer::from_path("slippery_cliff_walking.csv").expect("csv error");
@@ -217,7 +213,7 @@ pub fn run_slippery_cliff_walking() {
 
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
 
-    let q_learning_algo = QLearning::new(alpha, gamma, epsilon, learning_max_steps);
+    let q_learning_algo = QLearning::new(alpha, epsilon, learning_max_steps);
     let q_map = q_learning_algo.run(&slippy_cliff_walking_mdp, learning_episodes, &mut rng);
 
     let avg_reward = evaluate_epsilon_greedy_policy(
@@ -245,7 +241,7 @@ pub fn run_slippery_cliff_walking() {
         .serialize(("Q-Learning greedy", avg_reward))
         .expect("csv error");
 
-    let sarsa_algo = Sarsa::new(alpha, gamma, epsilon, learning_max_steps);
+    let sarsa_algo = Sarsa::new(alpha, epsilon, learning_max_steps);
     let q_map = sarsa_algo.run(&slippy_cliff_walking_mdp, learning_episodes, &mut rng);
 
     let avg_reward = evaluate_epsilon_greedy_policy(
@@ -314,12 +310,11 @@ pub fn run_cliff_walking_episodic() {
     let eval_max_steps = usize::MAX;
 
     let alpha = 0.3;
-    let gamma = 1.0;
     let epsilon = 0.1;
 
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
 
-    let q_learning_algo = QLearning::new(alpha, gamma, epsilon, learning_max_steps);
+    let q_learning_algo = QLearning::new(alpha, epsilon, learning_max_steps);
 
     let mut q_map = q_learning_algo.run(&cliff_walking_mdp, 1, &mut rng);
     let mut csv_writer = csv::Writer::from_path("q_learning.csv").expect("csv error");
@@ -346,7 +341,7 @@ pub fn run_cliff_walking_episodic() {
 
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
 
-    let sarsa_algo = Sarsa::new(alpha, gamma, epsilon, learning_max_steps);
+    let sarsa_algo = Sarsa::new(alpha, epsilon, learning_max_steps);
 
     let mut q_map = sarsa_algo.run(&cliff_walking_mdp, 1, &mut rng);
 

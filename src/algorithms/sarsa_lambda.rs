@@ -1,15 +1,16 @@
 use std::collections::BTreeMap;
 
+use rand::{Rng, SeedableRng};
+
 use crate::{
     mdp::{GenericAction, GenericMdp, GenericState, IndexAction, IndexState},
     policies::epsilon_greedy_policy,
 };
 
-use super::{GenericStateActionAlgorithm, StateActionAlgorithm, Trace};
+use super::{GenericStateActionAlgorithm, Trace};
 
 pub struct SarsaLambda {
     alpha: f64,
-    gamma: f64,
     epsilon: f64,
     lambda: f64,
     max_steps: usize,
@@ -17,17 +18,9 @@ pub struct SarsaLambda {
 }
 
 impl SarsaLambda {
-    pub fn new(
-        alpha: f64,
-        gamma: f64,
-        epsilon: f64,
-        lambda: f64,
-        max_steps: usize,
-        trace: Trace,
-    ) -> Self {
+    pub fn new(alpha: f64, epsilon: f64, lambda: f64, max_steps: usize, trace: Trace) -> Self {
         SarsaLambda {
             alpha,
-            gamma,
             epsilon,
             lambda,
             max_steps,
@@ -37,11 +30,16 @@ impl SarsaLambda {
 }
 
 impl GenericStateActionAlgorithm for SarsaLambda {
-    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
+    fn run_with_q_map<
+        M: GenericMdp<S, A>,
+        S: GenericState,
+        A: GenericAction,
+        R: Rng + SeedableRng,
+    >(
         &self,
         mdp: &M,
         episodes: usize,
-        rng: &mut rand_chacha::ChaCha20Rng,
+        rng: &mut R,
         q_map: &mut BTreeMap<(S, A), f64>,
     ) {
         for _ in 0..episodes {
@@ -63,7 +61,7 @@ impl GenericStateActionAlgorithm for SarsaLambda {
                 let next_q = *q_map.get(&(next_state, next_action)).unwrap();
                 let current_q = *q_map.get(&(current_state, current_action)).unwrap();
 
-                let delta = reward + self.gamma * next_q - current_q;
+                let delta = reward + mdp.get_discount_factor() * next_q - current_q;
 
                 e_map
                     .entry((current_state, current_action))
@@ -75,7 +73,7 @@ impl GenericStateActionAlgorithm for SarsaLambda {
                     q_map.entry(*key).and_modify(|q_entry| {
                         *q_entry += self.alpha * delta * *e_entry;
                     });
-                    *e_entry *= self.gamma * self.lambda;
+                    *e_entry *= mdp.get_discount_factor() * self.lambda;
                 });
 
                 current_state = next_state;
