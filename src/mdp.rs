@@ -70,7 +70,7 @@ pub trait GenericMdp<S: GenericState, A: GenericAction> {
 
     fn is_terminal(&self, state: S) -> bool;
 
-    fn get_initial_state(&self) -> S;
+    fn get_initial_state<R: Rng + SeedableRng>(&self, rng: &mut R) -> S;
 
     fn get_discount_factor(&self) -> f64;
 }
@@ -135,7 +135,7 @@ impl<S: GenericState, A: GenericAction> GenericMdp<S, A> for MapMdp<S, A> {
         self.terminal_states.contains(&state)
     }
 
-    fn get_initial_state(&self) -> S {
+    fn get_initial_state<R: Rng + SeedableRng>(&self, _: &mut R) -> S {
         self.initial_state
     }
 

@@ -46,8 +46,8 @@ impl GenericStateActionAlgorithm for SarsaLambda {
             let mut e_map: BTreeMap<(S, A), f64> = BTreeMap::new();
 
             let (mut current_state, mut current_action) = (
-                mdp.get_initial_state(),
-                epsilon_greedy_policy(mdp, q_map, mdp.get_initial_state(), self.epsilon, rng)
+                mdp.get_initial_state(rng),
+                epsilon_greedy_policy(mdp, q_map, mdp.get_initial_state(rng), self.epsilon, rng)
                     .unwrap(),
             );
             let mut steps = 0;

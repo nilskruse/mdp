@@ -10,7 +10,7 @@ impl BlackjackMdp {
     }
 
     pub fn draw_card<R: Rng + SeedableRng>(&self, rng: &mut R) -> u8 {
-        rng.gen_range(0..=10)
+        rng.gen_range(1..=10)
     }
 }
 
@@ -47,15 +47,16 @@ impl GenericMdp<BlackjackState, BlackjackAction> for BlackjackMdp {
         state_action: (BlackjackState, BlackjackAction),
         rng: &mut R,
     ) -> (BlackjackState, crate::mdp::Reward) {
-        let card = self.draw_card(rng);
-
         let (state, action) = state_action;
-        match state {
-            BlackjackState::Running(player, dealer, ace) => todo!(),
-            BlackjackState::Win => todo!(),
-            BlackjackState::Draw => todo!(),
-            BlackjackState::Loss => todo!(),
-        }
+        let BlackjackState::Running(player, dealer, useable_ace)  = state else { panic!("what are you doing here")};
+
+        let card = match action {
+            BlackjackAction::Hit => Some(self.draw_card(rng)),
+            BlackjackAction::Stick => None,
+        };
+
+        if let Some(card) = card {}
+
         todo!()
     }
 
@@ -82,8 +83,29 @@ impl GenericMdp<BlackjackState, BlackjackAction> for BlackjackMdp {
         }
     }
 
-    fn get_initial_state(&self) -> BlackjackState {
-        todo!()
+    fn get_initial_state<R: Rng + SeedableRng>(&self, rng: &mut R) -> BlackjackState {
+        let player_card_1 = self.draw_card(rng);
+        let player_card_2 = self.draw_card(rng);
+        let player_sum = player_card_1 + player_card_2;
+
+        let dealer_card_1 = self.draw_card(rng);
+        let dealer_card_2 = self.draw_card(rng);
+        let dealer_sum = dealer_card_1 + dealer_card_2;
+
+        // check for immediate end condition
+        if player_sum == 11 {
+            if dealer_sum == 11 {
+                return BlackjackState::Draw;
+            } else {
+                return BlackjackState::Win;
+            }
+        }
+
+        let player_state = if player_sum < 12 { 12 } else { player_sum };
+        let dealer_state = dealer_card_2;
+        let useable_ace = player_card_1 == 1 || player_card_2 == 1;
+
+        return BlackjackState::Running(player_state, dealer_state, useable_ace);
     }
 
     fn get_discount_factor(&self) -> f64 {

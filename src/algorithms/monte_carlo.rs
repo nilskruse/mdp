@@ -35,7 +35,7 @@ impl MonteCarlo {
     ) -> Vec<(S, A, Reward)> {
         let mut episode = vec![];
 
-        let mut current_state = mdp.get_initial_state();
+        let mut current_state = mdp.get_initial_state(rng);
         let mut steps = 0;
         while !mdp.is_terminal(current_state) && steps < self.max_steps {
             let selected_action =

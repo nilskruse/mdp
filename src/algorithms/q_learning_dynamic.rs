@@ -79,7 +79,7 @@ impl GenericStateActionAlgorithm for QLearningDynamic {
             // println!("prev_q_map:");
             // print_q_map(&prev_q_map);
 
-            let mut current_state = mdp.get_initial_state();
+            let mut current_state = mdp.get_initial_state(rng);
             let mut steps = 0;
 
             while !mdp.is_terminal(current_state) && steps < self.max_steps {

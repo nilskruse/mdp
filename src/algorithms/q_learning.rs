@@ -40,7 +40,7 @@ impl GenericStateActionAlgorithm for QLearning {
         q_map: &mut BTreeMap<(S, A), f64>,
     ) {
         for _ in 1..=episodes {
-            let mut current_state = mdp.get_initial_state();
+            let mut current_state = mdp.get_initial_state(rng);
             let mut steps = 0;
 
             while !mdp.is_terminal(current_state) && steps < self.max_steps {

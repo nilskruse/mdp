@@ -44,7 +44,7 @@ impl RiggedStateActionAlgorithm for QLearningBeta {
         rig: (S, A),
     ) {
         for episode in 1..=episodes {
-            let mut current_state = mdp.get_initial_state();
+            let mut current_state = mdp.get_initial_state(rng);
             let mut steps = 0;
 
             while !mdp.is_terminal(current_state) && steps < self.max_steps {
