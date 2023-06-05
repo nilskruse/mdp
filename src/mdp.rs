@@ -41,6 +41,21 @@ impl<S: GenericState, A: GenericAction> MapMdp<S, A> {
             discount_factor,
         }
     }
+    pub fn add_transition_vector(
+        &mut self,
+        sa: (S, A),
+        transition: Vec<(Probability, S, Reward)>,
+    ) -> anyhow::Result<()> {
+        if self.transitions.contains_key(&sa) {
+            return Err(anyhow::anyhow!("Duplicate state insert"));
+        }
+        self.transitions.insert(sa, transition);
+        Ok(())
+    }
+
+    pub fn add_terminal_state(&mut self, state: S) {
+        self.terminal_states.insert(state);
+    }
 }
 
 pub trait GenericState: Ord + Clone + Hash + Copy {}
@@ -50,14 +65,6 @@ pub trait GenericAction: Ord + Copy + Clone + Hash {}
 impl<T: Ord + Copy + Clone + Hash> GenericAction for T {}
 
 pub trait GenericMdp<S: GenericState, A: GenericAction> {
-    fn add_transition_vector(
-        &mut self,
-        sa: (S, A),
-        transition: Vec<(Probability, S, Reward)>,
-    ) -> anyhow::Result<()>;
-
-    fn add_terminal_state(&mut self, state: S);
-
     fn perform_action<R: SeedableRng + Rng>(
         &self,
         state_action: (S, A),
@@ -76,22 +83,6 @@ pub trait GenericMdp<S: GenericState, A: GenericAction> {
 }
 
 impl<S: GenericState, A: GenericAction> GenericMdp<S, A> for MapMdp<S, A> {
-    fn add_transition_vector(
-        &mut self,
-        sa: (S, A),
-        transition: Vec<(Probability, S, Reward)>,
-    ) -> anyhow::Result<()> {
-        if self.transitions.contains_key(&sa) {
-            return Err(anyhow::anyhow!("Duplicate state insert"));
-        }
-        self.transitions.insert(sa, transition);
-        Ok(())
-    }
-
-    fn add_terminal_state(&mut self, state: S) {
-        self.terminal_states.insert(state);
-    }
-
     fn perform_action<R: SeedableRng + Rng>(
         &self,
         state_action: (S, A),

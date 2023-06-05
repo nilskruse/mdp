@@ -30,18 +30,6 @@ pub enum BlackjackAction {
 }
 
 impl GenericMdp<BlackjackState, BlackjackAction> for BlackjackMdp {
-    fn add_transition_vector(
-        &mut self,
-        sa: (BlackjackState, BlackjackAction),
-        transition: Vec<(crate::mdp::Probability, BlackjackState, crate::mdp::Reward)>,
-    ) -> anyhow::Result<()> {
-        todo!()
-    }
-
-    fn add_terminal_state(&mut self, state: BlackjackState) {
-        todo!()
-    }
-
     fn perform_action<R: rand::SeedableRng + rand::Rng>(
         &self,
         state_action: (BlackjackState, BlackjackAction),
