@@ -73,7 +73,7 @@ pub trait GenericMdp<S: GenericState, A: GenericAction> {
 
     fn get_possible_actions(&self, current_state: S) -> Vec<A>;
 
-    fn get_all_state_actions_iter(&self) -> Keys<'_, (S, A), Vec<(Probability, S, Reward)>>;
+    fn get_all_state_actions_iter<I: Iterator<Item = (S, A)>>(&self) -> I;
 
     fn is_terminal(&self, state: S) -> bool;
 
