@@ -19,12 +19,15 @@ pub struct State {
 enum LightState {
     NorthSouthOpen = 0,
     EastWestOpen = 1,
+    ChangingToNS = 2,
+    ChangingToEW = 3,
 }
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Copy)]
 pub enum Action {
     Change = 0,
     Stay = 1,
+    WaitForChange = 2,
 }
 
 pub struct MyIntersectionMdp {
@@ -49,14 +52,29 @@ impl MyIntersectionMdp {
                     ns_cars,
                     ew_cars,
                 });
+                states.push(State {
+                    light_state: LightState::ChangingToNS,
+                    ns_cars,
+                    ew_cars,
+                });
+                states.push(State {
+                    light_state: LightState::ChangingToEW,
+                    ns_cars,
+                    ew_cars,
+                });
             }
         }
 
         let mut states_actions: Vec<(State, Action)> = vec![];
 
-        states.iter().for_each(|s| {
-            states_actions.push((*s, Action::Stay));
-            states_actions.push((*s, Action::Change));
+        states.iter().for_each(|s| match s.light_state {
+            LightState::NorthSouthOpen | LightState::EastWestOpen => {
+                states_actions.push((*s, Action::Stay));
+                states_actions.push((*s, Action::Change));
+            }
+            LightState::ChangingToNS | LightState::ChangingToEW => {
+                states_actions.push((*s, Action::WaitForChange));
+            }
         });
 
         Self {
@@ -98,10 +116,21 @@ impl GenericMdp<State, Action> for MyIntersectionMdp {
 
         let new_light_state = match action {
             Action::Change => match state.light_state {
-                LightState::NorthSouthOpen => LightState::EastWestOpen,
-                LightState::EastWestOpen => LightState::NorthSouthOpen,
+                LightState::NorthSouthOpen => LightState::ChangingToEW,
+                LightState::EastWestOpen => LightState::ChangingToNS,
+                LightState::ChangingToNS | LightState::ChangingToEW => {
+                    panic!("Unreachable state: can't change light mid-cycle")
+                }
             },
             Action::Stay => state.light_state,
+            Action::WaitForChange => match state.light_state {
+                LightState::ChangingToNS => LightState::NorthSouthOpen,
+                LightState::ChangingToEW => LightState::EastWestOpen,
+                LightState::NorthSouthOpen | LightState::EastWestOpen => {
+                    println!("State: {:?}", state);
+                    panic!("Unreachable state: can't wait for change when lights are not changing")
+                }
+            },
         };
 
         let (new_ns_cars, new_ew_cars) = match new_light_state {
@@ -112,6 +141,10 @@ impl GenericMdp<State, Action> for MyIntersectionMdp {
             LightState::EastWestOpen => (
                 self.closed_road_transition(state.ns_cars, self.new_car_prob_ns, rng),
                 self.open_road_transition(state.ew_cars, self.new_car_prob_ew, rng),
+            ),
+            LightState::ChangingToNS | LightState::ChangingToEW => (
+                self.closed_road_transition(state.ns_cars, self.new_car_prob_ns, rng),
+                self.closed_road_transition(state.ew_cars, self.new_car_prob_ew, rng),
             ),
         };
 
@@ -127,7 +160,12 @@ impl GenericMdp<State, Action> for MyIntersectionMdp {
     }
 
     fn get_possible_actions(&self, current_state: State) -> Vec<Action> {
-        vec![Action::Change, Action::Stay]
+        match current_state.light_state {
+            LightState::NorthSouthOpen | LightState::EastWestOpen => {
+                vec![Action::Change, Action::Stay]
+            }
+            LightState::ChangingToNS | LightState::ChangingToEW => vec![Action::WaitForChange],
+        }
     }
 
     fn get_all_state_actions(&self) -> &[(State, Action)] {

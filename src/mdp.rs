@@ -25,16 +25,18 @@ pub type Transition = (Probability, IndexState, Reward);
 
 #[derive(Debug, Clone)]
 pub struct MapMdp<S: GenericState, A: GenericAction> {
-    pub transitions: BTreeMap<(S, A), Vec<(Probability, S, Reward)>>,
+    pub transitions: Transitions<S, A>,
     pub terminal_states: std::collections::HashSet<S>,
     pub initial_state: S,
     pub discount_factor: f64,
     pub states_actions: Vec<(S, A)>,
 }
 
+type Transitions<S, A> = BTreeMap<(S, A), Vec<(Probability, S, Reward)>>;
+
 impl<S: GenericState, A: GenericAction> MapMdp<S, A> {
     pub fn new(discount_factor: f64, initial_state: S) -> MapMdp<S, A> {
-        let transitions: BTreeMap<(S, A), Vec<(Probability, S, Reward)>> = BTreeMap::new();
+        let transitions: Transitions<S, A> = BTreeMap::new();
         let terminal_states: HashSet<S> = HashSet::new();
         let states_actions = vec![];
 
