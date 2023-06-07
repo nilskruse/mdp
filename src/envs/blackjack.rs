@@ -54,7 +54,7 @@ impl GenericMdp<BlackjackState, BlackjackAction> for BlackjackMdp {
         vec![BlackjackAction::Hit, BlackjackAction::Stick]
     }
 
-    fn get_all_state_actions(&self) -> Vec<(BlackjackState, BlackjackAction)> {
+    fn get_all_state_actions(&self) -> &[(BlackjackState, BlackjackAction)] {
         todo!()
     }
 

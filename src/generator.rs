@@ -66,11 +66,13 @@ pub fn generate_random_mdp(
         HashSet::from_iter(terminal_states_vec.iter().copied());
     let discount_factor = 1.0;
 
+    let states_actions = vec![];
     MapMdp {
         transitions,
         terminal_states,
         initial_state,
         discount_factor,
+        states_actions,
     }
 }
 

@@ -29,18 +29,21 @@ pub struct MapMdp<S: GenericState, A: GenericAction> {
     pub terminal_states: std::collections::HashSet<S>,
     pub initial_state: S,
     pub discount_factor: f64,
+    pub states_actions: Vec<(S, A)>,
 }
 
 impl<S: GenericState, A: GenericAction> MapMdp<S, A> {
     pub fn new(discount_factor: f64, initial_state: S) -> MapMdp<S, A> {
         let transitions: BTreeMap<(S, A), Vec<(Probability, S, Reward)>> = BTreeMap::new();
         let terminal_states: HashSet<S> = HashSet::new();
+        let states_actions = vec![];
 
         MapMdp {
             transitions,
             terminal_states,
             initial_state,
             discount_factor,
+            states_actions,
         }
     }
     pub fn add_transition_vector(
@@ -52,6 +55,7 @@ impl<S: GenericState, A: GenericAction> MapMdp<S, A> {
             return Err(anyhow::anyhow!("Duplicate state insert"));
         }
         self.transitions.insert(sa, transition);
+        self.states_actions.push(sa);
         Ok(())
     }
 
@@ -75,7 +79,7 @@ pub trait GenericMdp<S: GenericState, A: GenericAction> {
 
     fn get_possible_actions(&self, current_state: S) -> Vec<A>;
 
-    fn get_all_state_actions(&self) -> Vec<(S, A)>;
+    fn get_all_state_actions(&self) -> &[(S, A)];
 
     fn is_terminal(&self, state: S) -> bool;
 
@@ -120,8 +124,8 @@ impl<S: GenericState, A: GenericAction> GenericMdp<S, A> for MapMdp<S, A> {
             .collect()
     }
 
-    fn get_all_state_actions(&self) -> Vec<(S, A)> {
-        self.transitions.keys().copied().collect_vec()
+    fn get_all_state_actions(&self) -> &[(S, A)] {
+        &self.states_actions
     }
 
     fn is_terminal(&self, state: S) -> bool {

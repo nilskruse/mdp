@@ -76,7 +76,7 @@ impl GenericMdp<State, Action> for TrafficMdp {
         todo!()
     }
 
-    fn get_all_state_actions(&self) -> Vec<(State, Action)> {
+    fn get_all_state_actions(&self) -> &[(State, Light)] {
         todo!()
     }
 

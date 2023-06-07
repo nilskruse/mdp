@@ -1,6 +1,6 @@
 use crate::{
     algorithms::GenericStateActionAlgorithm,
-    mdp::{GenericAction, GenericMdp, GenericState},
+    mdp::{GenericAction, GenericMdp, GenericState, MapMdp},
 };
 use std::collections::{BTreeMap, HashSet};
 
@@ -46,12 +46,14 @@ fn build_mdp(p: f64) -> IndexMdp {
     let terminal_states: HashSet<IndexState> =
         HashSet::from_iter(terminal_states_vec.iter().copied());
     let discount_factor = 1.0;
+    let states_actions = vec![];
 
     IndexMdp {
         transitions: transition_probabilities,
         terminal_states,
         initial_state: IndexState(0),
         discount_factor,
+        states_actions,
     }
 }
 

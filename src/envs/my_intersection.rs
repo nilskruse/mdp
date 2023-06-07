@@ -31,14 +31,39 @@ pub struct MyIntersectionMdp {
     new_car_prob_ns: f64,
     new_car_prob_ew: f64,
     max_cars: usize,
+    states_actions: Vec<(State, Action)>,
 }
 
 impl MyIntersectionMdp {
     pub fn new(new_car_prob_ns: f64, new_car_prob_ew: f64, max_cars: usize) -> Self {
+        let mut states = vec![];
+        for ns_cars in 0..=max_cars {
+            for ew_cars in 0..=max_cars {
+                states.push(State {
+                    light_state: LightState::NorthSouthOpen,
+                    ns_cars,
+                    ew_cars,
+                });
+                states.push(State {
+                    light_state: LightState::EastWestOpen,
+                    ns_cars,
+                    ew_cars,
+                });
+            }
+        }
+
+        let mut states_actions: Vec<(State, Action)> = vec![];
+
+        states.iter().for_each(|s| {
+            states_actions.push((*s, Action::Stay));
+            states_actions.push((*s, Action::Change));
+        });
+
         Self {
             new_car_prob_ns,
             new_car_prob_ew,
             max_cars,
+            states_actions,
         }
     }
 
@@ -105,31 +130,8 @@ impl GenericMdp<State, Action> for MyIntersectionMdp {
         vec![Action::Change, Action::Stay]
     }
 
-    fn get_all_state_actions(&self) -> Vec<(State, Action)> {
-        let mut states = vec![];
-        for ns_cars in 0..=self.max_cars {
-            for ew_cars in 0..=self.max_cars {
-                states.push(State {
-                    light_state: LightState::NorthSouthOpen,
-                    ns_cars,
-                    ew_cars,
-                });
-                states.push(State {
-                    light_state: LightState::EastWestOpen,
-                    ns_cars,
-                    ew_cars,
-                });
-            }
-        }
-
-        let mut states_actions: Vec<(State, Action)> = vec![];
-
-        states.iter().for_each(|s| {
-            states_actions.push((*s, Action::Stay));
-            states_actions.push((*s, Action::Change));
-        });
-
-        states_actions
+    fn get_all_state_actions(&self) -> &[(State, Action)] {
+        &self.states_actions
     }
 
     fn is_terminal(&self, state: State) -> bool {
