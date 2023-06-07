@@ -46,15 +46,16 @@ pub fn greedy_policy<
     current_state: S,
     rng: &mut R,
 ) -> Option<A> {
-    let selected_action = q_map
+    mdp.get_possible_actions(current_state)
         .iter()
-        .filter_map(|((state, action), reward)| {
-            if state.eq(&current_state) {
-                Some((*action, *reward))
-            } else {
-                None
-            }
+        // extract (action, q)- tuples
+        .map(|a| {
+            let q = *q_map
+                .get(&(current_state, *a))
+                .expect("(state, action) has no q_entry");
+            (*a, q)
         })
+        // select action with maxium reward
         .fold(None, |prev, (current_action, current_reward)| {
             if let Some((_, prev_reward)) = prev {
                 if current_reward > prev_reward {
@@ -68,10 +69,11 @@ pub fn greedy_policy<
                 Some((current_action, current_reward))
             }
         })
+        // extract Option<Action> from Option<Action, Reward>
         .unzip()
-        .0;
-
-    selected_action.or_else(|| random_policy(mdp, current_state, rng))
+        .0
+        // If single max exist return that, if not select action randomly
+        .or_else(|| random_policy(mdp, current_state, rng))
 }
 
 pub fn random_policy<
