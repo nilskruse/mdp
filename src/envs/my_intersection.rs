@@ -145,6 +145,6 @@ impl GenericMdp<State, Action> for MyIntersectionMdp {
     }
 
     fn get_discount_factor(&self) -> f64 {
-        1.0
+        0.8
     }
 }

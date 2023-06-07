@@ -53,7 +53,7 @@ fn main() {
     //
     let eval_episodes = 100;
     let train_episodes = 500;
-    let generic_mdp = envs::my_intersection::MyIntersectionMdp::new(0.4, 0.2, 10);
+    let generic_mdp = envs::my_intersection::MyIntersectionMdp::new(0.8, 0.1, 10);
     let generic_q_learning = QLearning::new(0.1, 0.1, 2000);
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
     let mut q_map = generic_q_learning.run(&generic_mdp, 1, &mut rng);
@@ -64,15 +64,15 @@ fn main() {
     let avg_reward_greedy =
         evaluate_greedy_policy(&generic_mdp, &q_map, eval_episodes, 2000, &mut rng);
     // println!("{:#?}", generic_mdp);
-    println!("{:?}", avg_reward_epsilon);
-    println!("{:?}", avg_reward_greedy);
-    println!("500 episode");
+    println!("epsilon: {:?}", avg_reward_epsilon);
+    println!("greedy: {:?}", avg_reward_greedy);
+    println!("500 episodes");
     generic_q_learning.run_with_q_map(&generic_mdp, 499, &mut rng, &mut q_map);
     let avg_reward_epsilon =
         evaluate_epsilon_greedy_policy(&generic_mdp, &q_map, eval_episodes, 2000, 0.1, &mut rng);
     let avg_reward_greedy =
         evaluate_greedy_policy(&generic_mdp, &q_map, eval_episodes, 2000, &mut rng);
     // println!("{:#?}", generic_mdp);
-    println!("{:?}", avg_reward_epsilon);
-    println!("{:?}", avg_reward_greedy);
+    println!("epsilon: {:?}", avg_reward_epsilon);
+    println!("greedy: {:?}", avg_reward_greedy);
 }
