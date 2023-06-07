@@ -1,12 +1,15 @@
 #![allow(unused_variables)]
-use std::collections::{btree_map, BTreeMap};
+use std::{
+    collections::{btree_map, BTreeMap},
+    slice::Iter,
+};
 
 use rand::Rng;
 
 use crate::mdp::GenericMdp;
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Copy)]
-struct State {
+pub struct State {
     light_state: LightState,
     ns_cars: usize,
     ew_cars: usize,
@@ -19,7 +22,7 @@ enum LightState {
 }
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Copy)]
-enum Action {
+pub enum Action {
     Change = 0,
     Stay = 1,
 }
@@ -31,6 +34,14 @@ pub struct MyIntersectionMdp {
 }
 
 impl MyIntersectionMdp {
+    pub fn new(new_car_prob_ns: f64, new_car_prob_ew: f64, max_cars: usize) -> Self {
+        Self {
+            new_car_prob_ns,
+            new_car_prob_ew,
+            max_cars,
+        }
+    }
+
     fn open_road_transition<R: Rng>(&self, old_cars: usize, new_prob: f64, rng: &mut R) -> usize {
         if old_cars == 0 {
             0
@@ -94,13 +105,7 @@ impl GenericMdp<State, Action> for MyIntersectionMdp {
         vec![Action::Change, Action::Stay]
     }
 
-    fn get_all_state_actions_iter(
-        &self,
-    ) -> std::collections::btree_map::Keys<
-        '_,
-        (State, Action),
-        Vec<(crate::mdp::Probability, State, crate::mdp::Reward)>,
-    > {
+    fn get_all_state_actions(&self) -> Vec<(State, Action)> {
         let mut states = vec![];
         for ns_cars in 0..=self.max_cars {
             for ew_cars in 0..=self.max_cars {
@@ -117,36 +122,14 @@ impl GenericMdp<State, Action> for MyIntersectionMdp {
             }
         }
 
-        let mut states_actions = BTreeMap::new();
+        let mut states_actions: Vec<(State, Action)> = vec![];
 
-        states.iter().for_each(|state| {
-            states_actions.insert(
-                (*state, Action::Stay),
-                vec![(
-                    0.0_f64,
-                    State {
-                        light_state: LightState::NorthSouthOpen,
-                        ns_cars: 0,
-                        ew_cars: 0,
-                    },
-                    0.0_f64,
-                )],
-            );
-            states_actions.insert(
-                (*state, Action::Change),
-                vec![(
-                    0.0_f64,
-                    State {
-                        light_state: LightState::NorthSouthOpen,
-                        ns_cars: 0,
-                        ew_cars: 0,
-                    },
-                    0.0_f64,
-                )],
-            );
+        states.iter().for_each(|s| {
+            states_actions.push((*s, Action::Stay));
+            states_actions.push((*s, Action::Change));
         });
 
-        states_actions.clone().keys()
+        states_actions
     }
 
     fn is_terminal(&self, state: State) -> bool {

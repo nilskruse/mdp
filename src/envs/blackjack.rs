@@ -1,3 +1,5 @@
+use std::slice::Iter;
+
 use rand::{Rng, SeedableRng};
 
 use crate::mdp::GenericMdp;
@@ -52,13 +54,7 @@ impl GenericMdp<BlackjackState, BlackjackAction> for BlackjackMdp {
         vec![BlackjackAction::Hit, BlackjackAction::Stick]
     }
 
-    fn get_all_state_actions_iter(
-        &self,
-    ) -> std::collections::btree_map::Keys<
-        '_,
-        (BlackjackState, BlackjackAction),
-        Vec<(crate::mdp::Probability, BlackjackState, crate::mdp::Reward)>,
-    > {
+    fn get_all_state_actions(&self) -> Vec<(BlackjackState, BlackjackAction)> {
         todo!()
     }
 

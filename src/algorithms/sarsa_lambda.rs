@@ -68,7 +68,7 @@ impl GenericStateActionAlgorithm for SarsaLambda {
                     .and_modify(|entry| *entry = self.trace.calculate(*entry, self.alpha));
 
                 // update q and e for all (state, action) pairs
-                mdp.get_all_state_actions_iter().for_each(|key| {
+                mdp.get_all_state_actions().iter().for_each(|key| {
                     let e_entry = e_map.entry(*key).or_default();
                     q_map.entry(*key).and_modify(|q_entry| {
                         *q_entry += self.alpha * delta * *e_entry;

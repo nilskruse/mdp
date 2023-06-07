@@ -1,4 +1,6 @@
 #![allow(unused_variables)]
+use std::slice::Iter;
+
 use rand::Rng;
 
 use crate::mdp::GenericMdp;
@@ -74,13 +76,7 @@ impl GenericMdp<State, Action> for TrafficMdp {
         todo!()
     }
 
-    fn get_all_state_actions_iter(
-        &self,
-    ) -> std::collections::btree_map::Keys<
-        '_,
-        (State, Action),
-        Vec<(crate::mdp::Probability, State, crate::mdp::Reward)>,
-    > {
+    fn get_all_state_actions(&self) -> Vec<(State, Action)> {
         todo!()
     }
 

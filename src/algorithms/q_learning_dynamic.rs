@@ -41,7 +41,7 @@ impl GenericStateActionAlgorithm for QLearningDynamic {
     ) {
         let mut prev_q_map: BTreeMap<(S, A), f64> = BTreeMap::new();
 
-        mdp.get_all_state_actions_iter().for_each(|state_action| {
+        mdp.get_all_state_actions().iter().for_each(|state_action| {
             prev_q_map.insert(*state_action, 0.0);
         });
 

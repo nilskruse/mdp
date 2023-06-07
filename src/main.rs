@@ -39,15 +39,40 @@ fn main() {
     // experiments::cliff_walking::run_cliff_walking();
     // experiments::cliff_walking::run_slippery_cliff_walking();
 
+    // let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
+    // let blackjack_mdp = envs::blackjack::BlackjackMdp::new();
+
+    // for _ in 0..100 {
+    //     println!("{:?}", blackjack_mdp.get_initial_state(&mut rng));
+    // }
+    // let arr1: [usize; 4] = [1, 3, 3, 3];
+    // let arr2: [usize; 4] = [1, 2, 3, 4];
+
+    // let compare = arr1 < arr2;
+    // println!("{compare}");
+    //
+    let eval_episodes = 100;
+    let train_episodes = 500;
+    let generic_mdp = envs::my_intersection::MyIntersectionMdp::new(0.4, 0.2, 10);
+    let generic_q_learning = QLearning::new(0.1, 0.1, 2000);
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
-    let blackjack_mdp = envs::blackjack::BlackjackMdp::new();
+    let mut q_map = generic_q_learning.run(&generic_mdp, 1, &mut rng);
 
-    for _ in 0..100 {
-        println!("{:?}", blackjack_mdp.get_initial_state(&mut rng));
-    }
-    let arr1: [usize; 4] = [1, 3, 3, 3];
-    let arr2: [usize; 4] = [1, 2, 3, 4];
-
-    let compare = arr1 < arr2;
-    println!("{compare}");
+    println!("first episode");
+    let avg_reward_epsilon =
+        evaluate_epsilon_greedy_policy(&generic_mdp, &q_map, eval_episodes, 2000, 0.1, &mut rng);
+    let avg_reward_greedy =
+        evaluate_greedy_policy(&generic_mdp, &q_map, eval_episodes, 2000, &mut rng);
+    // println!("{:#?}", generic_mdp);
+    println!("{:?}", avg_reward_epsilon);
+    println!("{:?}", avg_reward_greedy);
+    println!("500 episode");
+    generic_q_learning.run_with_q_map(&generic_mdp, 499, &mut rng, &mut q_map);
+    let avg_reward_epsilon =
+        evaluate_epsilon_greedy_policy(&generic_mdp, &q_map, eval_episodes, 2000, 0.1, &mut rng);
+    let avg_reward_greedy =
+        evaluate_greedy_policy(&generic_mdp, &q_map, eval_episodes, 2000, &mut rng);
+    // println!("{:#?}", generic_mdp);
+    println!("{:?}", avg_reward_epsilon);
+    println!("{:?}", avg_reward_greedy);
 }

@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use rand::{
     distributions::{Distribution, WeightedIndex},
     Rng, SeedableRng,
@@ -6,6 +7,7 @@ use rand_chacha::ChaCha20Rng;
 use std::{
     collections::{btree_map::Keys, BTreeMap, HashSet},
     hash::Hash,
+    slice::Iter,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -73,7 +75,7 @@ pub trait GenericMdp<S: GenericState, A: GenericAction> {
 
     fn get_possible_actions(&self, current_state: S) -> Vec<A>;
 
-    fn get_all_state_actions_iter<I: Iterator<Item = (S, A)>>(&self) -> I;
+    fn get_all_state_actions(&self) -> Vec<(S, A)>;
 
     fn is_terminal(&self, state: S) -> bool;
 
@@ -118,8 +120,8 @@ impl<S: GenericState, A: GenericAction> GenericMdp<S, A> for MapMdp<S, A> {
             .collect()
     }
 
-    fn get_all_state_actions_iter(&self) -> Keys<'_, (S, A), Vec<(Probability, S, Reward)>> {
-        self.transitions.keys()
+    fn get_all_state_actions(&self) -> Vec<(S, A)> {
+        self.transitions.keys().copied().collect_vec()
     }
 
     fn is_terminal(&self, state: S) -> bool {
