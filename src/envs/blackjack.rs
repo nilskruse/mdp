@@ -1,3 +1,4 @@
+#![allow(unused_variables)]
 use std::slice::Iter;
 
 use rand::{Rng, SeedableRng};
@@ -89,7 +90,7 @@ impl GenericMdp<BlackjackState, BlackjackAction> for BlackjackMdp {
         let dealer_state = dealer_card_2;
         let useable_ace = player_card_1 == 1 || player_card_2 == 1;
 
-        return BlackjackState::Running(player_state, dealer_state, useable_ace);
+        BlackjackState::Running(player_state, dealer_state, useable_ace)
     }
 
     fn get_discount_factor(&self) -> f64 {

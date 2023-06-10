@@ -54,7 +54,7 @@ fn main() {
     //
     let eval_episodes = 100;
     let train_episodes = 10000;
-    let generic_mdp = envs::my_intersection::MyIntersectionMdp::new(0.2, 0.2, 20);
+    let generic_mdp = envs::my_intersection::MyIntersectionMdp::new(0.4, 0.4, 50);
     let generic_q_learning = QLearning::new(0.1, 0.1, 2000);
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
     let mut q_map = generic_q_learning.run(&generic_mdp, 1, &mut rng);

@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
@@ -69,7 +69,7 @@ impl GenericStateActionAlgorithm for MonteCarlo {
         for _ in 0..episodes {
             // generate episode
             let episode = self.generate_episode(mdp, q_map, rng);
-            let mut g: HashMap<(S, A), f64> = HashMap::new();
+            let mut g: BTreeMap<(S, A), f64> = BTreeMap::new();
             let mut visited_states = HashSet::new();
 
             // get first-visit returns
