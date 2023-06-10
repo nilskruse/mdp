@@ -5,7 +5,7 @@ use assert_float_eq::assert_f64_near;
 use rand::SeedableRng;
 
 use crate::{
-    algorithms::{q_learning::QLearning, sarsa::Sarsa, StateActionAlgorithm},
+    algorithms::{q_learning::QLearning, sarsa::Sarsa},
     mdp::{IndexAction, IndexMdp, IndexState, Transition},
     utils::print_q_map,
 };
@@ -15,7 +15,7 @@ fn test_q_learning() {
     // this will select action 1 on first step and go to state 0
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(212);
     let mdp = create_test_mdp();
-    let algo = QLearning::new(0.1, 0.9, 0.1, 5);
+    let algo = QLearning::new(0.1, 0.1, 5);
     let q_map = algo.run(&mdp, 1, &mut rng);
 
     print_q_map(&q_map);
@@ -35,7 +35,7 @@ fn test_sarsa() {
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(8);
     let mdp = create_test_mdp();
 
-    let algo = Sarsa::new(0.1, 0.9, 0.1, 5);
+    let algo = Sarsa::new(0.1, 0.1, 5);
     let q_map = algo.run(&mdp, 1, &mut rng);
 
     assert_f64_near!(*q_map.get(&(IndexState(0), IndexAction(0))).unwrap(), 0.19);
@@ -55,7 +55,7 @@ const EPISODES: usize = 1000;
 #[test]
 fn test_sarsa_equivalence() {
     let mdp = create_test_mdp();
-    let algo = Sarsa::new(0.1, 0.9, 0.1, 1000);
+    let algo = Sarsa::new(0.1, 0.1, 1000);
 
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(0);
     let q_map_1 = algo.run(&mdp, EPISODES, &mut rng);
@@ -70,7 +70,7 @@ fn test_sarsa_equivalence() {
 #[test]
 fn test_q_learning_equivalence() {
     let mdp = create_test_mdp();
-    let algo = QLearning::new(0.1, 0.9, 0.1, 1000);
+    let algo = QLearning::new(0.1, 0.9, 1000);
 
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(0);
     let q_map_1 = algo.run(&mdp, EPISODES, &mut rng);
@@ -105,10 +105,18 @@ fn create_test_mdp() -> IndexMdp {
 
     let terminal_states_vec = vec![IndexState(2)];
     let terminal_states = HashSet::from_iter(terminal_states_vec.iter().copied());
+    let states_actions = vec![
+        (IndexState(0), IndexAction(0)),
+        (IndexState(0), IndexAction(1)),
+        (IndexState(1), IndexAction(0)),
+        (IndexState(1), IndexAction(1)),
+    ];
 
     IndexMdp {
         transitions: transition_probabilities,
         terminal_states,
         initial_state: IndexState(0),
+        discount_factor: 0.9,
+        states_actions,
     }
 }
