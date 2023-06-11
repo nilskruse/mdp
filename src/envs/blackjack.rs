@@ -8,10 +8,6 @@ use crate::mdp::GenericMdp;
 pub struct BlackjackMdp;
 
 impl BlackjackMdp {
-    pub fn new() -> Self {
-        Self {}
-    }
-
     pub fn draw_card<R: Rng + SeedableRng>(&self, rng: &mut R) -> u8 {
         rng.gen_range(1..=10)
     }

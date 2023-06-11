@@ -6,7 +6,7 @@ use crate::{
         self,
         my_intersection::{Action, MyIntersectionMdp},
     },
-    eval::{evaluate_epsilon_greedy_policy, evaluate_greedy_policy},
+    eval::{evaluate_epsilon_greedy_policy, evaluate_greedy_policy, evaluate_random_policy},
     mdp::GenericMdp,
 };
 
@@ -14,34 +14,16 @@ pub fn run_experiments() {
     let eval_episodes = 100;
     let train_episodes = 1000;
     let episode_length = 2000;
-    let generic_mdp = MyIntersectionMdp::new(0.2, 0.2, 50);
+    let generic_mdp = MyIntersectionMdp::new(0.4, 0.2, 50);
     let generic_q_learning = QLearning::new(0.1, 0.1, episode_length);
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
-    let mut q_map = generic_q_learning.run(&generic_mdp, 1, &mut rng);
+    let mut q_map = generic_q_learning.run(&generic_mdp, train_episodes, &mut rng);
 
     println!(
         "number of (state, action): {:?}",
         generic_mdp.get_all_state_actions().len()
     );
-    println!("first episode");
-    let avg_reward_epsilon = evaluate_epsilon_greedy_policy(
-        &generic_mdp,
-        &q_map,
-        eval_episodes,
-        episode_length,
-        0.1,
-        &mut rng,
-    );
-    let avg_reward_greedy = evaluate_greedy_policy(
-        &generic_mdp,
-        &q_map,
-        eval_episodes,
-        episode_length,
-        &mut rng,
-    );
     // println!("{:#?}", generic_mdp);
-    println!("epsilon: {:?}", avg_reward_epsilon);
-    println!("greedy: {:?}", avg_reward_greedy);
     println!("{train_episodes} episodes");
     generic_q_learning.run_with_q_map(&generic_mdp, train_episodes, &mut rng, &mut q_map);
     let avg_reward_epsilon = evaluate_epsilon_greedy_policy(
@@ -52,6 +34,7 @@ pub fn run_experiments() {
         0.1,
         &mut rng,
     );
+
     let avg_reward_greedy = evaluate_greedy_policy(
         &generic_mdp,
         &q_map,
@@ -59,9 +42,14 @@ pub fn run_experiments() {
         episode_length,
         &mut rng,
     );
-    // println!("{:#?}", generic_mdp);
+
+    let avg_reward_random =
+        evaluate_random_policy(&generic_mdp, eval_episodes, episode_length, &mut rng);
+
     println!("epsilon: {:?}", avg_reward_epsilon);
     println!("greedy: {:?}", avg_reward_greedy);
+    println!("random: {:?}", avg_reward_random);
+
     // q_map.iter().for_each(|e| println!("{:?}", e));
     //
     let avg_reward = fixed_cycle(
