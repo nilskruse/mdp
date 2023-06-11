@@ -9,5 +9,5 @@ fn main() {
     // visualisation::vis_test();
     // experiments::non_contractive::run_experiment();
     // experiments::q_learning_dynamic::run_experiment();
-    experiments::intersection::run_experiments();
+    experiments::intersection::run_experiment();
 }
