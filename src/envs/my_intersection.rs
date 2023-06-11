@@ -10,13 +10,13 @@ use crate::mdp::GenericMdp;
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Copy)]
 pub struct State {
-    light_state: LightState,
+    pub light_state: LightState,
     ns_cars: usize,
     ew_cars: usize,
 }
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Copy)]
-enum LightState {
+pub enum LightState {
     NorthSouthOpen = 0,
     EastWestOpen = 1,
     ChangingToNS = 2,
