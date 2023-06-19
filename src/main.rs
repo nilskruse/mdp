@@ -10,5 +10,6 @@ fn main() {
     // experiments::non_contractive::run_experiment();
     // experiments::q_learning_dynamic::run_experiment();
     // experiments::intersection::run_experiment();
-    experiments::q_learning_beta::run_q_beta_experiment();
+    // experiments::q_learning_beta::run_q_beta_experiment();
+    experiments::q_learning_beta::run_equivalence_experiment();
 }

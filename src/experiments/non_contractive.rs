@@ -65,10 +65,10 @@ pub fn build_mdp(p: f64) -> IndexMdp {
 
 pub fn run_experiment() {
     let mdp = build_mdp(0.001);
-    let rig = (IndexState(2), IndexAction(0));
+    let rig = Some((IndexState(2), IndexAction(0)));
 
     println!("Q-Learning");
-    let q_algo = RiggedQLearning::new(0.1, 0.2, usize::MAX);
+    let mut q_algo = RiggedQLearning::new(0.1, 0.2, usize::MAX);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
     let q_map = q_algo.run(&mdp, 1000000, &mut rng, rig);
     println!("Q-Table:");
@@ -76,7 +76,7 @@ pub fn run_experiment() {
     println!();
 
     println!("Q-Learning Beta");
-    let q_beta_algo = QLearningBeta::new(0.1, 0.2, usize::MAX, 1);
+    let mut q_beta_algo = QLearningBeta::new(0.1, 0.2, usize::MAX, 1);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
     let q_map = q_beta_algo.run(&mdp, 2000000, &mut rng, rig);
     println!("Q-Table:");
@@ -116,12 +116,12 @@ impl RiggedStateActionAlgorithm for RiggedQLearning {
         A: GenericAction,
         R: Rng + SeedableRng,
     >(
-        &self,
+        &mut self,
         mdp: &M,
         episodes: usize,
         rng: &mut R,
         q_map: &mut BTreeMap<(S, A), f64>,
-        rig: (S, A),
+        rig: Option<(S, A)>,
     ) {
         for episode in 1..=episodes {
             let mut current_state = mdp.get_initial_state(rng);
@@ -133,11 +133,13 @@ impl RiggedStateActionAlgorithm for RiggedQLearning {
                     mdp.perform_action((current_state, selected_action), rng);
 
                 // // get high, improbable reward on first episode and first step
-                if episode == 2 && steps == 0 {
-                    println!("Rigging first action selection!!!");
-                    next_state = rig.0;
-                    selected_action = rig.1;
-                    reward = 1000.0;
+                if let Some(rig) = rig {
+                    if episode == 2 && steps == 0 {
+                        println!("Rigging first action selection!!!");
+                        next_state = rig.0;
+                        selected_action = rig.1;
+                        reward = 1000.0;
+                    }
                 }
 
                 // update q_map
@@ -161,11 +163,11 @@ impl RiggedStateActionAlgorithm for RiggedQLearning {
 pub trait RiggedStateActionAlgorithm {
     // default implementation
     fn run<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng + SeedableRng>(
-        &self,
+        &mut self,
         mdp: &M,
         episodes: usize,
         rng: &mut R,
-        rig: (S, A),
+        rig: Option<(S, A)>,
     ) -> BTreeMap<(S, A), f64> {
         let mut q_map: BTreeMap<(S, A), f64> = BTreeMap::new();
 
@@ -178,12 +180,12 @@ pub trait RiggedStateActionAlgorithm {
         q_map
     }
     fn run_with_q_map<M, S, A, R>(
-        &self,
+        &mut self,
         mdp: &M,
         episodes: usize,
         rng: &mut R,
         q_map: &mut BTreeMap<(S, A), f64>,
-        rig: (S, A),
+        rig: Option<(S, A)>,
     ) where
         M: GenericMdp<S, A>,
         S: GenericState,

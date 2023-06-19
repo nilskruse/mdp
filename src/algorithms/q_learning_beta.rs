@@ -18,6 +18,8 @@ pub struct QLearningBeta {
     epsilon: f64,
     max_steps: usize,
     rate: usize,
+    beta_denom: f64,
+    total_episodes: usize,
 }
 
 impl QLearningBeta {
@@ -27,6 +29,8 @@ impl QLearningBeta {
             epsilon,
             max_steps,
             rate,
+            beta_denom: 2.0_f64,
+            total_episodes: 0,
         }
     }
 }
@@ -38,22 +42,22 @@ impl RiggedStateActionAlgorithm for QLearningBeta {
         A: GenericAction,
         R: Rng + SeedableRng,
     >(
-        &self,
+        &mut self,
         mdp: &M,
         episodes: usize,
         rng: &mut R,
         q_map: &mut BTreeMap<(S, A), f64>,
-        rig: (S, A),
+        rig: Option<(S, A)>,
     ) {
-        let mut beta_denom = 1;
         for episode in 1..=episodes {
             let mut current_state = mdp.get_initial_state(rng);
             let mut steps = 0;
 
-            if episode % self.rate == 0 {
-                beta_denom += 1;
+            if self.total_episodes % self.rate == 0 {
+                self.beta_denom += 1.0;
             }
-            let beta = 1.0 / (beta_denom + 1) as f64;
+
+            let beta = 1.0 / (self.beta_denom + 1.0);
             println!("beta={beta}");
 
             while !mdp.is_terminal(current_state) && steps < self.max_steps {
@@ -61,11 +65,13 @@ impl RiggedStateActionAlgorithm for QLearningBeta {
                 let (mut next_state, mut reward) =
                     mdp.perform_action((current_state, selected_action), rng);
 
-                if episode == 1 && steps == 0 {
-                    println!("Rigging first action selection!!!");
-                    selected_action = rig.1;
-                    next_state = rig.0;
-                    reward = 1000.0;
+                if let Some(rig) = rig {
+                    if episode == 1 && steps == 0 {
+                        println!("Rigging first action selection!!!");
+                        selected_action = rig.1;
+                        next_state = rig.0;
+                        reward = 1000.0;
+                    }
                 }
 
                 // update q_map
@@ -82,6 +88,7 @@ impl RiggedStateActionAlgorithm for QLearningBeta {
                 current_state = next_state;
 
                 steps += 1;
+                self.total_episodes += 1;
             }
         }
     }
