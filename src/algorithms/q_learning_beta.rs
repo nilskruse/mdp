@@ -29,7 +29,7 @@ impl QLearningBeta {
             epsilon,
             max_steps,
             rate,
-            beta_denom: 2.0_f64,
+            beta_denom: 0.0_f64,
             total_episodes: 0,
         }
     }
@@ -58,7 +58,7 @@ impl RiggedStateActionAlgorithm for QLearningBeta {
             }
 
             let beta = 1.0 / (self.beta_denom + 1.0);
-            println!("beta={beta}");
+            // println!("beta={beta}");
 
             while !mdp.is_terminal(current_state) && steps < self.max_steps {
                 let Some(mut selected_action) = epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng) else {break};
@@ -88,8 +88,8 @@ impl RiggedStateActionAlgorithm for QLearningBeta {
                 current_state = next_state;
 
                 steps += 1;
-                self.total_episodes += 1;
             }
+            self.total_episodes += 1;
         }
     }
 }
