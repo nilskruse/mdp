@@ -15,7 +15,7 @@ pub fn run_q_beta_experiment() {
     let rig = (IndexState(2), IndexAction(0));
 
     println!("Q-Learning Beta");
-    let q_beta_algo = QLearningBeta::new(0.1, 0.2, usize::MAX, 100);
+    let q_beta_algo = QLearningBeta::new(0.1, 0.2, usize::MAX, 10);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
     let q_map = q_beta_algo.run(&mdp, 2000, &mut rng, rig);
     println!("Q-Table:");
