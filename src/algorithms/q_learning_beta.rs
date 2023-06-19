@@ -17,14 +17,16 @@ pub struct QLearningBeta {
     alpha: f64,
     epsilon: f64,
     max_steps: usize,
+    rate: usize,
 }
 
 impl QLearningBeta {
-    pub fn new(alpha: f64, epsilon: f64, max_steps: usize) -> Self {
+    pub fn new(alpha: f64, epsilon: f64, max_steps: usize, rate: usize) -> Self {
         QLearningBeta {
             alpha,
             epsilon,
             max_steps,
+            rate,
         }
     }
 }
@@ -43,16 +45,23 @@ impl RiggedStateActionAlgorithm for QLearningBeta {
         q_map: &mut BTreeMap<(S, A), f64>,
         rig: (S, A),
     ) {
+        let mut beta_denom = 1;
         for episode in 1..=episodes {
             let mut current_state = mdp.get_initial_state(rng);
             let mut steps = 0;
+
+            if episode % self.rate == 0 {
+                beta_denom += 1;
+            }
+            let beta = 1.0 / (beta_denom + 1) as f64;
+            println!("beta={beta}");
 
             while !mdp.is_terminal(current_state) && steps < self.max_steps {
                 let Some(mut selected_action) = epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng) else {break};
                 let (mut next_state, mut reward) =
                     mdp.perform_action((current_state, selected_action), rng);
 
-                if episode == 2 && steps == 0 {
+                if episode == 1 && steps == 0 {
                     println!("Rigging first action selection!!!");
                     selected_action = rig.1;
                     next_state = rig.0;
@@ -66,7 +75,6 @@ impl RiggedStateActionAlgorithm for QLearningBeta {
                     .expect("No qmap entry found");
 
                 let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
-                let beta = 1.0 / episode as f64;
                 *current_q = *current_q
                     + (self.alpha * (reward + mdp.get_discount_factor() * best_q - *current_q))
                         * (1.0 - beta);

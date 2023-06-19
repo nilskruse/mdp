@@ -16,7 +16,7 @@ use crate::{
     utils::{print_q_map, print_transition_map},
 };
 
-fn build_mdp(p: f64) -> IndexMdp {
+pub fn build_mdp(p: f64) -> IndexMdp {
     let transition_probabilities: BTreeMap<(IndexState, IndexAction), Vec<Transition>> =
         BTreeMap::from([
             (
@@ -46,7 +46,13 @@ fn build_mdp(p: f64) -> IndexMdp {
     let terminal_states: HashSet<IndexState> =
         HashSet::from_iter(terminal_states_vec.iter().copied());
     let discount_factor = 1.0;
-    let states_actions = vec![];
+    let states_actions = vec![
+        (IndexState(0), IndexAction(0)),
+        (IndexState(0), IndexAction(1)),
+        (IndexState(1), IndexAction(1)),
+        (IndexState(2), IndexAction(0)),
+        (IndexState(3), IndexAction(0)),
+    ];
 
     IndexMdp {
         transitions: transition_probabilities,
@@ -70,7 +76,7 @@ pub fn run_experiment() {
     println!();
 
     println!("Q-Learning Beta");
-    let q_beta_algo = QLearningBeta::new(0.1, 0.2, usize::MAX);
+    let q_beta_algo = QLearningBeta::new(0.1, 0.2, usize::MAX, 1);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
     let q_map = q_beta_algo.run(&mdp, 2000000, &mut rng, rig);
     println!("Q-Table:");

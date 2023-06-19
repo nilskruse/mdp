@@ -1,7 +1,10 @@
 use rand::{Rng, SeedableRng};
 
 use crate::{
-    algorithms::{q_learning::QLearning, GenericStateActionAlgorithm},
+    algorithms::{
+        monte_carlo::MonteCarlo, q_learning::QLearning, q_learning_lambda::QLearningLamda,
+        sarsa::Sarsa, sarsa_lambda::SarsaLambda, GenericStateActionAlgorithm, Trace,
+    },
     envs::{
         self,
         my_intersection::{Action, MyIntersectionMdp},
@@ -16,6 +19,7 @@ pub fn run_experiment() {
     let episode_length = 2000;
     let generic_mdp = MyIntersectionMdp::new(0.5, 0.3, 50);
     let generic_q_learning = QLearning::new(0.1, 0.1, episode_length);
+    // let generic_q_learning = SarsaLambda::new(0.1, 0.1, 0.1, episode_length, Trace::Accumulating);
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
     let mut q_map = generic_q_learning.run(&generic_mdp, train_episodes, &mut rng);
 
@@ -25,7 +29,6 @@ pub fn run_experiment() {
     );
     // println!("{:#?}", generic_mdp);
     println!("{train_episodes} episodes");
-    generic_q_learning.run_with_q_map(&generic_mdp, train_episodes, &mut rng, &mut q_map);
     let avg_reward_epsilon = evaluate_epsilon_greedy_policy(
         &generic_mdp,
         &q_map,
@@ -52,7 +55,7 @@ pub fn run_experiment() {
         &generic_mdp,
         train_episodes,
         episode_length,
-        30,
+        50,
         30,
         &mut rng,
     );

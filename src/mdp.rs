@@ -66,11 +66,11 @@ impl<S: GenericState, A: GenericAction> MapMdp<S, A> {
     }
 }
 
-pub trait GenericState: Ord + Clone + Hash + Copy {}
-impl<T: Ord + Clone + Hash + Copy> GenericState for T {}
-pub trait GenericAction: Ord + Copy + Clone + Hash {}
+pub trait GenericState: Ord + Clone + Hash + Copy + std::fmt::Debug {}
+impl<T: Ord + Clone + Hash + Copy + std::fmt::Debug> GenericState for T {}
 
-impl<T: Ord + Copy + Clone + Hash> GenericAction for T {}
+pub trait GenericAction: Ord + Copy + Clone + Hash + std::fmt::Debug {}
+impl<T: Ord + Copy + Clone + Hash + std::fmt::Debug> GenericAction for T {}
 
 pub trait GenericMdp<S: GenericState, A: GenericAction> {
     fn perform_action<R: SeedableRng + Rng>(

@@ -52,7 +52,8 @@ pub fn greedy_policy<
         .map(|a| {
             let q = *q_map
                 .get(&(current_state, *a))
-                .expect("(state, action) has no q_entry");
+                // .expect(&format!("({:?}, {:?}) has no q_entry", current_state, *a));
+                .unwrap_or(&0.0);
             (*a, q)
         })
         // select action with maxium reward
