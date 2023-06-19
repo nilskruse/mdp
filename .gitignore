@@ -18,3 +18,4 @@ Cargo.lock
 **/*.py
 **/*.ipynb
 /.ipynb_checkpoints/
+todo
