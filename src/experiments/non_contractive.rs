@@ -76,9 +76,17 @@ pub fn run_experiment() {
     println!();
 
     println!("Q-Learning Beta");
-    let mut q_beta_algo = QLearningBeta::new(0.1, 0.2, usize::MAX, 1);
+    let mut q_beta_algo = QLearningBeta::new(0.1, 0.2, usize::MAX, 10);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
     let q_map = q_beta_algo.run(&mdp, 2000000, &mut rng, rig);
+    println!("Q-Table:");
+    print_q_map(&q_map);
+    println!();
+
+    println!("Q-Learning clipped");
+    let mut q_clipped_algo = QLearningClipped::new(0.1, 0.2, usize::MAX, 5.0);
+    let mut rng = ChaCha20Rng::seed_from_u64(0);
+    let q_map = q_clipped_algo.run(&mdp, 2000000, &mut rng, rig);
     println!("Q-Table:");
     print_q_map(&q_map);
     println!();
@@ -191,4 +199,74 @@ pub trait RiggedStateActionAlgorithm {
         S: GenericState,
         A: GenericAction,
         R: Rng + SeedableRng;
+}
+
+pub struct QLearningClipped {
+    alpha: f64,
+    epsilon: f64,
+    max_steps: usize,
+    clip: f64,
+}
+
+impl QLearningClipped {
+    pub fn new(alpha: f64, epsilon: f64, max_steps: usize, clip: f64) -> Self {
+        QLearningClipped {
+            alpha,
+            epsilon,
+            max_steps,
+            clip,
+        }
+    }
+}
+
+impl RiggedStateActionAlgorithm for QLearningClipped {
+    fn run_with_q_map<
+        M: GenericMdp<S, A>,
+        S: GenericState,
+        A: GenericAction,
+        R: Rng + SeedableRng,
+    >(
+        &mut self,
+        mdp: &M,
+        episodes: usize,
+        rng: &mut R,
+        q_map: &mut BTreeMap<(S, A), f64>,
+        rig: Option<(S, A)>,
+    ) {
+        for episode in 1..=episodes {
+            let mut current_state = mdp.get_initial_state(rng);
+            let mut steps = 0;
+
+            while !mdp.is_terminal(current_state) && steps < self.max_steps {
+                let Some(mut selected_action) = epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng) else {break};
+                let (mut next_state, mut reward) =
+                    mdp.perform_action((current_state, selected_action), rng);
+
+                // // get high, improbable reward on first episode and first step
+                if let Some(rig) = rig {
+                    if episode == 2 && steps == 0 {
+                        println!("Rigging first action selection!!!");
+                        next_state = rig.0;
+                        selected_action = rig.1;
+                        reward = 1000.0;
+                    }
+                }
+
+                // update q_map
+                let Some(best_action) = greedy_policy(mdp, q_map, next_state, rng) else {break};
+                let best_q = *q_map
+                    .get(&(next_state, best_action))
+                    .expect("No qmap entry found");
+
+                let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
+                *current_q = *current_q
+                    + (self.alpha * (reward + mdp.get_discount_factor() * best_q - *current_q))
+                        .clamp(-self.clip, self.clip);
+
+                current_state = next_state;
+
+                steps += 1;
+            }
+        }
+    }
 }

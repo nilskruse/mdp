@@ -43,14 +43,16 @@ pub fn run_equivalence_experiment() {
 
     total_q /= n as f64;
     total_q_beta /= n as f64;
-    println!("Q average steps for optimal greedy policy: {total_q}");
-    println!("Q-beta average steps for optimal greedy policy: {total_q_beta}");
+    println!("Q average episodes for optimal greedy policy: {total_q}");
+    println!("Q-beta average episodes for optimal greedy policy: {total_q_beta}");
 }
 
-pub fn run_equivalence_experiment_seed<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
-    mdp: &M,
-    seed: u64,
-) -> (usize, usize) {
+pub fn run_equivalence_experiment_seed<M, S, A>(mdp: &M, seed: u64) -> (usize, usize)
+where
+    M: GenericMdp<S, A>,
+    S: GenericState,
+    A: GenericAction,
+{
     let alpha = 0.1;
     let epsilon = 0.1;
     let max_steps = 200;
