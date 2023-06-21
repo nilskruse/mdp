@@ -70,7 +70,7 @@ pub fn run_experiment() {
     println!("Q-Learning");
     let mut q_algo = RiggedQLearning::new(0.1, 0.2, usize::MAX);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
-    let q_map = q_algo.run(&mdp, 1000000, &mut rng, rig);
+    let q_map = q_algo.run(&mdp, 1000, &mut rng, rig);
     println!("Q-Table:");
     print_q_map(&q_map);
     println!();
@@ -78,7 +78,7 @@ pub fn run_experiment() {
     println!("Q-Learning Beta");
     let mut q_beta_algo = QLearningBeta::new(0.1, 0.2, usize::MAX, 10);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
-    let q_map = q_beta_algo.run(&mdp, 2000000, &mut rng, rig);
+    let q_map = q_beta_algo.run(&mdp, 1000, &mut rng, rig);
     println!("Q-Table:");
     print_q_map(&q_map);
     println!();
@@ -86,7 +86,7 @@ pub fn run_experiment() {
     println!("Q-Learning clipped");
     let mut q_clipped_algo = QLearningClipped::new(0.1, 0.2, usize::MAX, 5.0);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
-    let q_map = q_clipped_algo.run(&mdp, 2000000, &mut rng, rig);
+    let q_map = q_clipped_algo.run(&mdp, 1000, &mut rng, rig);
     println!("Q-Table:");
     print_q_map(&q_map);
     println!();
