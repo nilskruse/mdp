@@ -72,7 +72,7 @@ where
 
     let q_algo = QLearning::new(alpha, epsilon, max_steps);
     let mut q_beta_algo = QLearningBeta::new(alpha, epsilon, max_steps, beta_rate);
-    let mut q_clipped_algo = QLearningClipped::new(alpha, epsilon, max_steps, 5.0);
+    let mut q_clipped_algo = QLearningClipped::new(alpha, epsilon, max_steps, 50.0);
 
     let mut rng = ChaCha20Rng::seed_from_u64(seed);
     let mut eval_rng = ChaCha20Rng::seed_from_u64(0);
@@ -87,6 +87,7 @@ where
         if avg_reward == -12.0 {
             break;
         }
+        println!("episode: {q_counter}");
         q_counter += 1;
     }
     // println!("Q-Learning found optimal strategy after {q_counter} steps");
@@ -104,6 +105,7 @@ where
         if avg_reward == -12.0 {
             break;
         }
+        println!("beta episode: {q_beta_counter}");
         q_beta_counter += 1;
     }
     // println!("Q-Learning-beta found optimal strategy after {q_beta_counter} steps");
@@ -122,6 +124,7 @@ where
             break;
         }
         q_clipped_counter += 1;
+        println!("clipped episode: {q_clipped_counter}");
     }
     // println!("Q-Learning-clipped found optimal strategy after {q_beta_counter} steps");
     (q_counter, q_beta_counter, q_clipped_counter)

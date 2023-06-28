@@ -70,7 +70,7 @@ pub fn run_experiment() {
     println!("Q-Learning");
     let mut q_algo = RiggedQLearning::new(0.1, 0.2, usize::MAX);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
-    let q_map = q_algo.run(&mdp, 1000, &mut rng, rig);
+    let q_map = q_algo.run(&mdp, 1, &mut rng, rig);
     println!("Q-Table:");
     print_q_map(&q_map);
     println!();
@@ -78,7 +78,7 @@ pub fn run_experiment() {
     println!("Q-Learning Beta");
     let mut q_beta_algo = QLearningBeta::new(0.1, 0.2, usize::MAX, 10);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
-    let q_map = q_beta_algo.run(&mdp, 1000, &mut rng, rig);
+    let q_map = q_beta_algo.run(&mdp, 1, &mut rng, rig);
     println!("Q-Table:");
     print_q_map(&q_map);
     println!();
@@ -86,7 +86,7 @@ pub fn run_experiment() {
     println!("Q-Learning clipped");
     let mut q_clipped_algo = QLearningClipped::new(0.1, 0.2, usize::MAX, 5.0);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
-    let q_map = q_clipped_algo.run(&mdp, 1000, &mut rng, rig);
+    let q_map = q_clipped_algo.run(&mdp, 100, &mut rng, rig);
     println!("Q-Table:");
     print_q_map(&q_map);
     println!();
@@ -142,7 +142,7 @@ impl RiggedStateActionAlgorithm for RiggedQLearning {
 
                 // // get high, improbable reward on first episode and first step
                 if let Some(rig) = rig {
-                    if episode == 2 && steps == 0 {
+                    if episode == 1 && steps == 0 {
                         println!("Rigging first action selection!!!");
                         next_state = rig.0;
                         selected_action = rig.1;
@@ -244,7 +244,7 @@ impl RiggedStateActionAlgorithm for QLearningClipped {
 
                 // // get high, improbable reward on first episode and first step
                 if let Some(rig) = rig {
-                    if episode == 2 && steps == 0 {
+                    if episode == 1 && steps == 0 {
                         println!("Rigging first action selection!!!");
                         next_state = rig.0;
                         selected_action = rig.1;
@@ -259,9 +259,22 @@ impl RiggedStateActionAlgorithm for QLearningClipped {
                     .expect("No qmap entry found");
 
                 let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
-                *current_q = *current_q
-                    + (self.alpha * (reward + mdp.get_discount_factor() * best_q - *current_q))
-                        .clamp(-self.clip, self.clip);
+                *current_q += self.alpha
+                    * (reward.clamp(-self.clip, self.clip) + mdp.get_discount_factor() * best_q
+                        - *current_q);
+
+                println!(
+                    "update: {:?}, state: {:?}, action: {:?}, clipped reward: {:?}, discounted: {:?}, current_q: {:?} ",
+                    self.alpha
+                        * (reward.clamp(-self.clip, self.clip)
+                            + mdp.get_discount_factor() * best_q
+                            - *current_q),
+                    current_state,
+                    selected_action,
+                    reward.clamp(-self.clip, self.clip),
+                    mdp.get_discount_factor() * best_q,
+                    *current_q
+                );
 
                 current_state = next_state;
 
