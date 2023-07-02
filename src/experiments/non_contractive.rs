@@ -263,18 +263,18 @@ impl RiggedStateActionAlgorithm for QLearningClipped {
                     * (reward.clamp(-self.clip, self.clip) + mdp.get_discount_factor() * best_q
                         - *current_q);
 
-                println!(
-                    "update: {:?}, state: {:?}, action: {:?}, clipped reward: {:?}, discounted: {:?}, current_q: {:?} ",
-                    self.alpha
-                        * (reward.clamp(-self.clip, self.clip)
-                            + mdp.get_discount_factor() * best_q
-                            - *current_q),
-                    current_state,
-                    selected_action,
-                    reward.clamp(-self.clip, self.clip),
-                    mdp.get_discount_factor() * best_q,
-                    *current_q
-                );
+                // println!(
+                //     "update: {:?}, state: {:?}, action: {:?}, clipped reward: {:?}, discounted: {:?}, current_q: {:?} ",
+                //     self.alpha
+                //         * (reward.clamp(-self.clip, self.clip)
+                //             + mdp.get_discount_factor() * best_q
+                //             - *current_q),
+                //     current_state,
+                //     selected_action,
+                //     reward.clamp(-self.clip, self.clip),
+                //     mdp.get_discount_factor() * best_q,
+                //     *current_q
+                // );
 
                 current_state = next_state;
 

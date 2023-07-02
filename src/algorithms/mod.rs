@@ -1,3 +1,4 @@
+pub mod dyna_q;
 pub mod monte_carlo;
 pub mod q_learning;
 pub mod q_learning_beta;
