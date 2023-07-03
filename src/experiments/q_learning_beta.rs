@@ -35,15 +35,18 @@ pub fn run_q_beta_experiment() {
 
 pub fn run_equivalence_experiment() {
     let mdp = crate::envs::cliff_walking::build_mdp().unwrap();
-    let n = 1000;
+    let mdp = crate::envs::slippery_cliff_walking::build_mdp(0.5).unwrap();
+    let n = 10;
     let mut total_q = 0.0;
     let mut total_q_beta = 0.0;
     let mut total_q_clipped = 0.0;
     let mut total_dyna_q = 0.0;
 
+    let optimal_reward = -14.0;
+
     for seed in 0..n {
         let (q_eps, q_beta_eps, q_clipped_eps, dyna_q_eps) =
-            run_equivalence_experiment_seed(&mdp, seed);
+            run_equivalence_experiment_seed(&mdp, seed, optimal_reward);
         total_q += q_eps as f64;
         total_q_beta += q_beta_eps as f64;
         total_q_clipped += q_clipped_eps as f64;
@@ -66,7 +69,11 @@ pub fn run_equivalence_experiment() {
     println!("DynaQ average episodes for optimal greedy policy: {total_dyna_q}");
 }
 
-pub fn run_equivalence_experiment_seed<M, S, A>(mdp: &M, seed: u64) -> (usize, usize, usize, usize)
+pub fn run_equivalence_experiment_seed<M, S, A>(
+    mdp: &M,
+    seed: u64,
+    optimal_reward: f64,
+) -> (usize, usize, usize, usize)
 where
     M: GenericMdp<S, A>,
     S: GenericState,
@@ -76,14 +83,14 @@ where
     let epsilon = 0.1;
     let max_steps = 200;
     let beta_rate = 10;
-    let k = 10;
+    let k = 5;
 
     let eval_episodes = 1;
 
     let q_algo = QLearning::new(alpha, epsilon, max_steps);
     let mut q_beta_algo = QLearningBeta::new(alpha, epsilon, max_steps, beta_rate);
     let mut q_clipped_algo = QLearningClipped::new(alpha, epsilon, max_steps, 50.0);
-    let mut dyna_q_algo = DynaQ::new(alpha, epsilon, k, max_steps);
+    let mut dyna_q_algo = DynaQ::new(alpha, epsilon, k, max_steps, mdp);
 
     let mut rng = ChaCha20Rng::seed_from_u64(seed);
     let mut eval_rng = ChaCha20Rng::seed_from_u64(0);
@@ -95,7 +102,7 @@ where
         let avg_reward =
             evaluate_greedy_policy(mdp, &q_map, eval_episodes, max_steps, &mut eval_rng);
         q_algo.run_with_q_map(mdp, 1, &mut rng, &mut q_map);
-        if avg_reward == -12.0 {
+        if avg_reward == optimal_reward {
             break;
         }
         // println!("episode: {q_counter}");
@@ -113,7 +120,7 @@ where
         let avg_reward =
             evaluate_greedy_policy(mdp, &q_map, eval_episodes, max_steps, &mut eval_rng);
         q_beta_algo.run_with_q_map(mdp, 1, &mut rng, &mut q_map, None);
-        if avg_reward == -12.0 {
+        if avg_reward == optimal_reward {
             break;
         }
         // println!("beta episode: {q_beta_counter}");
@@ -131,7 +138,7 @@ where
         let avg_reward =
             evaluate_greedy_policy(mdp, &q_map, eval_episodes, max_steps, &mut eval_rng);
         q_clipped_algo.run_with_q_map(mdp, 1, &mut rng, &mut q_map, None);
-        if avg_reward == -12.0 {
+        if avg_reward == optimal_reward {
             break;
         }
         q_clipped_counter += 1;
@@ -140,7 +147,7 @@ where
     // println!("dynaq");
     let mut rng = ChaCha20Rng::seed_from_u64(seed);
     let mut eval_rng = ChaCha20Rng::seed_from_u64(0);
-    let (mut q_map, mut model) = dyna_q_algo.run(mdp, 1, &mut rng);
+    let mut q_map = dyna_q_algo.run(mdp, 1, &mut rng);
 
     let mut dyna_q_counter = 1;
 
@@ -148,8 +155,8 @@ where
         let avg_reward =
             evaluate_greedy_policy(mdp, &q_map, eval_episodes, max_steps, &mut eval_rng);
         // println!("dyna_q_counter: {dyna_q_counter}, avg_reward: {avg_reward}");
-        dyna_q_algo.run_with_q_map(mdp, 1, &mut rng, &mut q_map, &mut model);
-        if avg_reward == -12.0 {
+        dyna_q_algo.run_with_q_map(mdp, 1, &mut rng, &mut q_map);
+        if avg_reward == optimal_reward {
             break;
         }
         dyna_q_counter += 1;

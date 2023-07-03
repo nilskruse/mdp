@@ -21,7 +21,7 @@ pub fn run_experiment() {
     let generic_q_learning = QLearning::new(0.1, 0.1, episode_length);
     // let generic_q_learning = SarsaLambda::new(0.1, 0.1, 0.1, episode_length, Trace::Accumulating);
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(1);
-    let mut q_map = generic_q_learning.run(&generic_mdp, train_episodes, &mut rng);
+    let q_map = generic_q_learning.run(&generic_mdp, train_episodes, &mut rng);
 
     println!(
         "number of (state, action): {:?}",
