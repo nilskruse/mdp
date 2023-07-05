@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+use eframe::glow::DRAW_INDIRECT_BUFFER_BINDING;
 use rand::{seq::IteratorRandom, Rng, SeedableRng};
 use std::collections::Bound::{Included, Unbounded};
 
@@ -42,6 +43,7 @@ pub struct DynaQ<S: GenericState, A: GenericAction> {
     max_steps: usize,
     model: BTreeMap<(S, A), (f64, S)>,
     t_table: BTreeMap<(S, A), BTreeMap<S, usize>>,
+    deterministic: bool,
 }
 
 impl<S: GenericState, A: GenericAction> DynaQ<S, A> {
@@ -50,6 +52,7 @@ impl<S: GenericState, A: GenericAction> DynaQ<S, A> {
         epsilon: f64,
         k: usize,
         max_steps: usize,
+        deterministic: bool,
         _mdp: &M, // used for type inference
     ) -> Self {
         Self {
@@ -59,6 +62,7 @@ impl<S: GenericState, A: GenericAction> DynaQ<S, A> {
             max_steps,
             model: BTreeMap::new(),
             t_table: BTreeMap::new(),
+            deterministic,
         }
     }
 }
@@ -90,46 +94,46 @@ impl<S: GenericState, A: GenericAction> Dyna<S, A> for DynaQ<S, A> {
                 *current_q = *current_q
                     + self.alpha * (reward + mdp.get_discount_factor() * best_q - *current_q);
 
+                // determine reward value used for updating model
+                let model_reward = if self.deterministic {
+                    reward
+                } else {
+                    let mut state_count = 0;
+
+                    // update t_table
+                    self.t_table
+                        .entry((current_state, selected_action))
+                        .and_modify(|map| {
+                            map.entry(next_state)
+                                .and_modify(|count| {
+                                    *count += 1;
+                                    state_count = *count;
+                                })
+                                .or_insert(1);
+                        })
+                        .or_insert(BTreeMap::from([(next_state, 1)]));
+
+                    state_count = *self
+                        .t_table
+                        .get(&(current_state, selected_action))
+                        .unwrap()
+                        .get(&next_state)
+                        .unwrap();
+
+                    let sum: usize = self
+                        .t_table
+                        .get(&(current_state, selected_action))
+                        .unwrap()
+                        .values()
+                        .copied()
+                        .sum();
+
+                    reward * (state_count as f64 / sum as f64)
+                };
+
                 // update model
-                // self.model
-                //     .insert((current_state, selected_action), (reward, next_state));
-
-                let mut state_count = 0;
-
-                // update t_table
-                self.t_table
-                    .entry((current_state, selected_action))
-                    .and_modify(|map| {
-                        map.entry(next_state)
-                            .and_modify(|count| {
-                                *count += 1;
-                                state_count = *count;
-                            })
-                            .or_insert(1);
-                    })
-                    .or_insert(BTreeMap::from([(next_state, 1)]));
-
-                state_count = *self
-                    .t_table
-                    .get(&(current_state, selected_action))
-                    .unwrap()
-                    .get(&next_state)
-                    .unwrap();
-
-                let sum: usize = self
-                    .t_table
-                    .get(&(current_state, selected_action))
-                    .unwrap()
-                    .values()
-                    .copied()
-                    .sum();
-
-                let weighted_reward: f64 = reward * (state_count as f64 / sum as f64);
-
-                self.model.insert(
-                    (current_state, selected_action),
-                    (weighted_reward, next_state),
-                );
+                self.model
+                    .insert((current_state, selected_action), (model_reward, next_state));
 
                 // run q on model
                 for _ in 0..self.k {
