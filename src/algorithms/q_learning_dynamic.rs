@@ -64,13 +64,13 @@ impl GenericStateActionAlgorithm for QLearningDynamic {
                 acc /= q_map.len() as f64;
                 // acc = acc / (max + 0.0001);
 
-                println!("max = {max}");
-                println!("acc = {acc}");
-                println!("Non-zero = {non_zero}");
+                // println!("max = {max}");
+                // println!("acc = {acc}");
+                // println!("Non-zero = {non_zero}");
                 alpha += acc;
                 alpha = alpha.clamp(self.alpha / 2.0, self.alpha * 2.0);
             }
-            println!("alpha = {alpha}");
+            // println!("alpha = {alpha}");
 
             // prev_q_map.extend(q_map.iter());
             prev_q_map = q_map.clone();

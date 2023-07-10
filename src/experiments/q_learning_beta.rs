@@ -6,10 +6,10 @@ use crate::{
         dyna_q::{Dyna, DynaQ},
         q_learning::QLearning,
         q_learning_beta::QLearningBeta,
-        GenericStateActionAlgorithm,
+        GenericStateActionAlgorithm, GenericStateActionAlgorithmStateful,
     },
     eval::evaluate_greedy_policy,
-    experiments::non_contractive::{QLearningClipped, RiggedStateActionAlgorithm},
+    experiments::non_contractive::QLearningClipped,
     mdp::{GenericAction, GenericMdp, GenericState, IndexAction, IndexState},
     utils::{print_q_map, print_transition_map},
 };
@@ -18,12 +18,11 @@ pub fn run_q_beta_experiment() {
     // mdp with unlikely high reward transition
     let mdp = crate::experiments::non_contractive::build_mdp(0.001);
     // force this transition once in the beginning
-    let rig = Some((IndexState(2), IndexAction(0)));
 
     println!("Q-Learning Beta");
     let mut q_beta_algo = QLearningBeta::new(0.1, 0.2, usize::MAX, 10);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
-    let q_map = q_beta_algo.run(&mdp, 2000, &mut rng, rig);
+    let q_map = q_beta_algo.run(&mdp, 2000, &mut rng);
     println!("Q-Table:");
     print_q_map(&q_map);
     println!();
@@ -34,8 +33,9 @@ pub fn run_q_beta_experiment() {
 }
 
 pub fn run_equivalence_experiment() {
-    let mdp = crate::envs::cliff_walking::build_mdp().unwrap();
-    let mdp = crate::envs::slippery_cliff_walking::build_mdp(0.5).unwrap();
+    // let mdp = crate::envs::cliff_walking::build_mdp().unwrap();
+    let mdp = crate::envs::slippery_cliff_walking::build_mdp(0.1).unwrap();
+
     let n = 10;
     let mut total_q = 0.0;
     let mut total_q_beta = 0.0;
@@ -82,14 +82,14 @@ where
     let alpha = 0.1;
     let epsilon = 0.1;
     let max_steps = 200;
-    let beta_rate = 10;
-    let k = 5;
+    let beta_rate = 20;
+    let k = 1;
 
     let eval_episodes = 1;
 
     let q_algo = QLearning::new(alpha, epsilon, max_steps);
     let mut q_beta_algo = QLearningBeta::new(alpha, epsilon, max_steps, beta_rate);
-    let mut q_clipped_algo = QLearningClipped::new(alpha, epsilon, max_steps, 50.0);
+    let q_clipped_algo = QLearningClipped::new(alpha, epsilon, max_steps, 50.0);
     let mut dyna_q_algo = DynaQ::new(alpha, epsilon, k, max_steps, false, mdp);
 
     let mut rng = ChaCha20Rng::seed_from_u64(seed);
@@ -112,14 +112,14 @@ where
 
     let mut rng = ChaCha20Rng::seed_from_u64(seed);
     let mut eval_rng = ChaCha20Rng::seed_from_u64(0);
-    let mut q_map = q_beta_algo.run(mdp, 1, &mut rng, None);
+    let mut q_map = q_beta_algo.run(mdp, 1, &mut rng);
 
     let mut q_beta_counter = 1;
 
     loop {
         let avg_reward =
             evaluate_greedy_policy(mdp, &q_map, eval_episodes, max_steps, &mut eval_rng);
-        q_beta_algo.run_with_q_map(mdp, 1, &mut rng, &mut q_map, None);
+        q_beta_algo.run_with_q_map(mdp, 1, &mut rng, &mut q_map);
         if avg_reward == optimal_reward {
             break;
         }
@@ -130,14 +130,14 @@ where
 
     let mut rng = ChaCha20Rng::seed_from_u64(seed);
     let mut eval_rng = ChaCha20Rng::seed_from_u64(0);
-    let mut q_map = q_clipped_algo.run(mdp, 1, &mut rng, None);
+    let mut q_map = q_clipped_algo.run(mdp, 1, &mut rng);
 
     let mut q_clipped_counter = 1;
 
     loop {
         let avg_reward =
             evaluate_greedy_policy(mdp, &q_map, eval_episodes, max_steps, &mut eval_rng);
-        q_clipped_algo.run_with_q_map(mdp, 1, &mut rng, &mut q_map, None);
+        q_clipped_algo.run_with_q_map(mdp, 1, &mut rng, &mut q_map);
         if avg_reward == optimal_reward {
             break;
         }
