@@ -1,6 +1,6 @@
 use crate::{
     algorithms::{
-        dyna_q::{Dyna, DynaQ},
+        dyna_q::{BetaDynaQ, Dyna, DynaQ},
         GenericStateActionAlgorithm, GenericStateActionAlgorithmStateful,
     },
     mdp::{GenericAction, GenericMdp, GenericState, MapMdp},
@@ -68,13 +68,13 @@ pub fn build_mdp(p: f64) -> IndexMdp {
 
 pub fn run_experiment() {
     let mdp = build_mdp(0.001);
-    let episodes = 1000000;
+    let episodes = 1000;
 
     let alpha = 0.1;
     let epsilon = 0.2;
     let k = 1;
     let max_steps = usize::MAX;
-    let beta_rate = 100;
+    let beta_rate = 1;
 
     println!("Q-Learning");
     let q_algo = QLearning::new(alpha, epsilon, max_steps);
@@ -104,7 +104,15 @@ pub fn run_experiment() {
     println!("DynaQ");
     let mut dyna_q_algo = DynaQ::new(alpha, epsilon, k, max_steps, false, &mdp);
     let mut rng = ChaCha20Rng::seed_from_u64(0);
-    let q_map = dyna_q_algo.run(&mdp, 100, &mut rng);
+    let q_map = dyna_q_algo.run(&mdp, episodes, &mut rng);
+    println!("Q-Table:");
+    print_q_map(&q_map);
+    println!();
+
+    println!("BetaDynaQ");
+    let mut beta_dyna_q_algo = BetaDynaQ::new(alpha, epsilon, k, max_steps, false, &mdp, beta_rate);
+    let mut rng = ChaCha20Rng::seed_from_u64(0);
+    let q_map = beta_dyna_q_algo.run(&mdp, episodes, &mut rng);
     println!("Q-Table:");
     print_q_map(&q_map);
     println!();

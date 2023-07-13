@@ -51,10 +51,11 @@ impl GenericStateActionAlgorithmStateful for QLearningBeta {
 
             if self.total_episodes % self.rate == 0 {
                 self.beta_denom += 1.0;
+                // let beta = 1.0 / (self.beta_denom + 1.0);
+                // println!("beta={beta}");
             }
 
             let beta = 1.0 / (self.beta_denom + 1.0);
-            // println!("beta={beta}");
 
             while !mdp.is_terminal(current_state) && steps < self.max_steps {
                 let Some(selected_action) = epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng) else {break};

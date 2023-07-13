@@ -50,9 +50,7 @@ pub fn greedy_policy<
         .iter()
         // extract (action, q)- tuples
         .map(|a| {
-            let q = *q_map
-                .get(&(current_state, *a))
-                .expect(&format!("({:?}, {:?}) has no q_entry", current_state, *a));
+            let q = *q_map.get(&(current_state, *a)).expect("no q-entry");
             (*a, q)
         })
         // select action with maxium reward
