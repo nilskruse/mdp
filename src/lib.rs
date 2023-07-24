@@ -20,3 +20,5 @@ pub mod benchmarks;
 pub mod experiments;
 
 pub mod visualisation;
+
+pub mod multiagent;
