@@ -98,10 +98,7 @@ impl<S: GenericState, A: GenericAction> GenericMdp<S, A> for MapMdp<S, A> {
     ) -> (S, Reward) {
         if let Some(transitions) = self.transitions.get(&state_action) {
             // extract probabilities, create distribution and sample
-            let probs: Vec<_> = transitions
-                .iter()
-                .map(|(prob, _, _)| (prob * 100.0) as u32)
-                .collect();
+            let probs: Vec<_> = transitions.iter().map(|(prob, _, _)| prob).collect();
             let dist = WeightedIndex::new(probs).unwrap();
             let state_index = dist.sample(rng);
 

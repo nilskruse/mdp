@@ -50,6 +50,38 @@ pub trait GenericStateActionAlgorithm {
     );
 }
 
+pub trait GenericStateActionAlgorithmStateful {
+    // default implementation
+    fn run<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng + SeedableRng>(
+        &mut self,
+        mdp: &M,
+        episodes: usize,
+        rng: &mut R,
+    ) -> BTreeMap<(S, A), f64> {
+        let mut q_map: BTreeMap<(S, A), f64> = BTreeMap::new();
+
+        mdp.get_all_state_actions().iter().for_each(|state_action| {
+            q_map.insert(*state_action, 0.0);
+        });
+
+        self.run_with_q_map(mdp, episodes, rng, &mut q_map);
+
+        q_map
+    }
+
+    fn run_with_q_map<
+        M: GenericMdp<S, A>,
+        S: GenericState,
+        A: GenericAction,
+        R: Rng + SeedableRng,
+    >(
+        &mut self,
+        mdp: &M,
+        episodes: usize,
+        rng: &mut R,
+        q_map: &mut BTreeMap<(S, A), f64>,
+    );
+}
 #[derive(Copy, Clone)]
 pub enum Trace {
     Accumulating,

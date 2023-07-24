@@ -51,9 +51,9 @@ impl GenericStateActionAlgorithm for QLearningDynamic {
                 // calculate the mean squared error
                 let mut acc = 0.0;
                 let mut max = f64::MIN;
-                let non_zero = q_map
-                    .values()
-                    .fold(0, |acc, elem| if *elem != 0.0 { acc + 1 } else { acc });
+                // let non_zero = q_map
+                //     .values()
+                //     .fold(0, |acc, elem| if *elem != 0.0 { acc + 1 } else { acc });
 
                 for (entry1, entry2) in zip(prev_q_map.iter(), q_map.iter()) {
                     acc += (*entry1.1 - *entry2.1).powi(2);
@@ -64,13 +64,13 @@ impl GenericStateActionAlgorithm for QLearningDynamic {
                 acc /= q_map.len() as f64;
                 // acc = acc / (max + 0.0001);
 
-                println!("max = {max}");
-                println!("acc = {acc}");
-                println!("Non-zero = {non_zero}");
+                // println!("max = {max}");
+                // println!("acc = {acc}");
+                // println!("Non-zero = {non_zero}");
                 alpha += acc;
                 alpha = alpha.clamp(self.alpha / 2.0, self.alpha * 2.0);
             }
-            println!("alpha = {alpha}");
+            // println!("alpha = {alpha}");
 
             // prev_q_map.extend(q_map.iter());
             prev_q_map = q_map.clone();
