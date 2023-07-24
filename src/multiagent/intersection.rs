@@ -149,6 +149,45 @@ impl MAIntersectionMdp {
             old_cars + 1
         }
     }
+    fn open_road_transition_1<R: Rng>(&self, old_cars: u8, new_prob: f64, rng: &mut R) -> u8 {
+        if old_cars == 0 {
+            0
+        } else if rng.gen_range(0.0..1.0) < (1.0 - new_prob) {
+            old_cars - 1
+        } else {
+            old_cars
+        }
+    }
+
+    fn closed_road_transition_1<R: Rng>(&self, old_cars: u8, new_prob: f64, rng: &mut R) -> u8 {
+        if old_cars == self.max_cars {
+            self.max_cars
+        } else if rng.gen_range(0.0..1.0) < (1.0 - new_prob) {
+            old_cars
+        } else {
+            old_cars + 1
+        }
+    }
+
+    fn open_road_transition_2<R: Rng>(&self, old_cars: u8, new_prob: f64, rng: &mut R) -> u8 {
+        if old_cars == 0 {
+            0
+        } else if rng.gen_range(0.0..1.0) < (1.0 - new_prob) {
+            old_cars - 1
+        } else {
+            old_cars
+        }
+    }
+
+    fn closed_road_transition_2<R: Rng>(&self, old_cars: u8, new_prob: f64, rng: &mut R) -> u8 {
+        if old_cars == self.max_cars {
+            self.max_cars
+        } else if rng.gen_range(0.0..1.0) < (1.0 - new_prob) {
+            old_cars
+        } else {
+            old_cars + 1
+        }
+    }
 
     fn state_transfer(light_state: LightState, action: LightAction) -> LightState {
         match action {
@@ -181,38 +220,52 @@ impl GenericMdp<State, Action> for MAIntersectionMdp {
         let (state, action) = state_action;
         let (action_1, action_2) = (action.0, action.1);
 
-        let new_light_state_1 = match action_1 {
-            LightAction::Change => match state.light_state_1 {
-                LightState::NorthSouthOpen => LightState::ChangingToEW,
-                LightState::EastWestOpen => LightState::ChangingToNS,
-                LightState::ChangingToNS | LightState::ChangingToEW => {
-                    panic!("Unreachable state: can't change light mid-cycle")
-                }
-            },
-            LightAction::Stay => state.light_state_1,
-            LightAction::WaitForChange => match state.light_state_1 {
-                LightState::ChangingToNS => LightState::NorthSouthOpen,
-                LightState::ChangingToEW => LightState::EastWestOpen,
-                LightState::NorthSouthOpen | LightState::EastWestOpen => {
-                    println!("State: {:?}", state);
-                    panic!("Unreachable state: can't wait for change when lights are not changing")
-                }
-            },
-        };
+        let new_light_state_1 = Self::state_transfer(state.light_state_1, action_1);
+        let new_light_state_2 = Self::state_transfer(state.light_state_2, action_2);
 
-        let (new_ns_cars, new_ew_cars) = match new_light_state {
+        // we need to consider that a car leaving the intersection in the east-west direction can
+        // increase the number of cars in the other intersection's east-west road
+        let (new_ns_cars_1, new_ew_cars_1) = match new_light_state_1 {
             LightState::NorthSouthOpen => (
-                self.open_road_transition(state.ns_cars, self.new_car_prob_ns, rng),
-                self.closed_road_transition(state.ew_cars, self.new_car_prob_ew, rng),
+                self.open_road_transition(state.ns_cars_1, self.new_car_prob_ns_1, rng),
+                self.closed_road_transition(state.ew_cars_1, self.new_car_prob_ew_1, rng),
             ),
             LightState::EastWestOpen => (
-                self.closed_road_transition(state.ns_cars, self.new_car_prob_ns, rng),
-                self.open_road_transition(state.ew_cars, self.new_car_prob_ew, rng),
+                self.closed_road_transition(state.ns_cars_1, self.new_car_prob_ns_1, rng),
+                self.open_road_transition(state.ew_cars_1, self.new_car_prob_ew_1, rng),
             ),
             LightState::ChangingToNS | LightState::ChangingToEW => (
-                self.closed_road_transition(state.ns_cars, self.new_car_prob_ns, rng),
-                self.closed_road_transition(state.ew_cars, self.new_car_prob_ew, rng),
+                self.closed_road_transition(state.ns_cars_1, self.new_car_prob_ns_1, rng),
+                self.closed_road_transition(state.ew_cars_1, self.new_car_prob_ew_1, rng),
             ),
+        };
+
+        let (new_ns_cars_2, new_ew_cars_2) = match new_light_state_2 {
+            LightState::NorthSouthOpen => (
+                self.open_road_transition(state.ns_cars_2, self.new_car_prob_ns_2, rng),
+                self.closed_road_transition(state.ew_cars_2, self.new_car_prob_ew_2, rng),
+            ),
+            LightState::EastWestOpen => (
+                self.closed_road_transition(state.ns_cars_2, self.new_car_prob_ns_2, rng),
+                self.open_road_transition(state.ew_cars_2, self.new_car_prob_ew_2, rng),
+            ),
+            LightState::ChangingToNS | LightState::ChangingToEW => (
+                self.closed_road_transition(state.ns_cars_2, self.new_car_prob_ns_2, rng),
+                self.closed_road_transition(state.ew_cars_2, self.new_car_prob_ew_2, rng),
+            ),
+        };
+
+        // assuming equal flow in both direction car passes with a 0.5 probability to the other
+        // intersection
+        let crossed_cars = if new_ew_cars_1 < state.ew_cars_1 {
+            let random_value = rng.gen_range(0.0..1.0);
+            if random_value < 0.5 {
+                1
+            } else {
+                0
+            }
+        } else {
+            0
         };
 
         let new_state = State {
