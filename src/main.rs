@@ -40,5 +40,5 @@ fn main() {
     println!("state count: {:?}", iter.clone().count());
 
     envs::my_intersection::MyIntersectionMdp::new(0.5, 0.5, 10);
-    multiagent::intersection::MyIntersectionMdp::new(0.5, 0.5, 0.5, 0.5, 10);
+    multiagent::intersection::MAIntersectionMdp::new(0.5, 0.5, 0.5, 0.5, 10);
 }

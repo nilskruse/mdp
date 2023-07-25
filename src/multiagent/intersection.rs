@@ -257,7 +257,18 @@ impl GenericMdp<State, Action> for MAIntersectionMdp {
 
         // assuming equal flow in both direction car passes with a 0.5 probability to the other
         // intersection
-        let crossed_cars = if new_ew_cars_1 < state.ew_cars_1 {
+        let crossed_cars_1 = if new_ew_cars_1 < state.ew_cars_1 {
+            let random_value = rng.gen_range(0.0..1.0);
+            if random_value < 0.5 {
+                1
+            } else {
+                0
+            }
+        } else {
+            0
+        };
+
+        let crossed_cars_2 = if new_ew_cars_2 < state.ew_cars_2 {
             let random_value = rng.gen_range(0.0..1.0);
             if random_value < 0.5 {
                 1
@@ -269,26 +280,40 @@ impl GenericMdp<State, Action> for MAIntersectionMdp {
         };
 
         let new_state = State {
-            light_state: new_light_state,
-            ns_cars: new_ns_cars,
-            ew_cars: new_ew_cars,
+            light_state_1: new_light_state_1,
+            light_state_2: new_light_state_2,
+            ns_cars_1: new_ns_cars_1,
+            ew_cars_1: new_ew_cars_1 + crossed_cars_2,
+            ns_cars_2: new_ns_cars_2,
+            ew_cars_2: new_ew_cars_2 + crossed_cars_1,
         };
 
-        let reward: f64 = -((new_ns_cars + new_ew_cars) as f64);
+        let reward: f64 = -((new_ns_cars_1 + new_ns_cars_2 + new_ew_cars_1 + new_ew_cars_2) as f64);
 
         (new_state, reward)
     }
 
-    fn get_possible_actions(&self, current_state: State) -> Vec<LightAction> {
-        match current_state.light_state {
+    fn get_possible_actions(&self, current_state: State) -> Vec<Action> {
+        let light_actions_1 = match current_state.light_state_1 {
             LightState::NorthSouthOpen | LightState::EastWestOpen => {
                 vec![LightAction::Change, LightAction::Stay]
             }
             LightState::ChangingToNS | LightState::ChangingToEW => vec![LightAction::WaitForChange],
-        }
+        };
+
+        let light_actions_2 = match current_state.light_state_2 {
+            LightState::NorthSouthOpen | LightState::EastWestOpen => {
+                vec![LightAction::Change, LightAction::Stay]
+            }
+            LightState::ChangingToNS | LightState::ChangingToEW => vec![LightAction::WaitForChange],
+        };
+
+        iproduct!(light_actions_1.iter(), light_actions_2.iter())
+            .map(|(a1, a2)| Action(*a1, *a2))
+            .collect()
     }
 
-    fn get_all_state_actions(&self) -> &[(State, LightAction)] {
+    fn get_all_state_actions(&self) -> &[(State, Action)] {
         &self.states_actions
     }
 
@@ -298,9 +323,12 @@ impl GenericMdp<State, Action> for MAIntersectionMdp {
 
     fn get_initial_state<R: Rng + rand::SeedableRng>(&self, rng: &mut R) -> State {
         State {
-            light_state: LightState::NorthSouthOpen,
-            ns_cars: 0,
-            ew_cars: 0,
+            light_state_1: LightState::NorthSouthOpen,
+            light_state_2: LightState::NorthSouthOpen,
+            ns_cars_1: 0,
+            ew_cars_1: 0,
+            ns_cars_2: 0,
+            ew_cars_2: 0,
         }
     }
 
