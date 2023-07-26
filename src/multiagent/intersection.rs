@@ -110,6 +110,7 @@ impl MAIntersectionMdp {
                         vec![LightAction::WaitForChange]
                     }
                 };
+
                 let action_pairs = iproduct!(ls_1_actions.into_iter(), ls_2_actions.into_iter());
                 action_pairs
                     .map(|(a1, a2)| (State::from(state), Action(a1, a2)))
@@ -220,6 +221,27 @@ impl MAIntersectionMdp {
             LightState::ChangingToNS | LightState::ChangingToEW => vec![LightAction::WaitForChange],
         }
     }
+
+    fn all_states(max_cars: u8) -> Vec<State> {
+        let lightstates = [
+            LightState::NorthSouthOpen,
+            LightState::EastWestOpen,
+            LightState::ChangingToNS,
+            LightState::ChangingToEW,
+        ];
+        let car_range = 0..=max_cars;
+        let states = iproduct!(
+            lightstates.iter().cloned(),
+            lightstates.iter().cloned(),
+            car_range.clone().into_iter(),
+            car_range.clone().into_iter(),
+            car_range.clone().into_iter(),
+            car_range.clone().into_iter()
+        )
+        .map(|s| State::from(s));
+
+        states.collect()
+    }
 }
 
 impl GenericMdp<State, Action> for MAIntersectionMdp {
@@ -271,7 +293,11 @@ impl GenericMdp<State, Action> for MAIntersectionMdp {
         let crossed_cars_1 = if new_ew_cars_1 < state.ew_cars_1 {
             let random_value = rng.gen_range(0.0..1.0);
             if random_value < 0.5 {
-                1
+                if new_ew_cars_2 + 1 <= self.max_cars {
+                    1
+                } else {
+                    0
+                }
             } else {
                 0
             }
@@ -282,7 +308,11 @@ impl GenericMdp<State, Action> for MAIntersectionMdp {
         let crossed_cars_2 = if new_ew_cars_2 < state.ew_cars_2 {
             let random_value = rng.gen_range(0.0..1.0);
             if random_value < 0.5 {
-                1
+                if new_ew_cars_1 + 1 <= self.max_cars {
+                    1
+                } else {
+                    0
+                }
             } else {
                 0
             }
@@ -348,7 +378,7 @@ impl GenericMdp<State, Action> for MAIntersectionMdp {
     }
 }
 
-struct MAIntersectionRunner<G: GenericStateActionAlgorithm> {
+pub struct MAIntersectionRunner<G: GenericStateActionAlgorithm> {
     mdp: MAIntersectionMdp,
     agent_1: G,
     agent_2: G,
@@ -356,7 +386,7 @@ struct MAIntersectionRunner<G: GenericStateActionAlgorithm> {
 }
 
 impl<G: GenericStateActionAlgorithm> MAIntersectionRunner<G> {
-    fn new(
+    pub fn new(
         new_car_prob_ns_1: f64,
         new_car_prob_ew_1: f64,
         new_car_prob_ns_2: f64,
@@ -373,6 +403,7 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunner<G> {
             new_car_prob_ew_2,
             max_cars,
         );
+
         Self {
             mdp,
             agent_1,
@@ -381,11 +412,11 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunner<G> {
         }
     }
 
-    fn run<R: Rng + SeedableRng>(
+    pub fn run<R: Rng + SeedableRng>(
         &self,
         episodes: usize,
-        q_map_1: &mut BTreeMap<(LightState, LightAction), f64>,
-        q_map_2: &mut BTreeMap<(LightState, LightAction), f64>,
+        q_map_1: &mut BTreeMap<(State, LightAction), f64>,
+        q_map_2: &mut BTreeMap<(State, LightAction), f64>,
         rng: &mut R,
     ) {
         for _ in 0..episodes {
@@ -405,13 +436,13 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunner<G> {
                     MAIntersectionMdp::possible_light_actions(current_state.light_state_2);
 
                 // select action for intersection 1
-                let Some(selected_action_1) = epsilon_greedy_policy_ma(&possible_actions_1, q_map_1, light_state_1, self.agent_1.get_epsilon(), rng)
+                let Some(selected_action_1) = epsilon_greedy_policy_ma(&possible_actions_1, q_map_1, current_state, self.agent_1.get_epsilon(), rng)
                 else {
                     panic!("no action possible")
                 };
 
                 // select action for intersection 2
-                let Some(selected_action_2) = epsilon_greedy_policy_ma(&possible_actions_2, q_map_2, light_state_2, self.agent_2.get_epsilon(), rng)
+                let Some(selected_action_2) = epsilon_greedy_policy_ma(&possible_actions_2, q_map_2, current_state, self.agent_2.get_epsilon(), rng)
                 else {
                     panic!("no action possible")
                 };
@@ -421,7 +452,86 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunner<G> {
                     (current_state, Action(selected_action_1, selected_action_2)),
                     rng,
                 );
+
+                // perform learning steps
+                let next_possible_actions_1 =
+                    MAIntersectionMdp::possible_light_actions(next_state.light_state_1);
+
+                let next_possible_actions_2 =
+                    MAIntersectionMdp::possible_light_actions(next_state.light_state_2);
+
+                println!("agent 1");
+                self.agent_1.step(
+                    q_map_1,
+                    &next_possible_actions_1,
+                    current_state,
+                    selected_action_1,
+                    next_state,
+                    reward,
+                    self.mdp.get_discount_factor(),
+                    rng,
+                );
+
+                println!("agent 2");
+                self.agent_2.step(
+                    q_map_2,
+                    &next_possible_actions_2,
+                    current_state,
+                    selected_action_2,
+                    next_state,
+                    reward,
+                    self.mdp.get_discount_factor(),
+                    rng,
+                );
+
+                // the usual
+                current_state = next_state;
+                steps += 1;
             }
         }
+    }
+
+    pub fn gen_q_maps(
+        &self,
+    ) -> (
+        BTreeMap<(State, LightAction), f64>,
+        BTreeMap<(State, LightAction), f64>,
+    ) {
+        let states: Vec<State> = MAIntersectionMdp::all_states(self.mdp.max_cars);
+        let states_actions_1: Vec<(State, LightAction)> = states
+            .iter()
+            .flat_map(|state| {
+                let possible_actions =
+                    MAIntersectionMdp::possible_light_actions(state.light_state_1);
+                possible_actions
+                    .iter()
+                    .map(|action| (State::from(*state), *action))
+                    .collect_vec()
+            })
+            .collect();
+
+        let states_actions_2: Vec<(State, LightAction)> = states
+            .iter()
+            .flat_map(|state| {
+                let possible_actions =
+                    MAIntersectionMdp::possible_light_actions(state.light_state_2);
+                possible_actions
+                    .iter()
+                    .map(|action| (State::from(*state), *action))
+                    .collect_vec()
+            })
+            .collect();
+
+        let mut q_map_1: BTreeMap<(State, LightAction), f64> = BTreeMap::new();
+        let mut q_map_2: BTreeMap<(State, LightAction), f64> = BTreeMap::new();
+
+        states_actions_1.iter().for_each(|state_action| {
+            q_map_1.insert(*state_action, 0.0);
+        });
+
+        states_actions_2.iter().for_each(|state_action| {
+            q_map_2.insert(*state_action, 0.0);
+        });
+        (q_map_1, q_map_2)
     }
 }

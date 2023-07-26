@@ -1,8 +1,11 @@
 use itertools::iproduct;
 use mdp::{
+    algorithms::q_learning::QLearning,
     envs::{self, my_intersection::LightState},
     experiments, multiagent,
+    utils::print_q_map,
 };
+use rand::SeedableRng;
 
 fn main() {
     // mdp::benchmarks::run_benchmarks();
@@ -41,4 +44,17 @@ fn main() {
 
     // envs::my_intersection::MyIntersectionMdp::new(0.5, 0.5, 10);
     // multiagent::intersection::MAIntersectionMdp::new(0.5, 0.5, 0.5, 0.5, 10);
+    let q_algo_1 = QLearning::new(0.1, 0.1, 2000);
+    let q_algo_2 = QLearning::new(0.1, 0.1, 2000);
+
+    let runner = multiagent::intersection::MAIntersectionRunner::new(
+        0.2, 0.2, 0.2, 0.2, 1, q_algo_1, q_algo_2, 2000,
+    );
+
+    let (mut q_map_1, mut q_map_2) = runner.gen_q_maps();
+
+    let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(0);
+    print_q_map(&q_map_1);
+    runner.run(1, &mut q_map_1, &mut q_map_2, &mut rng);
+    // print_q_map(&q_map_2);
 }

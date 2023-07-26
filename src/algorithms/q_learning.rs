@@ -58,9 +58,9 @@ impl GenericStateActionAlgorithm for QLearning {
                 // *current_q = *current_q
                 //     + self.alpha * (reward + mdp.get_discount_factor() * best_q - *current_q);
 
-                self.step(
+                let step = self.step(
                     q_map,
-                    &mdp.get_possible_actions(current_state),
+                    &mdp.get_possible_actions(next_state),
                     current_state,
                     selected_action,
                     next_state,
@@ -68,6 +68,11 @@ impl GenericStateActionAlgorithm for QLearning {
                     mdp.get_discount_factor(),
                     rng,
                 );
+
+                // break if step was not possible
+                if !step {
+                    break;
+                };
 
                 current_state = next_state;
 
@@ -79,7 +84,7 @@ impl GenericStateActionAlgorithm for QLearning {
     fn step<S: GenericState, A: GenericAction, R: Rng + SeedableRng>(
         &self,
         q_map: &mut BTreeMap<(S, A), f64>,
-        possible_actions: &[A],
+        next_possible_actions: &[A],
         current_state: S,
         selected_action: A,
         next_state: S,
@@ -87,7 +92,8 @@ impl GenericStateActionAlgorithm for QLearning {
         discount_factor: f64,
         rng: &mut R,
     ) -> bool {
-        let Some(best_action) = greedy_policy_ma(possible_actions, q_map, next_state, rng) else {return false};
+        println!("state: {:?}, action: {:?}", current_state, selected_action);
+        let Some(best_action) = greedy_policy_ma(next_possible_actions, q_map, next_state, rng) else {return false};
         let best_q = *q_map
             .get(&(next_state, best_action))
             .expect("No qmap entry found");
