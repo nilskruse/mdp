@@ -119,10 +119,10 @@ pub fn greedy_policy_ma<S: GenericState, A: GenericAction, R: Rng>(
         .iter()
         // extract (action, q)- tuples
         .map(|a| {
-            println!(
-                "greedy_policy_ma: state: {:?}, action: {:?}",
-                current_state, *a
-            );
+            // println!(
+            //     "greedy_policy_ma: state: {:?}, action: {:?}",
+            //     current_state, *a
+            // );
             let q = *q_map.get(&(current_state, *a)).expect("no q-entry");
             (*a, q)
         })

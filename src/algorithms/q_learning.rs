@@ -92,7 +92,7 @@ impl GenericStateActionAlgorithm for QLearning {
         discount_factor: f64,
         rng: &mut R,
     ) -> bool {
-        println!("state: {:?}, action: {:?}", current_state, selected_action);
+        // println!("state: {:?}, action: {:?}", current_state, selected_action);
         let Some(best_action) = greedy_policy_ma(next_possible_actions, q_map, next_state, rng) else {return false};
         let best_q = *q_map
             .get(&(next_state, best_action))
