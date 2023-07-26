@@ -99,4 +99,8 @@ impl GenericStateActionAlgorithm for MonteCarlo {
             returns.clear();
         }
     }
+
+    fn get_epsilon(&self) -> f64 {
+        self.epsilon
+    }
 }

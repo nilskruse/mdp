@@ -103,4 +103,7 @@ impl GenericStateActionAlgorithm for QLearningDynamic {
             }
         }
     }
+    fn get_epsilon(&self) -> f64 {
+        self.epsilon
+    }
 }

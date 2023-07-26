@@ -6,9 +6,11 @@ use std::{
 
 use itertools::{iproduct, Itertools};
 
-use rand::Rng;
+use rand::{Rng, SeedableRng};
 
-use crate::mdp::GenericMdp;
+use crate::{
+    algorithms::GenericStateActionAlgorithm, mdp::GenericMdp, policies::epsilon_greedy_policy_ma,
+};
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Copy)]
 pub struct State {
@@ -209,6 +211,15 @@ impl MAIntersectionMdp {
             },
         }
     }
+
+    fn possible_light_actions(light_state: LightState) -> Vec<LightAction> {
+        match light_state {
+            LightState::NorthSouthOpen | LightState::EastWestOpen => {
+                vec![LightAction::Change, LightAction::Stay]
+            }
+            LightState::ChangingToNS | LightState::ChangingToEW => vec![LightAction::WaitForChange],
+        }
+    }
 }
 
 impl GenericMdp<State, Action> for MAIntersectionMdp {
@@ -334,5 +345,83 @@ impl GenericMdp<State, Action> for MAIntersectionMdp {
 
     fn get_discount_factor(&self) -> f64 {
         0.8
+    }
+}
+
+struct MAIntersectionRunner<G: GenericStateActionAlgorithm> {
+    mdp: MAIntersectionMdp,
+    agent_1: G,
+    agent_2: G,
+    max_steps: usize,
+}
+
+impl<G: GenericStateActionAlgorithm> MAIntersectionRunner<G> {
+    fn new(
+        new_car_prob_ns_1: f64,
+        new_car_prob_ew_1: f64,
+        new_car_prob_ns_2: f64,
+        new_car_prob_ew_2: f64,
+        max_cars: u8,
+        agent_1: G,
+        agent_2: G,
+        max_steps: usize,
+    ) -> Self {
+        let mdp = MAIntersectionMdp::new(
+            new_car_prob_ns_1,
+            new_car_prob_ew_1,
+            new_car_prob_ns_2,
+            new_car_prob_ew_2,
+            max_cars,
+        );
+        Self {
+            mdp,
+            agent_1,
+            agent_2,
+            max_steps,
+        }
+    }
+
+    fn run<R: Rng + SeedableRng>(
+        &self,
+        episodes: usize,
+        q_map_1: &mut BTreeMap<(LightState, LightAction), f64>,
+        q_map_2: &mut BTreeMap<(LightState, LightAction), f64>,
+        rng: &mut R,
+    ) {
+        for _ in 0..episodes {
+            let mut current_state: State = self.mdp.get_initial_state(rng);
+            let mut steps = 0;
+
+            while !self.mdp.is_terminal(current_state) && steps < self.max_steps {
+                let light_state_1 = current_state.light_state_1;
+                let light_state_2 = current_state.light_state_2;
+
+                // retrieve possible actions for light 1
+                let possible_actions_1 =
+                    MAIntersectionMdp::possible_light_actions(current_state.light_state_1);
+
+                // retrieve possible actions for light 2
+                let possible_actions_2 =
+                    MAIntersectionMdp::possible_light_actions(current_state.light_state_2);
+
+                // select action for intersection 1
+                let Some(selected_action_1) = epsilon_greedy_policy_ma(&possible_actions_1, q_map_1, light_state_1, self.agent_1.get_epsilon(), rng)
+                else {
+                    panic!("no action possible")
+                };
+
+                // select action for intersection 2
+                let Some(selected_action_2) = epsilon_greedy_policy_ma(&possible_actions_2, q_map_2, light_state_2, self.agent_2.get_epsilon(), rng)
+                else {
+                    panic!("no action possible")
+                };
+
+                // execute combined action
+                let (next_state, reward) = self.mdp.perform_action(
+                    (current_state, Action(selected_action_1, selected_action_2)),
+                    rng,
+                );
+            }
+        }
     }
 }

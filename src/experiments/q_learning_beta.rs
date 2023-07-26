@@ -69,7 +69,11 @@ pub fn run_equivalence_experiment() {
     println!("DynaQ average episodes for optimal greedy policy: {total_dyna_q}");
 }
 
-pub fn run_equivalence_experiment_seed<M, S, A>(mdp: &M, seed: u64, optimal_reward: f64) -> (usize, usize, usize, usize)
+pub fn run_equivalence_experiment_seed<M, S, A>(
+    mdp: &M,
+    seed: u64,
+    optimal_reward: f64,
+) -> (usize, usize, usize, usize)
 where
     M: GenericMdp<S, A>,
     S: GenericState,

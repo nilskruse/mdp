@@ -90,4 +90,7 @@ impl GenericStateActionAlgorithm for QLearningLamda {
             }
         }
     }
+    fn get_epsilon(&self) -> f64 {
+        self.epsilon
+    }
 }

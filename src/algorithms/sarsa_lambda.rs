@@ -83,4 +83,8 @@ impl GenericStateActionAlgorithm for SarsaLambda {
             }
         }
     }
+
+    fn get_epsilon(&self) -> f64 {
+        self.epsilon
+    }
 }

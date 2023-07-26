@@ -198,4 +198,8 @@ impl GenericStateActionAlgorithm for QLearningClipped {
             }
         }
     }
+
+    fn get_epsilon(&self) -> f64 {
+        self.epsilon
+    }
 }

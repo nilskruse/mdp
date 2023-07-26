@@ -6,7 +6,7 @@ use mdp::{
 
 fn main() {
     // mdp::benchmarks::run_benchmarks();
-    // experiments::cliff_walking::run_cliff_walking();
+    experiments::cliff_walking::run_cliff_walking();
     // experiments::cliff_walking::run_slippery_cliff_walking();
     // experiments::cliff_walking::run_cliff_walking_episodic();
     // mdp::visualisation::vis_test();
@@ -18,27 +18,27 @@ fn main() {
     // experiments::intersection::run_experiment();
     // experiments::q_learning_beta::run_q_beta_experiment();
     // experiments::q_learning_beta::run_equivalence_experiment();
-    let lightstates = [
-        LightState::NorthSouthOpen,
-        LightState::EastWestOpen,
-        LightState::ChangingToNS,
-        LightState::ChangingToEW,
-    ];
-    let car_iter = 0..=5;
-    let iter = iproduct!(
-        lightstates.iter(),
-        lightstates.iter(),
-        car_iter.clone().into_iter(),
-        car_iter.clone().into_iter(),
-        car_iter.clone().into_iter(),
-        car_iter.clone().into_iter()
-    );
+    // let lightstates = [
+    //     LightState::NorthSouthOpen,
+    //     LightState::EastWestOpen,
+    //     LightState::ChangingToNS,
+    //     LightState::ChangingToEW,
+    // ];
+    // let car_iter = 0..=5;
+    // let iter = iproduct!(
+    //     lightstates.iter(),
+    //     lightstates.iter(),
+    //     car_iter.clone().into_iter(),
+    //     car_iter.clone().into_iter(),
+    //     car_iter.clone().into_iter(),
+    //     car_iter.clone().into_iter()
+    // );
 
-    iter.clone().for_each(|t| {
-        println!("{:?}", t);
-    });
-    println!("state count: {:?}", iter.clone().count());
+    // iter.clone().for_each(|t| {
+    //     println!("{:?}", t);
+    // });
+    // println!("state count: {:?}", iter.clone().count());
 
-    envs::my_intersection::MyIntersectionMdp::new(0.5, 0.5, 10);
-    multiagent::intersection::MAIntersectionMdp::new(0.5, 0.5, 0.5, 0.5, 10);
+    // envs::my_intersection::MyIntersectionMdp::new(0.5, 0.5, 10);
+    // multiagent::intersection::MAIntersectionMdp::new(0.5, 0.5, 0.5, 0.5, 10);
 }

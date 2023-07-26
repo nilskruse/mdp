@@ -77,7 +77,10 @@ impl MyIntersectionMdp {
             }
         });
 
-        println!("single agent states_actions count: {:?}", states_actions.len());
+        println!(
+            "single agent states_actions count: {:?}",
+            states_actions.len()
+        );
         Self {
             new_car_prob_ns,
             new_car_prob_ew,

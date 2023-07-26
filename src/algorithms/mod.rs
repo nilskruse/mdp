@@ -48,6 +48,23 @@ pub trait GenericStateActionAlgorithm {
         rng: &mut R,
         q_map: &mut BTreeMap<(S, A), f64>,
     );
+
+    fn get_epsilon(&self) -> f64;
+
+    #[allow(unused_variables)]
+    fn step<S: GenericState, A: GenericAction, R: Rng + SeedableRng>(
+        &self,
+        q_map: &mut BTreeMap<(S, A), f64>,
+        possible_actions: &[A],
+        current_state: S,
+        selected_action: A,
+        next_state: S,
+        reward: f64,
+        discount_factor: f64,
+        rng: &mut R,
+    ) -> bool {
+        panic!("step not implemented");
+    }
 }
 
 pub trait GenericStateActionAlgorithmStateful {

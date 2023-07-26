@@ -1,6 +1,6 @@
 use rand::{Rng, SeedableRng};
 
-use crate::mdp::GenericMdp;
+use crate::{mdp::GenericMdp, policies::greedy_policy_ma};
 use std::collections::BTreeMap;
 
 use crate::{
@@ -49,19 +49,55 @@ impl GenericStateActionAlgorithm for QLearning {
                     mdp.perform_action((current_state, selected_action), rng);
 
                 // update q_map
-                let Some(best_action) = greedy_policy(mdp, q_map, next_state, rng) else {break};
-                let best_q = *q_map
-                    .get(&(next_state, best_action))
-                    .expect("No qmap entry found");
+                // let Some(best_action) = greedy_policy(mdp, q_map, next_state, rng) else {break};
+                // let best_q = *q_map
+                //     .get(&(next_state, best_action))
+                //     .expect("No qmap entry found");
 
-                let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
-                *current_q = *current_q
-                    + self.alpha * (reward + mdp.get_discount_factor() * best_q - *current_q);
+                // let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
+                // *current_q = *current_q
+                //     + self.alpha * (reward + mdp.get_discount_factor() * best_q - *current_q);
+
+                self.step(
+                    q_map,
+                    &mdp.get_possible_actions(current_state),
+                    current_state,
+                    selected_action,
+                    next_state,
+                    reward,
+                    mdp.get_discount_factor(),
+                    rng,
+                );
 
                 current_state = next_state;
 
                 steps += 1;
             }
         }
+    }
+
+    fn step<S: GenericState, A: GenericAction, R: Rng + SeedableRng>(
+        &self,
+        q_map: &mut BTreeMap<(S, A), f64>,
+        possible_actions: &[A],
+        current_state: S,
+        selected_action: A,
+        next_state: S,
+        reward: f64,
+        discount_factor: f64,
+        rng: &mut R,
+    ) -> bool {
+        let Some(best_action) = greedy_policy_ma(possible_actions, q_map, next_state, rng) else {return false};
+        let best_q = *q_map
+            .get(&(next_state, best_action))
+            .expect("No qmap entry found");
+
+        let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
+        *current_q = *current_q + self.alpha * (reward + discount_factor * best_q - *current_q);
+        return true;
+    }
+
+    fn get_epsilon(&self) -> f64 {
+        self.epsilon
     }
 }
