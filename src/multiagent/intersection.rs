@@ -81,10 +81,10 @@ impl MAIntersectionMdp {
         let state_iter = iproduct!(
             lightstates.iter().cloned(),
             lightstates.iter().cloned(),
-            car_range.clone().into_iter(),
-            car_range.clone().into_iter(),
-            car_range.clone().into_iter(),
-            car_range.clone().into_iter()
+            car_range.clone(),
+            car_range.clone(),
+            car_range.clone(),
+            car_range.clone()
         );
 
         // combine with all possible action pairs for each state
@@ -194,12 +194,12 @@ impl MAIntersectionMdp {
         let states = iproduct!(
             lightstates.iter().cloned(),
             lightstates.iter().cloned(),
-            car_range.clone().into_iter(),
-            car_range.clone().into_iter(),
-            car_range.clone().into_iter(),
-            car_range.clone().into_iter()
+            car_range.clone(),
+            car_range.clone(),
+            car_range.clone(),
+            car_range.clone()
         )
-        .map(|s| State::from(s));
+        .map(State::from);
 
         states.collect()
     }
@@ -254,7 +254,7 @@ impl GenericMdp<State, Action> for MAIntersectionMdp {
         let crossed_cars_1 = if new_ew_cars_1 < state.ew_cars_1 {
             let random_value = rng.gen_range(0.0..1.0);
             if random_value < 0.5 {
-                if new_ew_cars_2 + 1 <= self.max_cars {
+                if new_ew_cars_2 < self.max_cars {
                     1
                 } else {
                     0
@@ -269,7 +269,7 @@ impl GenericMdp<State, Action> for MAIntersectionMdp {
         let crossed_cars_2 = if new_ew_cars_2 < state.ew_cars_2 {
             let random_value = rng.gen_range(0.0..1.0);
             if random_value < 0.5 {
-                if new_ew_cars_1 + 1 <= self.max_cars {
+                if new_ew_cars_1 < self.max_cars {
                     1
                 } else {
                     0
@@ -466,7 +466,7 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunner<G> {
                     MAIntersectionMdp::possible_light_actions(state.light_state_1);
                 possible_actions
                     .iter()
-                    .map(|action| (State::from(*state), *action))
+                    .map(|action| (*state, *action))
                     .collect_vec()
             })
             .collect();
@@ -478,7 +478,7 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunner<G> {
                     MAIntersectionMdp::possible_light_actions(state.light_state_2);
                 possible_actions
                     .iter()
-                    .map(|action| (State::from(*state), *action))
+                    .map(|action| (*state, *action))
                     .collect_vec()
             })
             .collect();

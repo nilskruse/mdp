@@ -14,6 +14,7 @@ egui = "0.21.0"
 itertools = "0.10.5"
 rand = "0.8.5"
 rand_chacha = "0.3.1"
+rayon = "1.7.0"
 
 [profile.release]
 opt-level = 3               # Use slightly better optimizations.

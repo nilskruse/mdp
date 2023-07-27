@@ -8,7 +8,7 @@ use crate::mdp::GenericMdp;
 pub struct BlackjackMdp;
 
 impl BlackjackMdp {
-    pub fn draw_card<R: Rng >(&self, rng: &mut R) -> u8 {
+    pub fn draw_card<R: Rng>(&self, rng: &mut R) -> u8 {
         rng.gen_range(1..=10)
     }
 }
@@ -64,7 +64,7 @@ impl GenericMdp<BlackjackState, BlackjackAction> for BlackjackMdp {
         }
     }
 
-    fn get_initial_state<R: Rng >(&self, rng: &mut R) -> BlackjackState {
+    fn get_initial_state<R: Rng>(&self, rng: &mut R) -> BlackjackState {
         let player_card_1 = self.draw_card(rng);
         let player_card_2 = self.draw_card(rng);
         let player_sum = player_card_1 + player_card_2;

@@ -176,6 +176,8 @@ pub struct BetaDynaQ<S: GenericState, A: GenericAction> {
     beta_rate: usize,
     beta_denom: f64,
     total_episodes: usize,
+    converging_alpha: bool,
+    direct_learning: bool,
 }
 
 impl<S: GenericState, A: GenericAction> BetaDynaQ<S, A> {
@@ -199,6 +201,34 @@ impl<S: GenericState, A: GenericAction> BetaDynaQ<S, A> {
             beta_rate,
             beta_denom: 0.0_f64,
             total_episodes: 0,
+            converging_alpha: false,
+            direct_learning: true,
+        }
+    }
+    pub fn new_with_settings<M: GenericMdp<S, A>>(
+        alpha: f64,
+        epsilon: f64,
+        k: usize,
+        max_steps: usize,
+        deterministic: bool,
+        _mdp: &M, // used for type inference
+        beta_rate: usize,
+        converging_alpha: bool,
+        direct_learning: bool,
+    ) -> Self {
+        Self {
+            alpha,
+            epsilon,
+            k,
+            max_steps,
+            model: BTreeMap::new(),
+            t_table: BTreeMap::new(),
+            deterministic,
+            beta_rate,
+            beta_denom: 0.0_f64,
+            total_episodes: 0,
+            converging_alpha,
+            direct_learning,
         }
     }
 }
@@ -212,13 +242,18 @@ impl<S: GenericState, A: GenericAction> Dyna<S, A> for BetaDynaQ<S, A> {
         q_map: &mut BTreeMap<(S, A), f64>,
     ) {
         for _ in 1..=episodes {
-            if self.total_episodes % self.beta_rate == 0 {
-                self.beta_denom += 1.0;
-                // let beta = 1.0 / (self.beta_denom + 1.0);
-                // println!("beta={beta}");
-            }
+            // println!("beta_denom: {}", self.beta_denom);
+            let alpha = if self.converging_alpha {
+                1.0 / (self.beta_denom + 1.0).sqrt()
+            } else {
+                self.alpha
+            };
 
             let beta = 1.0 / (self.beta_denom + 1.0);
+
+            if self.total_episodes % self.beta_rate == 0 {
+                self.beta_denom += 1.0;
+            }
 
             let mut current_state = mdp.get_initial_state(rng);
             let mut steps = 0;
@@ -228,16 +263,18 @@ impl<S: GenericState, A: GenericAction> Dyna<S, A> for BetaDynaQ<S, A> {
                 let (next_state, reward) =
                     mdp.perform_action((current_state, selected_action), rng);
 
-                // update q_map
-                let Some(best_action) = greedy_policy(mdp, q_map, next_state, rng) else {break};
-                let best_q = *q_map
-                    .get(&(next_state, best_action))
-                    .expect("No qmap entry found");
+                // direct RL step
+                if self.direct_learning {
+                    let Some(best_action) = greedy_policy(mdp, q_map, next_state, rng) else {break};
+                    let best_q = *q_map
+                        .get(&(next_state, best_action))
+                        .expect("No qmap entry found");
 
-                let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
-                *current_q = (*current_q
-                    + self.alpha * (reward + mdp.get_discount_factor() * best_q - *current_q))
-                    * (1.0 - beta);
+                    let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
+                    *current_q = (*current_q
+                        + alpha * (reward + mdp.get_discount_factor() * best_q - *current_q))
+                        * (1.0 - beta);
+                }
 
                 // determine reward value used for updating model
                 let model_reward = if self.deterministic {
@@ -300,7 +337,7 @@ impl<S: GenericState, A: GenericAction> Dyna<S, A> for BetaDynaQ<S, A> {
                     let current_q = q_map.entry(*key).or_insert(0.0);
 
                     *current_q = (*current_q
-                        + self.alpha * (reward + mdp.get_discount_factor() * best_q - *current_q))
+                        + alpha * (reward + mdp.get_discount_factor() * best_q - *current_q))
                         * (1.0 - beta);
                 }
                 current_state = next_state;

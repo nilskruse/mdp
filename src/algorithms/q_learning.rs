@@ -77,7 +77,7 @@ impl GenericStateActionAlgorithm for QLearning {
         }
     }
 
-    fn step<S: GenericState, A: GenericAction, R: Rng >(
+    fn step<S: GenericState, A: GenericAction, R: Rng>(
         &self,
         q_map: &mut BTreeMap<(S, A), f64>,
         next_possible_actions: &[A],

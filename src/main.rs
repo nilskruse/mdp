@@ -1,16 +1,12 @@
-
-use mdp::{
-    experiments,
-};
-
+use mdp::experiments;
 
 fn main() {
     // mdp::benchmarks::run_benchmarks();
-    experiments::cliff_walking::run_cliff_walking();
+    // experiments::cliff_walking::run_cliff_walking();
     // experiments::cliff_walking::run_slippery_cliff_walking();
     // experiments::cliff_walking::run_cliff_walking_episodic();
     // mdp::visualisation::vis_test();
-    // experiments::non_contractive::run_experiment();
+    experiments::non_contractive::run_experiment();
     // test();
     // visualisation::vis_test();
     // experiments::non_contractive::run_experiment();
@@ -41,5 +37,4 @@ fn main() {
 
     // envs::my_intersection::MyIntersectionMdp::new(0.5, 0.5, 10);
     // multiagent::intersection::MAIntersectionMdp::new(0.5, 0.5, 0.5, 0.5, 10);
-
 }

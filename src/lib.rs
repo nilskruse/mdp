@@ -1,5 +1,4 @@
 #![allow(dead_code)]
-#![allow(unused_imports)]
 
 #[macro_use]
 extern crate assert_float_eq;
