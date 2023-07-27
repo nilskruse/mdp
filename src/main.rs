@@ -1,11 +1,8 @@
-use itertools::iproduct;
+
 use mdp::{
-    algorithms::q_learning::QLearning,
-    envs::{self, my_intersection::LightState},
-    experiments, multiagent,
-    utils::print_q_map,
+    experiments,
 };
-use rand::SeedableRng;
+
 
 fn main() {
     // mdp::benchmarks::run_benchmarks();
