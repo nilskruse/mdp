@@ -1,9 +1,6 @@
 use rand::SeedableRng;
 
-use crate::{
-    algorithms::q_learning::QLearning,
-    multiagent::{self, intersection::MAIntersectionRunner},
-};
+use crate::{algorithms::q_learning::QLearning, multiagent::intersection::MAIntersectionRunner};
 
 pub fn main() {
     let max_steps = 5000;

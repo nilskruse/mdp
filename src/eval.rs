@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use rand_chacha::ChaCha20Rng;
 
 use crate::{
-    mdp::{GenericAction, GenericState, IndexAction, IndexMdp, IndexState, MapMdp},
+    mdp::{GenericAction, GenericState},
     policies::{epsilon_greedy_policy, greedy_policy},
 };
 

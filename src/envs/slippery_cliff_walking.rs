@@ -1,6 +1,6 @@
 use crate::{
-    envs::cliff_walking::{self, Action, CLIFF_REWARD, COLS, ROWS, STEP_REWARD},
-    mdp::{self, IndexMdp, IndexState, MapMdp, Reward, Transition},
+    envs::cliff_walking::{self, CLIFF_REWARD, COLS, ROWS, STEP_REWARD},
+    mdp::MapMdp,
 };
 
 use super::cliff_walking::{CliffWalkingAction, CliffWalkingState, CliffWalkingTransition};

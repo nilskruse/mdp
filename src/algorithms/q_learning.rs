@@ -1,11 +1,11 @@
-use rand::{Rng, SeedableRng};
+use rand::Rng;
 
 use crate::{mdp::GenericMdp, policies::greedy_policy_ma};
 use std::collections::BTreeMap;
 
 use crate::{
-    mdp::{GenericAction, GenericState, IndexAction, IndexState, MapMdp},
-    policies::{epsilon_greedy_policy, greedy_policy},
+    mdp::{GenericAction, GenericState},
+    policies::epsilon_greedy_policy,
 };
 
 use super::GenericStateActionAlgorithm;

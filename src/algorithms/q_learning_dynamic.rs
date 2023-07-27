@@ -1,11 +1,10 @@
 use std::{collections::BTreeMap, iter::zip};
 
-use rand::{Rng, SeedableRng};
+use rand::Rng;
 
 use crate::{
-    mdp::{GenericAction, GenericMdp, GenericState, IndexAction, IndexState},
+    mdp::{GenericAction, GenericMdp, GenericState},
     policies::{epsilon_greedy_policy, greedy_policy},
-    utils::print_q_map,
 };
 
 use super::GenericStateActionAlgorithm;

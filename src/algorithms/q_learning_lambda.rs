@@ -1,9 +1,9 @@
 use std::collections::BTreeMap;
 
-use rand::{Rng, SeedableRng};
+use rand::Rng;
 
 use crate::{
-    mdp::{GenericAction, GenericMdp, GenericState, IndexAction, IndexState},
+    mdp::{GenericAction, GenericMdp, GenericState},
     policies::{epsilon_greedy_policy, greedy_policy},
 };
 

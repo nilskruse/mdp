@@ -2,10 +2,7 @@
 #![allow(unused_mut)]
 use std::collections::BTreeMap;
 
-use crate::{
-    mdp::{self, IndexState, Probability, Reward, Transition},
-    utils::print_transition_map,
-};
+use crate::mdp::{self, IndexState, Probability, Reward, Transition};
 
 enum IntersectionAction {
     Stay = 0,

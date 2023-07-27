@@ -1,7 +1,6 @@
 #![allow(unused_variables)]
-use std::slice::Iter;
 
-use rand::{Rng, SeedableRng};
+use rand::Rng;
 
 use crate::mdp::GenericMdp;
 

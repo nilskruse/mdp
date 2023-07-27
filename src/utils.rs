@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use std::{cmp::Ordering, collections::BTreeMap};
 
-use crate::mdp::{GenericAction, GenericState, IndexAction, IndexMdp, IndexState, Reward};
+use crate::mdp::{GenericAction, GenericState, IndexMdp, Reward};
 
 // print q_map in order
 pub fn print_q_map<S: GenericState, A: GenericAction>(q_map: &BTreeMap<(S, A), Reward>) {

@@ -1,5 +1,4 @@
 #![allow(unused_variables)]
-use std::slice::Iter;
 
 use rand::Rng;
 

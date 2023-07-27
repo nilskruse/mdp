@@ -1,13 +1,11 @@
-use itertools::Itertools;
 use rand::{
     distributions::{Distribution, WeightedIndex},
-    Rng, SeedableRng,
+    Rng,
 };
-use rand_chacha::ChaCha20Rng;
+
 use std::{
-    collections::{btree_map::Keys, BTreeMap, HashSet},
+    collections::{BTreeMap, HashSet},
     hash::Hash,
-    slice::Iter,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]

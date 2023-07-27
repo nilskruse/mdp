@@ -1,12 +1,9 @@
 use std::collections::{BTreeMap, HashSet};
 
-use rand::{Rng, SeedableRng};
-use rand_chacha::ChaCha20Rng;
+use rand::Rng;
 
 use crate::{
-    mdp::{
-        self, GenericAction, GenericMdp, GenericState, IndexAction, IndexMdp, IndexState, Reward,
-    },
+    mdp::{GenericAction, GenericMdp, GenericState, Reward},
     policies::epsilon_greedy_policy,
 };
 

@@ -1,12 +1,9 @@
 #![allow(unused_variables)]
-use std::{
-    collections::{btree_map, BTreeMap},
-    slice::Iter,
-};
+use std::collections::BTreeMap;
 
 use itertools::{iproduct, Itertools};
 
-use rand::{Rng, SeedableRng};
+use rand::Rng;
 
 use crate::{
     algorithms::GenericStateActionAlgorithm, mdp::GenericMdp, policies::epsilon_greedy_policy_ma,

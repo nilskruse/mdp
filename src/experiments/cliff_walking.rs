@@ -3,7 +3,6 @@ use crate::{
     eval::{evaluate_epsilon_greedy_policy, evaluate_greedy_policy},
 };
 use rand::SeedableRng;
-use std::io;
 
 use crate::{
     algorithms::{

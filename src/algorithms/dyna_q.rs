@@ -1,11 +1,9 @@
 use std::collections::BTreeMap;
 
-use eframe::glow::DRAW_INDIRECT_BUFFER_BINDING;
-use rand::{seq::IteratorRandom, Rng, SeedableRng};
-use std::collections::Bound::{Included, Unbounded};
+use rand::{seq::IteratorRandom, Rng};
 
 use crate::{
-    mdp::{GenericAction, GenericMdp, GenericState, Reward},
+    mdp::{GenericAction, GenericMdp, GenericState},
     policies::{epsilon_greedy_policy, greedy_policy},
 };
 

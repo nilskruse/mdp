@@ -1,10 +1,7 @@
 use rand::{Rng, SeedableRng};
 
 use crate::{
-    algorithms::{
-        monte_carlo::MonteCarlo, q_learning::QLearning, q_learning_lambda::QLearningLamda,
-        sarsa::Sarsa, sarsa_lambda::SarsaLambda, GenericStateActionAlgorithm, Trace,
-    },
+    algorithms::{q_learning::QLearning, GenericStateActionAlgorithm},
     envs::{
         self,
         my_intersection::{Action, MyIntersectionMdp},

@@ -9,7 +9,7 @@ use rand::{
 };
 use rand_chacha::ChaCha20Rng;
 
-use crate::mdp::{IndexAction, IndexMdp, IndexState, MapMdp, Transition};
+use crate::mdp::{IndexAction, IndexState, MapMdp, Transition};
 
 // TODO: Ensure at least one terminal state is reachable
 pub fn generate_random_mdp(

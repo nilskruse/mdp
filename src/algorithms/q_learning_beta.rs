@@ -1,14 +1,11 @@
-use rand::{Rng, SeedableRng};
+use rand::Rng;
 
 use crate::mdp::{GenericAction, GenericMdp, GenericState};
 use std::collections::BTreeMap;
 
-use crate::{
-    mdp::{IndexAction, IndexState},
-    policies::{epsilon_greedy_policy, greedy_policy},
-};
+use crate::policies::{epsilon_greedy_policy, greedy_policy};
 
-use super::{GenericStateActionAlgorithm, GenericStateActionAlgorithmStateful};
+use super::GenericStateActionAlgorithmStateful;
 
 pub struct QLearningBeta {
     alpha: f64,

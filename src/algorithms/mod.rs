@@ -11,11 +11,8 @@ pub mod value_iteration;
 use std::collections::BTreeMap;
 
 use rand::{Rng, SeedableRng};
-use rand_chacha::ChaCha20Rng;
 
-use crate::mdp::{
-    GenericAction, GenericMdp, GenericState, IndexAction, IndexMdp, IndexState, MapMdp,
-};
+use crate::mdp::{GenericAction, GenericMdp, GenericState};
 
 pub trait GenericStateActionAlgorithm {
     // default implementation

@@ -1,10 +1,10 @@
 use crate::mdp::GenericMdp;
 use std::collections::BTreeMap;
 
-use rand::{Rng, SeedableRng};
+use rand::Rng;
 use rand_chacha::ChaCha20Rng;
 
-use crate::mdp::{GenericAction, GenericState, IndexAction, IndexMdp, IndexState, MapMdp, Reward};
+use crate::mdp::{GenericAction, GenericState, IndexAction, IndexMdp, IndexState, Reward};
 
 trait Policy {
     fn select_action(

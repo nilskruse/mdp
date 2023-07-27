@@ -1,9 +1,11 @@
 use crate::{
     algorithms::{
         dyna_q::{BetaDynaQ, Dyna, DynaQ},
+        q_learning::QLearning,
+        q_learning_beta::QLearningBeta,
         GenericStateActionAlgorithm, GenericStateActionAlgorithmStateful,
     },
-    mdp::{GenericAction, GenericMdp, GenericState, MapMdp},
+    mdp::{GenericAction, GenericMdp, GenericState},
 };
 use std::collections::{BTreeMap, HashSet};
 
@@ -11,9 +13,7 @@ use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 
 use crate::{
-    algorithms::{
-        q_learning::QLearning, q_learning_beta::QLearningBeta, value_iteration::value_iteration,
-    },
+    algorithms::value_iteration::value_iteration,
     mdp::{IndexAction, IndexMdp, IndexState, Transition},
     policies::{epsilon_greedy_policy, greedy_policy},
     utils::{print_q_map, print_transition_map},
@@ -76,41 +76,51 @@ pub fn run_experiment() {
     let max_steps = usize::MAX;
     let beta_rate = 1;
 
-    // println!("Q-Learning");
-    // let q_algo = QLearning::new(alpha, epsilon, max_steps);
-    // let mut rng = ChaCha20Rng::seed_from_u64(0);
-    // // let q_map = q_algo.run(&mdp, episodes, &mut rng, Some(&rig));
-    // let q_map = q_algo.run(&mdp, episodes, &mut rng);
-    // println!("Q-Table:");
-    // print_q_map(&q_map);
-    // println!();
+    println!("Q-Learning");
+    let q_algo = QLearning::new(alpha, epsilon, max_steps);
+    let mut rng = ChaCha20Rng::seed_from_u64(0);
+    // let q_map = q_algo.run(&mdp, episodes, &mut rng, Some(&rig));
+    let q_map = q_algo.run(&mdp, episodes, &mut rng);
+    println!("Q-Table:");
+    print_q_map(&q_map);
+    println!();
 
-    // println!("Q-Learning Beta");
-    // let mut q_beta_algo = QLearningBeta::new(alpha, epsilon, max_steps, beta_rate);
-    // let mut rng = ChaCha20Rng::seed_from_u64(0);
-    // let q_map = q_beta_algo.run(&mdp, episodes, &mut rng);
-    // println!("Q-Table:");
-    // print_q_map(&q_map);
-    // println!();
+    println!("Q-Learning Beta");
+    let mut q_beta_algo = QLearningBeta::new(alpha, epsilon, max_steps, beta_rate);
+    let mut rng = ChaCha20Rng::seed_from_u64(0);
+    let q_map = q_beta_algo.run(&mdp, episodes, &mut rng);
+    println!("Q-Table:");
+    print_q_map(&q_map);
+    println!();
 
-    // println!("Q-Learning clipped");
-    // let q_clipped_algo = QLearningClipped::new(alpha, epsilon, max_steps, 5.0);
-    // let mut rng = ChaCha20Rng::seed_from_u64(0);
-    // let q_map = q_clipped_algo.run(&mdp, episodes, &mut rng);
-    // println!("Q-Table:");
-    // print_q_map(&q_map);
-    // println!();
+    println!("Q-Learning clipped");
+    let q_clipped_algo = QLearningClipped::new(alpha, epsilon, max_steps, 5.0);
+    let mut rng = ChaCha20Rng::seed_from_u64(0);
+    let q_map = q_clipped_algo.run(&mdp, episodes, &mut rng);
+    println!("Q-Table:");
+    print_q_map(&q_map);
+    println!();
 
-    // println!("DynaQ");
-    // let mut dyna_q_algo = DynaQ::new(alpha, epsilon, k, max_steps, false, &mdp);
-    // let mut rng = ChaCha20Rng::seed_from_u64(0);
-    // let q_map = dyna_q_algo.run(&mdp, episodes, &mut rng);
-    // println!("Q-Table:");
-    // print_q_map(&q_map);
-    // println!();
+    println!("DynaQ");
+    let mut dyna_q_algo = DynaQ::new(alpha, epsilon, k, max_steps, false, &mdp);
+    let mut rng = ChaCha20Rng::seed_from_u64(0);
+    let q_map = dyna_q_algo.run(&mdp, episodes, &mut rng);
+    println!("Q-Table:");
+    print_q_map(&q_map);
+    println!();
 
     println!("BetaDynaQ, no converging alpha, direct learning step");
     let mut beta_dyna_q_algo = BetaDynaQ::new(alpha, epsilon, k, max_steps, false, &mdp, beta_rate);
+    let mut rng = ChaCha20Rng::seed_from_u64(0);
+    let q_map = beta_dyna_q_algo.run(&mdp, episodes, &mut rng);
+    println!("Q-Table:");
+    print_q_map(&q_map);
+    println!();
+
+    println!("BetaDynaQ, no converging alpha, no direct learning step");
+    let mut beta_dyna_q_algo = BetaDynaQ::new_with_settings(
+        alpha, epsilon, k, max_steps, false, &mdp, beta_rate, false, false,
+    );
     let mut rng = ChaCha20Rng::seed_from_u64(0);
     let q_map = beta_dyna_q_algo.run(&mdp, episodes, &mut rng);
     println!("Q-Table:");

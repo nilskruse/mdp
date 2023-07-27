@@ -1,13 +1,13 @@
 use std::collections::BTreeMap;
 
 use eframe::egui;
-use egui::{Color32, Pos2, Rgba};
+use egui::Color32;
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
 use crate::{
     envs::cliff_walking::{CliffWalkingAction, CliffWalkingState, COLS, ROWS},
-    mdp::{GenericAction, GenericMdp, GenericState, IndexMdp, MapMdp},
+    mdp::MapMdp,
     policies::greedy_policy,
 };
 

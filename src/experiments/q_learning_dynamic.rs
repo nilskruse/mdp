@@ -7,7 +7,6 @@ use rand::SeedableRng;
 use crate::{
     algorithms::{q_learning::QLearning, q_learning_dynamic::QLearningDynamic},
     envs,
-    utils::print_q_map,
 };
 
 pub fn run_experiment() {

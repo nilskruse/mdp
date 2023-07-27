@@ -10,7 +10,7 @@ use crate::{
     },
     eval::evaluate_greedy_policy,
     experiments::non_contractive::QLearningClipped,
-    mdp::{GenericAction, GenericMdp, GenericState, IndexAction, IndexState},
+    mdp::{GenericAction, GenericMdp, GenericState},
     utils::{print_q_map, print_transition_map},
 };
 
