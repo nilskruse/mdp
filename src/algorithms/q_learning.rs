@@ -27,12 +27,7 @@ impl QLearning {
 }
 
 impl GenericStateActionAlgorithm for QLearning {
-    fn run_with_q_map<
-        M: GenericMdp<S, A>,
-        S: GenericState,
-        A: GenericAction,
-        R: Rng + SeedableRng,
-    >(
+    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng>(
         &self,
         mdp: &M,
         episodes: usize,
@@ -71,6 +66,7 @@ impl GenericStateActionAlgorithm for QLearning {
 
                 // break if step was not possible
                 if !step {
+                    println!("broke");
                     break;
                 };
 
@@ -81,7 +77,7 @@ impl GenericStateActionAlgorithm for QLearning {
         }
     }
 
-    fn step<S: GenericState, A: GenericAction, R: Rng + SeedableRng>(
+    fn step<S: GenericState, A: GenericAction, R: Rng >(
         &self,
         q_map: &mut BTreeMap<(S, A), f64>,
         next_possible_actions: &[A],

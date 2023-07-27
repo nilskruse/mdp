@@ -27,12 +27,7 @@ impl QLearningDynamic {
 }
 
 impl GenericStateActionAlgorithm for QLearningDynamic {
-    fn run_with_q_map<
-        M: GenericMdp<S, A>,
-        S: GenericState,
-        A: GenericAction,
-        R: Rng + SeedableRng,
-    >(
+    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng>(
         &self,
         mdp: &M,
         episodes: usize,

@@ -56,7 +56,7 @@ impl TrafficMdp {
 }
 
 impl GenericMdp<State, Action> for TrafficMdp {
-    fn perform_action<R: rand::SeedableRng + rand::Rng>(
+    fn perform_action<R: rand::Rng>(
         &self,
         state_action: (State, Action),
         rng: &mut R,
@@ -84,7 +84,7 @@ impl GenericMdp<State, Action> for TrafficMdp {
         todo!()
     }
 
-    fn get_initial_state<R: rand::Rng + rand::SeedableRng>(&self, rng: &mut R) -> State {
+    fn get_initial_state<R: rand::Rng>(&self, rng: &mut R) -> State {
         todo!()
     }
 

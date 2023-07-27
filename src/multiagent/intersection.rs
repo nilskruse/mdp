@@ -152,45 +152,6 @@ impl MAIntersectionMdp {
             old_cars + 1
         }
     }
-    fn open_road_transition_1<R: Rng>(&self, old_cars: u8, new_prob: f64, rng: &mut R) -> u8 {
-        if old_cars == 0 {
-            0
-        } else if rng.gen_range(0.0..1.0) < (1.0 - new_prob) {
-            old_cars - 1
-        } else {
-            old_cars
-        }
-    }
-
-    fn closed_road_transition_1<R: Rng>(&self, old_cars: u8, new_prob: f64, rng: &mut R) -> u8 {
-        if old_cars == self.max_cars {
-            self.max_cars
-        } else if rng.gen_range(0.0..1.0) < (1.0 - new_prob) {
-            old_cars
-        } else {
-            old_cars + 1
-        }
-    }
-
-    fn open_road_transition_2<R: Rng>(&self, old_cars: u8, new_prob: f64, rng: &mut R) -> u8 {
-        if old_cars == 0 {
-            0
-        } else if rng.gen_range(0.0..1.0) < (1.0 - new_prob) {
-            old_cars - 1
-        } else {
-            old_cars
-        }
-    }
-
-    fn closed_road_transition_2<R: Rng>(&self, old_cars: u8, new_prob: f64, rng: &mut R) -> u8 {
-        if old_cars == self.max_cars {
-            self.max_cars
-        } else if rng.gen_range(0.0..1.0) < (1.0 - new_prob) {
-            old_cars
-        } else {
-            old_cars + 1
-        }
-    }
 
     fn state_transfer(light_state: LightState, action: LightAction) -> LightState {
         match action {
@@ -245,7 +206,7 @@ impl MAIntersectionMdp {
 }
 
 impl GenericMdp<State, Action> for MAIntersectionMdp {
-    fn perform_action<R: rand::SeedableRng + Rng>(
+    fn perform_action<R: rand::Rng>(
         &self,
         state_action: (State, Action),
         rng: &mut R,
@@ -362,7 +323,7 @@ impl GenericMdp<State, Action> for MAIntersectionMdp {
         false
     }
 
-    fn get_initial_state<R: Rng + rand::SeedableRng>(&self, rng: &mut R) -> State {
+    fn get_initial_state<R: Rng>(&self, rng: &mut R) -> State {
         State {
             light_state_1: LightState::NorthSouthOpen,
             light_state_2: LightState::NorthSouthOpen,
@@ -412,7 +373,7 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunner<G> {
         }
     }
 
-    pub fn run<R: Rng + SeedableRng>(
+    pub fn run<R: Rng>(
         &self,
         episodes: usize,
         q_map_1: &mut BTreeMap<(State, LightAction), f64>,
@@ -535,7 +496,7 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunner<G> {
         (q_map_1, q_map_2)
     }
 
-    pub fn eval_greedy<R: Rng + SeedableRng>(
+    pub fn eval_greedy<R: Rng>(
         &self,
         episodes: usize,
         q_map_1: &BTreeMap<(State, LightAction), f64>,
@@ -575,6 +536,7 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunner<G> {
                 let (next_state, reward) = self
                     .mdp
                     .perform_action((current_state, combined_action), rng);
+
                 episode_reward += reward;
                 current_state = next_state;
                 steps += 1;

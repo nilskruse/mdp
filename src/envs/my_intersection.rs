@@ -111,7 +111,7 @@ impl MyIntersectionMdp {
 }
 
 impl GenericMdp<State, Action> for MyIntersectionMdp {
-    fn perform_action<R: rand::SeedableRng + Rng>(
+    fn perform_action<R: Rng>(
         &self,
         state_action: (State, Action),
         rng: &mut R,
@@ -180,7 +180,7 @@ impl GenericMdp<State, Action> for MyIntersectionMdp {
         false
     }
 
-    fn get_initial_state<R: Rng + rand::SeedableRng>(&self, rng: &mut R) -> State {
+    fn get_initial_state<R: Rng>(&self, rng: &mut R) -> State {
         State {
             light_state: LightState::NorthSouthOpen,
             ns_cars: 0,

@@ -73,11 +73,7 @@ pub trait GenericAction: Ord + Copy + Clone + Hash + std::fmt::Debug {}
 impl<T: Ord + Copy + Clone + Hash + std::fmt::Debug> GenericAction for T {}
 
 pub trait GenericMdp<S: GenericState, A: GenericAction> {
-    fn perform_action<R: SeedableRng + Rng>(
-        &self,
-        state_action: (S, A),
-        rng: &mut R,
-    ) -> (S, Reward);
+    fn perform_action<R: Rng>(&self, state_action: (S, A), rng: &mut R) -> (S, Reward);
 
     fn get_possible_actions(&self, current_state: S) -> Vec<A>;
 
@@ -85,17 +81,13 @@ pub trait GenericMdp<S: GenericState, A: GenericAction> {
 
     fn is_terminal(&self, state: S) -> bool;
 
-    fn get_initial_state<R: Rng + SeedableRng>(&self, rng: &mut R) -> S;
+    fn get_initial_state<R: Rng>(&self, rng: &mut R) -> S;
 
     fn get_discount_factor(&self) -> f64;
 }
 
 impl<S: GenericState, A: GenericAction> GenericMdp<S, A> for MapMdp<S, A> {
-    fn perform_action<R: SeedableRng + Rng>(
-        &self,
-        state_action: (S, A),
-        rng: &mut R,
-    ) -> (S, Reward) {
+    fn perform_action<R: Rng>(&self, state_action: (S, A), rng: &mut R) -> (S, Reward) {
         if let Some(transitions) = self.transitions.get(&state_action) {
             // extract probabilities, create distribution and sample
             let probs: Vec<_> = transitions.iter().map(|(prob, _, _)| prob).collect();
@@ -131,7 +123,7 @@ impl<S: GenericState, A: GenericAction> GenericMdp<S, A> for MapMdp<S, A> {
         self.terminal_states.contains(&state)
     }
 
-    fn get_initial_state<R: Rng + SeedableRng>(&self, _: &mut R) -> S {
+    fn get_initial_state<R: Rng>(&self, _: &mut R) -> S {
         self.initial_state
     }
 

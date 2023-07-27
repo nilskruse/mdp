@@ -22,12 +22,7 @@ impl MonteCarlo {
         MonteCarlo { max_steps, epsilon }
     }
 
-    fn generate_episode<
-        M: GenericMdp<S, A>,
-        S: GenericState,
-        A: GenericAction,
-        R: Rng + SeedableRng,
-    >(
+    fn generate_episode<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng>(
         &self,
         mdp: &M,
         q_map: &BTreeMap<(S, A), Reward>,
@@ -53,12 +48,7 @@ impl MonteCarlo {
 }
 
 impl GenericStateActionAlgorithm for MonteCarlo {
-    fn run_with_q_map<
-        M: GenericMdp<S, A>,
-        S: GenericState,
-        A: GenericAction,
-        R: Rng + SeedableRng,
-    >(
+    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng>(
         &self,
         mdp: &M,
         episodes: usize,

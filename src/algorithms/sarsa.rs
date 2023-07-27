@@ -26,12 +26,7 @@ impl Sarsa {
 }
 
 impl GenericStateActionAlgorithm for Sarsa {
-    fn run_with_q_map<
-        M: GenericMdp<S, A>,
-        S: GenericState,
-        A: GenericAction,
-        R: Rng + SeedableRng,
-    >(
+    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng>(
         &self,
         mdp: &M,
         episodes: usize,

@@ -15,12 +15,7 @@ trait Policy {
     );
 }
 
-pub fn epsilon_greedy_policy<
-    M: GenericMdp<S, A>,
-    S: GenericState,
-    A: GenericAction,
-    R: Rng + SeedableRng,
->(
+pub fn epsilon_greedy_policy<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng>(
     mdp: &M,
     q_map: &BTreeMap<(S, A), Reward>,
     current_state: S,
@@ -35,12 +30,7 @@ pub fn epsilon_greedy_policy<
     }
 }
 
-pub fn greedy_policy<
-    M: GenericMdp<S, A>,
-    S: GenericState,
-    A: GenericAction,
-    R: Rng + SeedableRng,
->(
+pub fn greedy_policy<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng>(
     mdp: &M,
     q_map: &BTreeMap<(S, A), Reward>,
     current_state: S,
@@ -74,12 +64,7 @@ pub fn greedy_policy<
         .or_else(|| random_policy(mdp, current_state, rng))
 }
 
-pub fn random_policy<
-    M: GenericMdp<S, A>,
-    S: GenericState,
-    A: GenericAction,
-    R: Rng + SeedableRng,
->(
+pub fn random_policy<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng>(
     mdp: &M,
     current_state: S,
     rng: &mut R,
@@ -94,7 +79,7 @@ pub fn random_policy<
     }
 }
 
-pub fn epsilon_greedy_policy_ma<S: GenericState, A: GenericAction, R: Rng + SeedableRng>(
+pub fn epsilon_greedy_policy_ma<S: GenericState, A: GenericAction, R: Rng>(
     possible_actions: &[A],
     q_map: &BTreeMap<(S, A), Reward>,
     current_state: S,

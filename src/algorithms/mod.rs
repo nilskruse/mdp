@@ -36,12 +36,7 @@ pub trait GenericStateActionAlgorithm {
         q_map
     }
 
-    fn run_with_q_map<
-        M: GenericMdp<S, A>,
-        S: GenericState,
-        A: GenericAction,
-        R: Rng + SeedableRng,
-    >(
+    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng>(
         &self,
         mdp: &M,
         episodes: usize,
@@ -52,7 +47,7 @@ pub trait GenericStateActionAlgorithm {
     fn get_epsilon(&self) -> f64;
 
     #[allow(unused_variables)]
-    fn step<S: GenericState, A: GenericAction, R: Rng + SeedableRng>(
+    fn step<S: GenericState, A: GenericAction, R: Rng>(
         &self,
         q_map: &mut BTreeMap<(S, A), f64>,
         possible_actions: &[A],
@@ -69,7 +64,7 @@ pub trait GenericStateActionAlgorithm {
 
 pub trait GenericStateActionAlgorithmStateful {
     // default implementation
-    fn run<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng + SeedableRng>(
+    fn run<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng>(
         &mut self,
         mdp: &M,
         episodes: usize,
@@ -86,12 +81,7 @@ pub trait GenericStateActionAlgorithmStateful {
         q_map
     }
 
-    fn run_with_q_map<
-        M: GenericMdp<S, A>,
-        S: GenericState,
-        A: GenericAction,
-        R: Rng + SeedableRng,
-    >(
+    fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng>(
         &mut self,
         mdp: &M,
         episodes: usize,

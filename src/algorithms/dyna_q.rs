@@ -10,7 +10,7 @@ use crate::{
 };
 
 pub trait Dyna<S: GenericState, A: GenericAction> {
-    fn run<M: GenericMdp<S, A>, R: Rng + SeedableRng>(
+    fn run<M: GenericMdp<S, A>, R: Rng>(
         &mut self,
         mdp: &M,
         episodes: usize,
@@ -27,7 +27,7 @@ pub trait Dyna<S: GenericState, A: GenericAction> {
         q_map
     }
 
-    fn run_with_q_map<M: GenericMdp<S, A>, R: Rng + SeedableRng>(
+    fn run_with_q_map<M: GenericMdp<S, A>, R: Rng>(
         &mut self,
         mdp: &M,
         episodes: usize,
@@ -68,7 +68,7 @@ impl<S: GenericState, A: GenericAction> DynaQ<S, A> {
 }
 
 impl<S: GenericState, A: GenericAction> Dyna<S, A> for DynaQ<S, A> {
-    fn run_with_q_map<M: GenericMdp<S, A>, R: Rng + SeedableRng>(
+    fn run_with_q_map<M: GenericMdp<S, A>, R: Rng>(
         &mut self,
         mdp: &M,
         episodes: usize,
@@ -204,7 +204,7 @@ impl<S: GenericState, A: GenericAction> BetaDynaQ<S, A> {
 }
 
 impl<S: GenericState, A: GenericAction> Dyna<S, A> for BetaDynaQ<S, A> {
-    fn run_with_q_map<M: GenericMdp<S, A>, R: Rng + SeedableRng>(
+    fn run_with_q_map<M: GenericMdp<S, A>, R: Rng>(
         &mut self,
         mdp: &M,
         episodes: usize,
