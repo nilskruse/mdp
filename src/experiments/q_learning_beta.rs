@@ -90,7 +90,7 @@ where
     let q_algo = QLearning::new(alpha, epsilon, max_steps);
     let mut q_beta_algo = QLearningBeta::new(alpha, epsilon, max_steps, beta_rate);
     let q_clipped_algo = QLearningClipped::new(alpha, epsilon, max_steps, 50.0);
-    let mut dyna_q_algo = DynaQ::new(alpha, epsilon, k, max_steps, false, mdp);
+    let mut dyna_q_algo = DynaQ::new(alpha, epsilon, k, max_steps, false, true, mdp);
 
     let mut rng = ChaCha20Rng::seed_from_u64(seed);
     let mut eval_rng = ChaCha20Rng::seed_from_u64(0);

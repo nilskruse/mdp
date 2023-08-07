@@ -42,6 +42,7 @@ pub struct DynaQ<S: GenericState, A: GenericAction> {
     model: BTreeMap<(S, A), (f64, S)>,
     t_table: BTreeMap<(S, A), BTreeMap<S, usize>>,
     deterministic: bool,
+    direct_learning: bool,
 }
 
 impl<S: GenericState, A: GenericAction> DynaQ<S, A> {
@@ -51,6 +52,7 @@ impl<S: GenericState, A: GenericAction> DynaQ<S, A> {
         k: usize,
         max_steps: usize,
         deterministic: bool,
+        direct_learning: bool,
         _mdp: &M, // used for type inference
     ) -> Self {
         Self {
@@ -61,6 +63,7 @@ impl<S: GenericState, A: GenericAction> DynaQ<S, A> {
             model: BTreeMap::new(),
             t_table: BTreeMap::new(),
             deterministic,
+            direct_learning,
         }
     }
 }
@@ -82,15 +85,17 @@ impl<S: GenericState, A: GenericAction> Dyna<S, A> for DynaQ<S, A> {
                 let (next_state, reward) =
                     mdp.perform_action((current_state, selected_action), rng);
 
-                // update q_map
-                let Some(best_action) = greedy_policy(mdp, q_map, next_state, rng) else {break};
-                let best_q = *q_map
-                    .get(&(next_state, best_action))
-                    .expect("No qmap entry found");
+                // direct learning step
+                if self.direct_learning {
+                    let Some(best_action) = greedy_policy(mdp, q_map, next_state, rng) else {break};
+                    let best_q = *q_map
+                        .get(&(next_state, best_action))
+                        .expect("No qmap entry found");
 
-                let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
-                *current_q = *current_q
-                    + self.alpha * (reward + mdp.get_discount_factor() * best_q - *current_q);
+                    let current_q = q_map.entry((current_state, selected_action)).or_insert(0.0);
+                    *current_q = *current_q
+                        + self.alpha * (reward + mdp.get_discount_factor() * best_q - *current_q);
+                }
 
                 // determine reward value used for updating model
                 let model_reward = if self.deterministic {

@@ -55,7 +55,7 @@ pub trait GenericStateActionAlgorithm {
         discount_factor: f64,
         rng: &mut R,
     ) -> bool {
-        panic!("step not implemented");
+        unimplemented!()
     }
 }
 

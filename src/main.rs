@@ -1,6 +1,32 @@
+use clap::{arg, Command};
 use mdp::experiments;
 
+fn cli() -> Command {
+    Command::new("mdp")
+        .about("MDP tool")
+        .subcommand_required(false)
+        .arg_required_else_help(false)
+        .allow_external_subcommands(true)
+        .subcommand(
+            Command::new("noncontractive").about("Tests various algorithms on non-contractive mdp"),
+        )
+}
+
 fn main() {
+    let matches = cli().get_matches();
+
+    match matches.subcommand() {
+        Some(("noncontractive", _)) => {
+            println!("doing stuff");
+        }
+        Some((_, _)) => {
+            println!("doing stuff");
+        }
+        _ => default_main(), // If all subcommands are defined above, anything else is unreachable!()
+    }
+}
+
+fn default_main() {
     // mdp::benchmarks::run_benchmarks();
     // experiments::cliff_walking::run_cliff_walking();
     // experiments::cliff_walking::run_slippery_cliff_walking();
