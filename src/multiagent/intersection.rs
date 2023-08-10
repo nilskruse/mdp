@@ -48,7 +48,7 @@ pub enum LightAction {
 }
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Copy)]
-struct Action(LightAction, LightAction);
+pub struct Action(LightAction, LightAction);
 
 pub struct MAIntersectionMdp {
     new_car_prob_ns_1: f64,
@@ -336,14 +336,14 @@ impl GenericMdp<State, Action> for MAIntersectionMdp {
     }
 }
 
-pub struct MAIntersectionRunner<G: GenericStateActionAlgorithm> {
-    mdp: MAIntersectionMdp,
+pub struct MAIntersectionRunnerSingleAgentRL<G: GenericStateActionAlgorithm> {
+    pub mdp: MAIntersectionMdp,
     agent_1: G,
     agent_2: G,
     max_steps: usize,
 }
 
-impl<G: GenericStateActionAlgorithm> MAIntersectionRunner<G> {
+impl<G: GenericStateActionAlgorithm> MAIntersectionRunnerSingleAgentRL<G> {
     pub fn new(
         new_car_prob_ns_1: f64,
         new_car_prob_ew_1: f64,
@@ -541,5 +541,37 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunner<G> {
             total_reward += episode_reward;
         }
         total_reward / episodes as f64
+    }
+
+    pub fn single_step<R: Rng>(
+        &self,
+        state: State,
+        q_map_1: &BTreeMap<(State, LightAction), f64>,
+        q_map_2: &BTreeMap<(State, LightAction), f64>,
+        rng: &mut R,
+    ) -> (State, f64) {
+        // retrieve possible actions for light 1
+        let possible_actions_1 = MAIntersectionMdp::possible_light_actions(state.light_state_1);
+
+        // retrieve possible actions for light 2
+        let possible_actions_2 = MAIntersectionMdp::possible_light_actions(state.light_state_2);
+
+        // select action for intersection 1
+        let Some(selected_action_1) = epsilon_greedy_policy_ma(&possible_actions_1, q_map_1, state, self.agent_1.get_epsilon(), rng)
+                else {
+                    panic!("no action possible")
+                };
+
+        // select action for intersection 2
+        let Some(selected_action_2) = epsilon_greedy_policy_ma(&possible_actions_2, q_map_2, state, self.agent_2.get_epsilon(), rng)
+                else {
+                    panic!("no action possible")
+                };
+
+        let combined_action = Action(selected_action_1, selected_action_2);
+
+        let (next_state, reward) = self.mdp.perform_action((state, combined_action), rng);
+
+        (next_state, reward)
     }
 }

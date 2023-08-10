@@ -1,5 +1,5 @@
 use clap::{arg, Command};
-use mdp::experiments;
+use mdp::{experiments::{self, multiagent}, visualisation};
 
 fn cli() -> Command {
     Command::new("mdp")
@@ -18,9 +18,10 @@ fn main() {
     match matches.subcommand() {
         Some(("noncontractive", _)) => {
             println!("doing stuff");
+            experiments::non_contractive::run_experiment();
         }
         Some((_, _)) => {
-            println!("doing stuff");
+            println!("Invalid command.");
         }
         _ => default_main(), // If all subcommands are defined above, anything else is unreachable!()
     }
@@ -32,7 +33,7 @@ fn default_main() {
     // experiments::cliff_walking::run_slippery_cliff_walking();
     // experiments::cliff_walking::run_cliff_walking_episodic();
     // mdp::visualisation::vis_test();
-    experiments::non_contractive::run_experiment();
+    // experiments::non_contractive::run_experiment();
     // test();
     // visualisation::vis_test();
     // experiments::non_contractive::run_experiment();
@@ -63,4 +64,6 @@ fn default_main() {
 
     // envs::my_intersection::MyIntersectionMdp::new(0.5, 0.5, 10);
     // multiagent::intersection::MAIntersectionMdp::new(0.5, 0.5, 0.5, 0.5, 10);
+    // experiments::multiagent::main();
+    visualisation::ma_intersection::main().unwrap();
 }

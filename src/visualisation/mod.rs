@@ -6,6 +6,7 @@ use crate::{
 };
 
 pub mod cliff_walking;
+pub mod ma_intersection;
 
 pub fn vis_test() {
     let cliff_walking_mdp = envs::cliff_walking::build_mdp().unwrap();
