@@ -1,11 +1,10 @@
 use std::collections::BTreeMap;
 
-use iced::alignment::Horizontal;
 use iced::executor;
 use iced::mouse;
-use iced::widget::canvas::{stroke, Cache, Geometry, LineCap, Path, Stroke};
+use iced::widget::canvas::{stroke, Cache, Geometry, Path, Stroke};
 use iced::widget::column;
-use iced::widget::row;
+
 use iced::widget::text;
 use iced::widget::{canvas, container};
 use iced::{
@@ -18,7 +17,7 @@ use rand_chacha::ChaCha20Rng;
 use crate::algorithms::q_learning::QLearning;
 use crate::algorithms::GenericStateActionAlgorithm;
 use crate::mdp::GenericMdp;
-use crate::mdp::Reward;
+
 use crate::multiagent::intersection::{LightAction, MAIntersectionRunnerSingleAgentRL, State};
 
 pub fn main() -> iced::Result {

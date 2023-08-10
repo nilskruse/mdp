@@ -1,6 +1,6 @@
-use clap::{arg, Command};
+use clap::Command;
 use mdp::{
-    experiments::{self, multiagent},
+    experiments::{self},
     visualisation,
 };
 
