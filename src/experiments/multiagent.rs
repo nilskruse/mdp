@@ -16,12 +16,12 @@ pub fn main() {
     let (mut q_map_1, mut q_map_2) = runner.gen_q_maps();
 
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(0);
-    let avg_reward = runner.eval_greedy(100, &q_map_1, &q_map_2, max_steps, &mut rng);
+    let avg_reward = runner.eval_greedy(1, &q_map_1, &q_map_2, max_steps, &mut rng);
     println!("avg reward before: {}", avg_reward);
 
-    runner.run(50000, &mut q_map_1, &mut q_map_2, &mut rng);
+    runner.run(20000, &mut q_map_1, &mut q_map_2, &mut rng);
 
-    let avg_reward = runner.eval_greedy(100, &q_map_1, &q_map_2, max_steps, &mut rng);
+    let avg_reward = runner.eval_greedy(1, &q_map_1, &q_map_2, max_steps, &mut rng);
     println!("avg reward after: {}", avg_reward);
 
     // print_q_map(&q_map_1);

@@ -508,6 +508,7 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunnerSingleAgentRL<G> {
             let mut steps = 0;
 
             while !self.mdp.is_terminal(current_state) && steps < max_steps {
+                println!("step {steps} : {:?}", current_state);
                 // retrieve possible actions for light 1
                 let possible_actions_1 =
                     MAIntersectionMdp::possible_light_actions(current_state.light_state_1);
@@ -569,6 +570,7 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunnerSingleAgentRL<G> {
                 };
 
         let combined_action = Action(selected_action_1, selected_action_2);
+        println!("combined_action: {:?}", combined_action);
 
         let (next_state, reward) = self.mdp.perform_action((state, combined_action), rng);
 

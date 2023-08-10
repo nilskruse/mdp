@@ -1,5 +1,8 @@
 use clap::{arg, Command};
-use mdp::{experiments::{self, multiagent}, visualisation};
+use mdp::{
+    experiments::{self, multiagent},
+    visualisation,
+};
 
 fn cli() -> Command {
     Command::new("mdp")
