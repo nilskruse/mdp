@@ -13,10 +13,10 @@ use crate::{
 pub struct State {
     pub light_state_1: LightState,
     pub light_state_2: LightState,
-    ns_cars_1: u8,
-    ew_cars_1: u8,
-    ns_cars_2: u8,
-    ew_cars_2: u8,
+    pub ns_cars_1: u8,
+    pub ew_cars_1: u8,
+    pub ns_cars_2: u8,
+    pub ew_cars_2: u8,
 }
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Copy)]
