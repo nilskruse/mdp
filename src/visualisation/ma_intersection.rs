@@ -1,7 +1,10 @@
 use std::collections::BTreeMap;
 
+use iced::alignment::Horizontal;
+use iced::alignment::Vertical;
 use iced::executor;
 use iced::mouse;
+use iced::widget::canvas::Text;
 use iced::widget::canvas::{stroke, Cache, Geometry, Path, Stroke};
 use iced::widget::column;
 
@@ -15,9 +18,9 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
 use crate::algorithms::q_learning::QLearning;
-use crate::algorithms::GenericStateActionAlgorithm;
 use crate::mdp::GenericMdp;
 
+use crate::multiagent::intersection::LightState;
 use crate::multiagent::intersection::{LightAction, MAIntersectionRunnerSingleAgentRL, State};
 
 pub fn main() -> iced::Result {
@@ -62,7 +65,7 @@ impl Application for MAIntersection {
         let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(0);
 
         println!("Learning...");
-        mdp.run(100, &mut q_map_1, &mut q_map_2, &mut rng);
+        mdp.run(1000, &mut q_map_1, &mut q_map_2, &mut rng);
         let state = mdp.mdp.get_initial_state(&mut rng);
         println!("Done!");
 
@@ -293,6 +296,40 @@ impl<Message> canvas::Program<Message, Renderer> for MAIntersection {
                 if self.state.ew_cars_2 > 0 {
                     draw_horizontal_cars(street_center_2, self.state.ew_cars_2);
                 }
+            });
+
+            frame.with_save(|frame| {
+                let light_symbol = |light_state: LightState| match light_state {
+                    crate::multiagent::intersection::LightState::NorthSouthOpen => "↕",
+                    crate::multiagent::intersection::LightState::EastWestOpen => "↔",
+                    crate::multiagent::intersection::LightState::ChangingToNS => "✋",
+                    crate::multiagent::intersection::LightState::ChangingToEW => "✋",
+                };
+
+                let size = 30.0;
+                let text = Text {
+                    content: light_symbol(self.state.light_state_1).to_owned(),
+                    position: street_center_1,
+                    color: Color::WHITE,
+                    size,
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
+
+                    ..Text::default()
+                };
+                frame.fill_text(text);
+
+                let text = Text {
+                    content: light_symbol(self.state.light_state_2).to_owned(),
+                    position: street_center_2,
+                    color: Color::WHITE,
+                    size,
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
+
+                    ..Text::default()
+                };
+                frame.fill_text(text);
             });
         });
 
