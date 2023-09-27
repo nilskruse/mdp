@@ -16,7 +16,7 @@ use crate::mdp::{GenericAction, GenericMdp, GenericState};
 
 pub trait GenericStateActionAlgorithm {
     // default implementation
-    fn run<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng + SeedableRng>(
+    fn run<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng>(
         &self,
         mdp: &M,
         episodes: usize,

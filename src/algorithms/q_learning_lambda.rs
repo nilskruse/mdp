@@ -9,7 +9,7 @@ use crate::{
 
 use super::{GenericStateActionAlgorithm, Trace};
 
-pub struct QLearningLamda {
+pub struct QLearningLambda {
     alpha: f64,
     epsilon: f64,
     lambda: f64,
@@ -17,9 +17,9 @@ pub struct QLearningLamda {
     trace: Trace,
 }
 
-impl QLearningLamda {
+impl QLearningLambda {
     pub fn new(alpha: f64, epsilon: f64, lambda: f64, max_steps: usize, trace: Trace) -> Self {
-        QLearningLamda {
+        QLearningLambda {
             alpha,
             epsilon,
             lambda,
@@ -29,7 +29,7 @@ impl QLearningLamda {
     }
 }
 
-impl GenericStateActionAlgorithm for QLearningLamda {
+impl GenericStateActionAlgorithm for QLearningLambda {
     fn run_with_q_map<M: GenericMdp<S, A>, S: GenericState, A: GenericAction, R: Rng>(
         &self,
         mdp: &M,

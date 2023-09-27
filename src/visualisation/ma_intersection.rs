@@ -58,7 +58,7 @@ impl Application for MAIntersection {
         let q_algo_2 = QLearning::new(0.1, 0.1, max_steps);
 
         let mdp = MAIntersectionRunnerSingleAgentRL::new(
-            0.6, 0.6, 0.6, 0.6, 10, q_algo_1, q_algo_2, max_steps,
+            0.1, 0.6, 0.1, 0.6, 10, q_algo_1, q_algo_2, max_steps,
         );
 
         let (mut q_map_1, mut q_map_2) = mdp.gen_q_maps();

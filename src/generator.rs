@@ -39,7 +39,7 @@ pub fn generate_random_mdp(
     for state in &states {
         let n_actions = rng.gen_range(min_actions..=max_actions);
         actions.choose_multiple(rng, n_actions).for_each(|action| {
-            states_actions.push((state, *action));
+            states_actions.push((*state, *action));
         });
     }
 
@@ -54,7 +54,7 @@ pub fn generate_random_mdp(
                 let next_state = states.choose(rng).unwrap();
                 outcomes.push((probability, *next_state, reward));
             }
-            ((**state, *action), outcomes)
+            ((*state, *action), outcomes)
         }));
 
     let terminal_states_vec = states
@@ -66,7 +66,6 @@ pub fn generate_random_mdp(
         HashSet::from_iter(terminal_states_vec.iter().copied());
     let discount_factor = 1.0;
 
-    let states_actions = vec![];
     MapMdp {
         transitions,
         terminal_states,

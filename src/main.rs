@@ -1,5 +1,6 @@
 use clap::Command;
 use mdp::{
+    benchmarks,
     experiments::{self},
     visualisation,
 };
@@ -68,5 +69,7 @@ fn default_main() {
     // envs::my_intersection::MyIntersectionMdp::new(0.5, 0.5, 10);
     // multiagent::intersection::MAIntersectionMdp::new(0.5, 0.5, 0.5, 0.5, 10);
     // experiments::multiagent::main();
-    visualisation::ma_intersection::main().unwrap();
+    // visualisation::ma_intersection::main().unwrap();
+    // benchmarks::bench_slippery_cliff_walking();
+    benchmarks::bench_runtime_all_env();
 }

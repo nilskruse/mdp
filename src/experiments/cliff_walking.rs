@@ -6,7 +6,7 @@ use rand::SeedableRng;
 
 use crate::{
     algorithms::{
-        monte_carlo::MonteCarlo, q_learning::QLearning, q_learning_lambda::QLearningLamda,
+        monte_carlo::MonteCarlo, q_learning::QLearning, q_learning_lambda::QLearningLambda,
         sarsa::Sarsa, sarsa_lambda::SarsaLambda, Trace,
     },
     envs,
@@ -155,7 +155,7 @@ pub fn run_cliff_walking() {
 
     // Q-Learning Lambda
     let lambda = 0.1;
-    let q_learning_lambda_algo = QLearningLamda::new(
+    let q_learning_lambda_algo = QLearningLambda::new(
         alpha,
         epsilon,
         lambda,

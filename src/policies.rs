@@ -1,4 +1,4 @@
-use crate::mdp::GenericMdp;
+use crate::{mdp::GenericMdp, utils::print_q_map};
 use std::collections::BTreeMap;
 
 use rand::Rng;
