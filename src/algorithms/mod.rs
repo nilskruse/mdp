@@ -8,7 +8,7 @@ pub mod sarsa;
 pub mod sarsa_lambda;
 pub mod value_iteration;
 
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, fmt::Display};
 
 use rand::{Rng, SeedableRng};
 
@@ -86,11 +86,17 @@ pub trait GenericStateActionAlgorithmStateful {
         q_map: &mut BTreeMap<(S, A), f64>,
     );
 }
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum Trace {
     Accumulating,
     Replacing,
     Dutch,
+}
+
+impl Display for Trace {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 impl Trace {

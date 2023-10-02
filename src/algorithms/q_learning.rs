@@ -39,7 +39,11 @@ impl GenericStateActionAlgorithm for QLearning {
             let mut steps = 0;
 
             while !mdp.is_terminal(current_state) && steps < self.max_steps {
-                let Some(selected_action) = epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng) else {break};
+                let Some(selected_action) =
+                    epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng)
+                else {
+                    break;
+                };
                 let (next_state, reward) =
                     mdp.perform_action((current_state, selected_action), rng);
 
@@ -89,7 +93,10 @@ impl GenericStateActionAlgorithm for QLearning {
         rng: &mut R,
     ) -> bool {
         // println!("state: {:?}, action: {:?}", current_state, selected_action);
-        let Some(best_action) = greedy_policy_ma(next_possible_actions, q_map, next_state, rng) else {return false};
+        let Some(best_action) = greedy_policy_ma(next_possible_actions, q_map, next_state, rng)
+        else {
+            return false;
+        };
         let best_q = *q_map
             .get(&(next_state, best_action))
             .expect("No qmap entry found");

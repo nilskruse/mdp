@@ -39,6 +39,9 @@ impl GenericStateActionAlgorithm for QLearningLambda {
     ) {
         for _ in 0..episodes {
             let mut e_map: BTreeMap<(S, A), f64> = BTreeMap::new();
+            mdp.get_all_state_actions().iter().for_each(|state_action| {
+                e_map.insert(*state_action, 0.0);
+            });
 
             let (mut current_state, mut current_action) = (
                 mdp.get_initial_state(rng),
@@ -51,8 +54,13 @@ impl GenericStateActionAlgorithm for QLearningLambda {
                 let (next_state, reward) = mdp.perform_action((current_state, current_action), rng);
 
                 let Some(next_action) =
-                    epsilon_greedy_policy(mdp, q_map, next_state, self.epsilon, rng) else {break};
-                let Some(best_action) = greedy_policy(mdp, q_map, next_state, rng) else {break};
+                    epsilon_greedy_policy(mdp, q_map, next_state, self.epsilon, rng)
+                else {
+                    break;
+                };
+                let Some(best_action) = greedy_policy(mdp, q_map, next_state, rng) else {
+                    break;
+                };
 
                 // update q_map
                 let next_q = *q_map.get(&(next_state, best_action)).unwrap();
@@ -62,18 +70,32 @@ impl GenericStateActionAlgorithm for QLearningLambda {
 
                 e_map
                     .entry((current_state, current_action))
-                    .and_modify(|entry| *entry = self.trace.calculate(*entry, self.alpha));
+                    .and_modify(|entry| {
+                        // if *entry > 0.0 {
+                        //     println!("hooray");
+                        //     println!("old e: {:?}", *entry);
+                        // }
+                        // println!("old e: {:?}", *entry);
+                        *entry = self.trace.calculate(*entry, self.alpha);
+                        // println!("new e: {:?}", *entry);
+                    });
+
+                let test_e = e_map.entry((current_state, current_action));
+                // println!("{:?}", test_e);
 
                 // update q and e for all (state, action) pairs
                 mdp.get_all_state_actions().iter().for_each(|key| {
-                    let e_entry = e_map.entry(*key).or_default();
+                    // println!("iterating");
+                    let e_entry = e_map.get_mut(key).expect("no e-entry");
 
                     q_map.entry(*key).and_modify(|q_entry| {
                         *q_entry += self.alpha * delta * *e_entry;
                     });
                     if next_action == best_action {
+                        // println!("next_action == best_action");
                         *e_entry *= mdp.get_discount_factor() * self.lambda;
                     } else {
+                        // println!("doesn't");
                         *e_entry = 0.0;
                     }
                 });

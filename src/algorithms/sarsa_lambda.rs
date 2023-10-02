@@ -51,7 +51,11 @@ impl GenericStateActionAlgorithm for SarsaLambda {
                 let (next_state, reward) = mdp.perform_action((current_state, current_action), rng);
 
                 // select action epsilon greedy and break if no action is possible (episode ends)
-                let Some(next_action) = epsilon_greedy_policy(mdp, q_map, next_state, self.epsilon, rng) else {break};
+                let Some(next_action) =
+                    epsilon_greedy_policy(mdp, q_map, next_state, self.epsilon, rng)
+                else {
+                    break;
+                };
                 // update q_map
                 let next_q = *q_map.get(&(next_state, next_action)).unwrap();
                 let current_q = *q_map.get(&(current_state, current_action)).unwrap();

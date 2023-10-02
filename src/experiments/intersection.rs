@@ -63,7 +63,7 @@ pub fn run_experiment() {
     println!("fixed cycle reward: {:?}", avg_reward_fixed_cycle);
 }
 
-fn fixed_cycle(
+pub fn fixed_cycle(
     mdp: &MyIntersectionMdp,
     episodes: usize,
     max_steps: usize,

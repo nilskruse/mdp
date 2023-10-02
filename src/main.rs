@@ -71,5 +71,7 @@ fn default_main() {
     // experiments::multiagent::main();
     // visualisation::ma_intersection::main().unwrap();
     // benchmarks::bench_slippery_cliff_walking();
-    benchmarks::bench_runtime_all_env();
+    // benchmarks::runtime::bench_runtime_all_env();
+    benchmarks::optimal_episodes::run_benchmark();
+    // benchmarks::optimal_episodes::grid_world();
 }

@@ -34,7 +34,9 @@ impl GenericMdp<BlackjackState, BlackjackAction> for BlackjackMdp {
         rng: &mut R,
     ) -> (BlackjackState, crate::mdp::Reward) {
         let (state, action) = state_action;
-        let BlackjackState::Running(player, dealer, useable_ace)  = state else { panic!("what are you doing here")};
+        let BlackjackState::Running(player, dealer, useable_ace) = state else {
+            panic!("what are you doing here")
+        };
 
         let card = match action {
             BlackjackAction::Hit => Some(self.draw_card(rng)),

@@ -50,12 +50,18 @@ impl GenericStateActionAlgorithmStateful for QLearningBeta {
             let beta = 1.0 / (self.beta_denom + 1.0);
 
             while !mdp.is_terminal(current_state) && steps < self.max_steps {
-                let Some(selected_action) = epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng) else {break};
+                let Some(selected_action) =
+                    epsilon_greedy_policy(mdp, q_map, current_state, self.epsilon, rng)
+                else {
+                    break;
+                };
                 let (next_state, reward) =
                     mdp.perform_action((current_state, selected_action), rng);
 
                 // update q_map
-                let Some(best_action) = greedy_policy(mdp, q_map, next_state, rng) else {break};
+                let Some(best_action) = greedy_policy(mdp, q_map, next_state, rng) else {
+                    break;
+                };
                 let best_q = *q_map
                     .get(&(next_state, best_action))
                     .expect("No qmap entry found");

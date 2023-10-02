@@ -394,14 +394,24 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunnerSingleAgentRL<G> {
                     MAIntersectionMdp::possible_light_actions(current_state.light_state_2);
 
                 // select action for intersection 1
-                let Some(selected_action_1) = epsilon_greedy_policy_ma(&possible_actions_1, q_map_1, current_state, self.agent_1.get_epsilon(), rng)
-                else {
+                let Some(selected_action_1) = epsilon_greedy_policy_ma(
+                    &possible_actions_1,
+                    q_map_1,
+                    current_state,
+                    self.agent_1.get_epsilon(),
+                    rng,
+                ) else {
                     panic!("no action possible")
                 };
 
                 // select action for intersection 2
-                let Some(selected_action_2) = epsilon_greedy_policy_ma(&possible_actions_2, q_map_2, current_state, self.agent_2.get_epsilon(), rng)
-                else {
+                let Some(selected_action_2) = epsilon_greedy_policy_ma(
+                    &possible_actions_2,
+                    q_map_2,
+                    current_state,
+                    self.agent_2.get_epsilon(),
+                    rng,
+                ) else {
                     panic!("no action possible")
                 };
 
@@ -518,14 +528,24 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunnerSingleAgentRL<G> {
                     MAIntersectionMdp::possible_light_actions(current_state.light_state_2);
 
                 // select action for intersection 1
-                let Some(selected_action_1) = epsilon_greedy_policy_ma(&possible_actions_1, q_map_1, current_state, self.agent_1.get_epsilon(), rng)
-                else {
+                let Some(selected_action_1) = epsilon_greedy_policy_ma(
+                    &possible_actions_1,
+                    q_map_1,
+                    current_state,
+                    self.agent_1.get_epsilon(),
+                    rng,
+                ) else {
                     panic!("no action possible")
                 };
 
                 // select action for intersection 2
-                let Some(selected_action_2) = epsilon_greedy_policy_ma(&possible_actions_2, q_map_2, current_state, self.agent_2.get_epsilon(), rng)
-                else {
+                let Some(selected_action_2) = epsilon_greedy_policy_ma(
+                    &possible_actions_2,
+                    q_map_2,
+                    current_state,
+                    self.agent_2.get_epsilon(),
+                    rng,
+                ) else {
                     panic!("no action possible")
                 };
 
@@ -558,16 +578,26 @@ impl<G: GenericStateActionAlgorithm> MAIntersectionRunnerSingleAgentRL<G> {
         let possible_actions_2 = MAIntersectionMdp::possible_light_actions(state.light_state_2);
 
         // select action for intersection 1
-        let Some(selected_action_1) = epsilon_greedy_policy_ma(&possible_actions_1, q_map_1, state, self.agent_1.get_epsilon(), rng)
-                else {
-                    panic!("no action possible")
-                };
+        let Some(selected_action_1) = epsilon_greedy_policy_ma(
+            &possible_actions_1,
+            q_map_1,
+            state,
+            self.agent_1.get_epsilon(),
+            rng,
+        ) else {
+            panic!("no action possible")
+        };
 
         // select action for intersection 2
-        let Some(selected_action_2) = epsilon_greedy_policy_ma(&possible_actions_2, q_map_2, state, self.agent_2.get_epsilon(), rng)
-                else {
-                    panic!("no action possible")
-                };
+        let Some(selected_action_2) = epsilon_greedy_policy_ma(
+            &possible_actions_2,
+            q_map_2,
+            state,
+            self.agent_2.get_epsilon(),
+            rng,
+        ) else {
+            panic!("no action possible")
+        };
 
         let combined_action = Action(selected_action_1, selected_action_2);
         println!("combined_action: {:?}", combined_action);
