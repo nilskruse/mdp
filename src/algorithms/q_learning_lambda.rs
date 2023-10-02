@@ -80,7 +80,7 @@ impl GenericStateActionAlgorithm for QLearningLambda {
                         // println!("new e: {:?}", *entry);
                     });
 
-                let test_e = e_map.entry((current_state, current_action));
+                let _test_e = e_map.entry((current_state, current_action));
                 // println!("{:?}", test_e);
 
                 // update q and e for all (state, action) pairs

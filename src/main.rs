@@ -2,7 +2,6 @@ use clap::Command;
 use mdp::{
     benchmarks,
     experiments::{self},
-    visualisation,
 };
 
 fn cli() -> Command {

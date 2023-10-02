@@ -4,10 +4,8 @@ use rand_chacha::ChaCha20Rng;
 use crate::{
     algorithms::{
         dyna_q::{Dyna, DynaQ},
-        monte_carlo::MonteCarlo,
         q_learning::QLearning,
         q_learning_lambda::QLearningLambda,
-        sarsa::Sarsa,
         sarsa_lambda::SarsaLambda,
         GenericStateActionAlgorithm, Trace,
     },
@@ -89,8 +87,8 @@ pub fn bench_algos_until_optimal(lambda: f64, trace: Trace) {
     let epsilon = 0.1;
     // let lambda = 1.0;
     // let trace = Trace::Replacing;
-    let k = 5;
-    let deterministic = true;
+    let _k = 5;
+    let _deterministic = true;
     let max_steps = 500;
     let optimal_reward = -13.0;
     let mut results: Vec<(String, f64)> = vec![];

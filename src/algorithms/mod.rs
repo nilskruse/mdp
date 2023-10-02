@@ -10,7 +10,7 @@ pub mod value_iteration;
 
 use std::{collections::BTreeMap, fmt::Display};
 
-use rand::{Rng, SeedableRng};
+use rand::Rng;
 
 use crate::mdp::{GenericAction, GenericMdp, GenericState};
 
