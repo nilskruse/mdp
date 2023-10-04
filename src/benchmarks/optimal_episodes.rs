@@ -7,7 +7,7 @@ use crate::{
         q_learning::QLearning,
         q_learning_lambda::QLearningLambda,
         sarsa_lambda::SarsaLambda,
-        GenericStateActionAlgorithm, Trace,
+        GenericStateActionAlgorithm, Trace, sarsa::Sarsa, monte_carlo::MonteCarlo,
     },
     envs,
     eval::evaluate_greedy_policy,
@@ -87,29 +87,29 @@ pub fn bench_algos_until_optimal(lambda: f64, trace: Trace) {
     let epsilon = 0.1;
     // let lambda = 1.0;
     // let trace = Trace::Replacing;
-    let _k = 5;
-    let _deterministic = true;
+    let k = 5;
+    let deterministic = true;
     let max_steps = 500;
     let optimal_reward = -13.0;
     let mut results: Vec<(String, f64)> = vec![];
 
-    // // monte carlo
-    // println!("MC");
-    // let mc_algo = MonteCarlo::new(epsilon, max_steps);
-    // let mc_episodes = bench_until_optimal(&cw_mdp, &mc_algo, seed, num_seeds, optimal_reward);
-    // results.push(("MC".to_owned(), mc_episodes));
+    // monte carlo
+    println!("MC");
+    let mc_algo = MonteCarlo::new(epsilon, max_steps);
+    let mc_episodes = bench_until_optimal(&cw_mdp, &mc_algo, seed, num_seeds, optimal_reward);
+    results.push(("MC".to_owned(), mc_episodes));
 
-    // // Q-Learning
-    // println!("Q");
-    // let q_algo = QLearning::new(alpha, epsilon, max_steps);
-    // let q_episodes = bench_until_optimal(&cw_mdp, &q_algo, seed, num_seeds, optimal_reward);
-    // results.push(("Q-Learning".to_owned(), q_episodes));
+    // Q-Learning
+    println!("Q");
+    let q_algo = QLearning::new(alpha, epsilon, max_steps);
+    let q_episodes = bench_until_optimal(&cw_mdp, &q_algo, seed, num_seeds, optimal_reward);
+    results.push(("Q-Learning".to_owned(), q_episodes));
 
-    // // SARSA
-    // println!("SARSA");
-    // let sarsa_algo = Sarsa::new(alpha, epsilon, max_steps);
-    // let sarsa_episodes = bench_until_optimal(&cw_mdp, &sarsa_algo, seed, num_seeds, optimal_reward);
-    // results.push(("SARSA".to_owned(), sarsa_episodes));
+    // SARSA
+    println!("SARSA");
+    let sarsa_algo = Sarsa::new(alpha, epsilon, max_steps);
+    let sarsa_episodes = bench_until_optimal(&cw_mdp, &sarsa_algo, seed, num_seeds, optimal_reward);
+    results.push(("SARSA".to_owned(), sarsa_episodes));
 
     // Q-Learning(lambda)
     println!("Q lambda");
@@ -125,11 +125,11 @@ pub fn bench_algos_until_optimal(lambda: f64, trace: Trace) {
         bench_until_optimal(&cw_mdp, &sarsa_lambda_algo, seed, num_seeds, optimal_reward);
     results.push(("SARSA(lambda)".to_owned(), sarsa_lambda_episodes));
 
-    // // DynaQ
-    // println!("DynaQ");
-    // let mut dyna_q_algo = DynaQ::new(alpha, epsilon, k, max_steps, deterministic, true, &cw_mdp);
-    // let dyna_q_episodes = bench_until_optimal_dynaq(&cw_mdp, &mut dyna_q_algo, seed, num_seeds, optimal_reward);
-    // results.push(("DynaQ".to_owned(), dyna_q_episodes));
+    // DynaQ
+    println!("DynaQ");
+    let mut dyna_q_algo = DynaQ::new(alpha, epsilon, k, max_steps, deterministic, true, &cw_mdp);
+    let dyna_q_episodes = bench_until_optimal_dynaq(&cw_mdp, &mut dyna_q_algo, seed, num_seeds, optimal_reward);
+    results.push(("DynaQ".to_owned(), dyna_q_episodes));
 
     //
     // let mut _rng = ChaCha20Rng::seed_from_u64(seed);

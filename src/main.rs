@@ -71,6 +71,8 @@ fn default_main() {
     // visualisation::ma_intersection::main().unwrap();
     // benchmarks::bench_slippery_cliff_walking();
     // benchmarks::runtime::bench_runtime_all_env();
-    benchmarks::optimal_episodes::run_benchmark();
+    // benchmarks::optimal_episodes::run_benchmark();
     // benchmarks::optimal_episodes::grid_world();
+    // benchmarks::strategies::compare_intersection();
+    benchmarks::strategies::test_intersection_params();
 }
