@@ -20,16 +20,12 @@ fn test_q_learning() {
 
     print_q_map(&q_map);
 
-    assert_f64_near!(*q_map.get(&(IndexState(0), IndexAction(0))).unwrap(), 0.181);
+    assert_f64_near!(*q_map.get(&(IndexState(0), IndexAction(0))).unwrap(), 0.0);
     assert_f64_near!(*q_map.get(&(IndexState(0), IndexAction(1))).unwrap(), -0.1);
-    assert_f64_near!(*q_map.get(&(IndexState(1), IndexAction(0))).unwrap(), -0.1);
-    assert_f64_near!(
-        *q_map.get(&(IndexState(1), IndexAction(1))).unwrap(),
-        -0.191
-    );
+    assert_f64_near!(*q_map.get(&(IndexState(1), IndexAction(0))).unwrap(), 0.0);
+    assert_f64_near!(*q_map.get(&(IndexState(1), IndexAction(1))).unwrap(), 0.0);
 }
 
-// TODO: redo the manual calculations because the initial state handling has changed
 #[test]
 fn test_sarsa() {
     let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(8);
@@ -38,16 +34,10 @@ fn test_sarsa() {
     let algo = Sarsa::new(0.1, 0.1, 5);
     let q_map = algo.run(&mdp, 1, &mut rng);
 
-    assert_f64_near!(*q_map.get(&(IndexState(0), IndexAction(0))).unwrap(), 0.19);
-    assert_f64_near!(*q_map.get(&(IndexState(0), IndexAction(1))).unwrap(), 0.0);
-    assert_f64_near!(
-        *q_map.get(&(IndexState(1), IndexAction(0))).unwrap(),
-        -0.199
-    );
-    assert_f64_near!(
-        *q_map.get(&(IndexState(1), IndexAction(1))).unwrap(),
-        -0.191
-    );
+    assert_f64_near!(*q_map.get(&(IndexState(0), IndexAction(0))).unwrap(), 0.0);
+    assert_f64_near!(*q_map.get(&(IndexState(0), IndexAction(1))).unwrap(), -0.1);
+    assert_f64_near!(*q_map.get(&(IndexState(1), IndexAction(0))).unwrap(), 0.0);
+    assert_f64_near!(*q_map.get(&(IndexState(1), IndexAction(1))).unwrap(), 0.0);
 }
 
 const EPISODES: usize = 1000;

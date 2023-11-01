@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::{mdp::GenericMdp, policies::greedy_policy_ma};
+use crate::{mdp::GenericMdp, policies::greedy_policy_ma, utils::print_q_map};
 use std::collections::BTreeMap;
 
 use crate::{
@@ -67,6 +67,7 @@ impl GenericStateActionAlgorithm for QLearning {
                     mdp.get_discount_factor(),
                     rng,
                 );
+                // print_q_map(q_map);
 
                 // break if step was not possible
                 if !step {

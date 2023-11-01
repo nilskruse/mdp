@@ -28,8 +28,8 @@ pub fn compare_intersection() {
 
     let alpha = 0.1;
     let epsilon = 0.1;
-    let lambda = 0.9;
-    let trace = Trace::Dutch;
+    let lambda = 0.7;
+    let trace = Trace::Replacing;
     let k = 5;
     let deterministic = true;
     let max_steps = 2000;
@@ -248,7 +248,7 @@ fn test_params_lambda_trace(lambda: f64, trace: Trace) -> (f64, f64) {
     let alpha = 0.1;
     let epsilon = 0.1;
     let max_steps = 2000;
-    let train_episodes = 1000;
+    let train_episodes = 100;
 
     // Q-Learning(lambda)
     println!("Q lambda");

@@ -1,17 +1,60 @@
 use clap::Command;
 use mdp::{
+    algorithms::Trace,
     benchmarks,
     experiments::{self},
+    visualisation,
 };
 
 fn cli() -> Command {
     Command::new("mdp")
         .about("MDP tool")
         .subcommand_required(false)
-        .arg_required_else_help(false)
+        .arg_required_else_help(true)
         .allow_external_subcommands(true)
         .subcommand(
-            Command::new("noncontractive").about("Tests various algorithms on non-contractive mdp"),
+            Command::new("experiment")
+                .about("Run experiments")
+                .arg_required_else_help(true)
+                .subcommand(
+                    Command::new("noncontractive")
+                        .about("Tests various algorithms on non-contractive mdp"),
+                )
+                .subcommand(
+                    Command::new("multiagent_single")
+                        .about("Run single-agent RL on multi-agent intersection environment"),
+                )
+                .subcommand(
+                    Command::new("multiagent_agent_aware")
+                        .about("Run agent-aware RL on multi-agent intersection environment"),
+                ),
+        )
+        .subcommand(
+            Command::new("bench")
+                .about("Run benchmarks and write results to CSV files")
+                .arg_required_else_help(true)
+                .subcommand(Command::new("runtime").about("Run runtime benchmarks"))
+                .subcommand(
+                    Command::new("optimal_episodes")
+                        .about("Run episodes required for optimal policy benchmarks"),
+                )
+                .subcommand(
+                    Command::new("intersection")
+                        .about("Run strategy comparison benchmark on intersection environment"),
+                ),
+        )
+        .subcommand(
+            Command::new("visual")
+                .about("Run benchmarks and write results to CSV files")
+                .arg_required_else_help(true)
+                .subcommand(
+                    Command::new("multiagent_intersection")
+                        .about("Run visualisation of multi-agent intersection"),
+                )
+                .subcommand(
+                    Command::new("cliff_walking")
+                        .about("Run Q-Learning on cliff walking environment and visualize policy"),
+                ),
         )
 }
 
@@ -19,60 +62,26 @@ fn main() {
     let matches = cli().get_matches();
 
     match matches.subcommand() {
-        Some(("noncontractive", _)) => {
-            println!("doing stuff");
-            experiments::non_contractive::run_experiment();
-        }
+        Some(("experiment", experiment)) => match experiment.subcommand() {
+            Some(("noncontractive", _)) => experiments::non_contractive::run_experiment(),
+            Some(("multiagent_single", _)) => experiments::multiagent::regular_rl(),
+            Some(("multiagent_agent_aware", _)) => experiments::multiagent::single_agent_rl(),
+            _ => println!("Invalid command."),
+        },
+        Some(("bench", benchmark)) => match benchmark.subcommand() {
+            Some(("runtime", _)) => benchmarks::runtime::bench_runtime_all_env(),
+            Some(("optimal_episodes", _)) => benchmarks::optimal_episodes::run_benchmark(),
+            Some(("intersection", _)) => benchmarks::strategies::compare_intersection(),
+            _ => println!("Invalid command."),
+        },
+        Some(("visual", vis)) => match vis.subcommand() {
+            Some(("multiagent_intersection", _)) => visualisation::ma_intersection::main().unwrap(),
+            Some(("cliff_walking", _)) => visualisation::vis_test(),
+            _ => println!("Invalid command."),
+        },
         Some((_, _)) => {
             println!("Invalid command.");
         }
-        _ => default_main(), // If all subcommands are defined above, anything else is unreachable!()
+        _ => panic!("we should not reach this"),
     }
-}
-
-fn default_main() {
-    // mdp::benchmarks::run_benchmarks();
-    // experiments::cliff_walking::run_cliff_walking();
-    // experiments::cliff_walking::run_slippery_cliff_walking();
-    // experiments::cliff_walking::run_cliff_walking_episodic();
-    // mdp::visualisation::vis_test();
-    // experiments::non_contractive::run_experiment();
-    // test();
-    // visualisation::vis_test();
-    // experiments::non_contractive::run_experiment();
-    // experiments::q_learning_dynamic::run_experiment();
-    // experiments::intersection::run_experiment();
-    // experiments::q_learning_beta::run_q_beta_experiment();
-    // experiments::q_learning_beta::run_equivalence_experiment();
-    // let lightstates = [
-    //     LightState::NorthSouthOpen,
-    //     LightState::EastWestOpen,
-    //     LightState::ChangingToNS,
-    //     LightState::ChangingToEW,
-    // ];
-    // let car_iter = 0..=5;
-    // let iter = iproduct!(
-    //     lightstates.iter(),
-    //     lightstates.iter(),
-    //     car_iter.clone().into_iter(),
-    //     car_iter.clone().into_iter(),
-    //     car_iter.clone().into_iter(),
-    //     car_iter.clone().into_iter()
-    // );
-
-    // iter.clone().for_each(|t| {
-    //     println!("{:?}", t);
-    // });
-    // println!("state count: {:?}", iter.clone().count());
-
-    // envs::my_intersection::MyIntersectionMdp::new(0.5, 0.5, 10);
-    // multiagent::intersection::MAIntersectionMdp::new(0.5, 0.5, 0.5, 0.5, 10);
-    // experiments::multiagent::main();
-    // visualisation::ma_intersection::main().unwrap();
-    // benchmarks::bench_slippery_cliff_walking();
-    // benchmarks::runtime::bench_runtime_all_env();
-    // benchmarks::optimal_episodes::run_benchmark();
-    // benchmarks::optimal_episodes::grid_world();
-    // benchmarks::strategies::compare_intersection();
-    benchmarks::strategies::test_intersection_params();
 }

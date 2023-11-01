@@ -4,7 +4,7 @@ use crate::{
     algorithms::{q_learning::QLearning, GenericStateActionAlgorithm},
     envs::{
         self,
-        my_intersection::{Action, MyIntersectionMdp},
+        my_intersection::{LightAction, MyIntersectionMdp},
     },
     eval::{evaluate_epsilon_greedy_policy, evaluate_greedy_policy, evaluate_random_policy},
     mdp::GenericMdp,
@@ -83,23 +83,23 @@ pub fn fixed_cycle(
                 envs::my_intersection::LightState::NorthSouthOpen => {
                     if cycle_counter < ns_time {
                         cycle_counter += 1;
-                        Action::Stay
+                        LightAction::Stay
                     } else {
                         cycle_counter = 0;
-                        Action::Change
+                        LightAction::Change
                     }
                 }
                 envs::my_intersection::LightState::EastWestOpen => {
                     if cycle_counter < ew_time {
                         cycle_counter += 1;
-                        Action::Stay
+                        LightAction::Stay
                     } else {
                         cycle_counter = 0;
-                        Action::Change
+                        LightAction::Change
                     }
                 }
-                envs::my_intersection::LightState::ChangingToNS => Action::WaitForChange,
-                envs::my_intersection::LightState::ChangingToEW => Action::WaitForChange,
+                envs::my_intersection::LightState::ChangingToNS => LightAction::WaitForChange,
+                envs::my_intersection::LightState::ChangingToEW => LightAction::WaitForChange,
             };
 
             // println!("step: {:?}, action: {:?}", steps, action);

@@ -18,10 +18,11 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
 use crate::algorithms::q_learning::QLearning;
+use crate::envs::my_intersection::LightAction;
+use crate::envs::my_intersection::LightState;
 use crate::mdp::GenericMdp;
 
-use crate::multiagent::intersection::LightState;
-use crate::multiagent::intersection::{LightAction, MAIntersectionRunnerSingleAgentRL, State};
+use crate::multiagent::intersection::{MAIntersectionRunnerSingleAgentRL, MAState};
 
 pub fn main() -> iced::Result {
     MAIntersection::run(Settings {
@@ -32,9 +33,9 @@ pub fn main() -> iced::Result {
 
 struct MAIntersection {
     mdp: MAIntersectionRunnerSingleAgentRL<QLearning>,
-    q_map_1: BTreeMap<(State, LightAction), f64>,
-    q_map_2: BTreeMap<(State, LightAction), f64>,
-    state: State,
+    q_map_1: BTreeMap<(MAState, LightAction), f64>,
+    q_map_2: BTreeMap<(MAState, LightAction), f64>,
+    state: MAState,
     steps: usize,
     total_reward: f64,
     rng: ChaCha20Rng,
@@ -300,10 +301,10 @@ impl<Message> canvas::Program<Message, Renderer> for MAIntersection {
 
             frame.with_save(|frame| {
                 let light_symbol = |light_state: LightState| match light_state {
-                    crate::multiagent::intersection::LightState::NorthSouthOpen => "↕",
-                    crate::multiagent::intersection::LightState::EastWestOpen => "↔",
-                    crate::multiagent::intersection::LightState::ChangingToNS => "✋",
-                    crate::multiagent::intersection::LightState::ChangingToEW => "✋",
+                    LightState::NorthSouthOpen => "↕",
+                    LightState::EastWestOpen => "↔",
+                    LightState::ChangingToNS => "✋",
+                    LightState::ChangingToEW => "✋",
                 };
 
                 let size = 30.0;

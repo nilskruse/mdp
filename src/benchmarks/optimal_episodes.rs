@@ -3,11 +3,13 @@ use rand_chacha::ChaCha20Rng;
 
 use crate::{
     algorithms::{
-        dyna_q::{Dyna, DynaQ},
+        dyna_q::{BetaDynaQ, Dyna, DynaQ},
+        monte_carlo::MonteCarlo,
         q_learning::QLearning,
         q_learning_lambda::QLearningLambda,
+        sarsa::Sarsa,
         sarsa_lambda::SarsaLambda,
-        GenericStateActionAlgorithm, Trace, sarsa::Sarsa, monte_carlo::MonteCarlo,
+        GenericStateActionAlgorithm, Trace,
     },
     envs,
     eval::evaluate_greedy_policy,
@@ -77,8 +79,40 @@ fn bench_until_optimal_dynaq<M: GenericMdp<S, A>, S: GenericState, A: GenericAct
     total_episodes as f64 / num_seeds as f64
 }
 
+fn bench_until_optimal_beta_dynaq<M: GenericMdp<S, A>, S: GenericState, A: GenericAction>(
+    env: &M,
+    algo: &mut BetaDynaQ<S, A>,
+    seed: u64,
+    num_seeds: usize,
+    optimal_reward: f64,
+) -> f64 {
+    let mut eval_rng = ChaCha20Rng::seed_from_u64(seed + 1);
+    let eval_max_steps = 200;
+    let eval_episodes = 10;
+
+    let mut total_episodes = 0;
+    for i in 0..num_seeds {
+        let mut rng = ChaCha20Rng::seed_from_u64(seed + i as u64);
+        algo.clear_model();
+        let mut q_map = algo.run(env, 1, &mut rng);
+
+        loop {
+            let avg_reward =
+                evaluate_greedy_policy(env, &q_map, eval_episodes, eval_max_steps, &mut eval_rng);
+            algo.run_with_q_map(env, 1, &mut rng, &mut q_map);
+            if avg_reward == optimal_reward {
+                break;
+            }
+            // println!("episode: {q_counter}");
+            total_episodes += 1;
+            // dbg!(i, total_episodes, avg_reward);
+        }
+    }
+    total_episodes as f64 / num_seeds as f64
+}
+
 pub fn bench_algos_until_optimal(lambda: f64, trace: Trace) {
-    let seed: u64 = 0;
+    let seed: u64 = 1;
     let num_seeds: usize = 100;
     // let cw_mdp = crate::envs::cliff_walking::build_mdp().unwrap();
     let cw_mdp = crate::envs::grid_world::build_mdp().unwrap();
@@ -112,24 +146,47 @@ pub fn bench_algos_until_optimal(lambda: f64, trace: Trace) {
     results.push(("SARSA".to_owned(), sarsa_episodes));
 
     // Q-Learning(lambda)
-    println!("Q lambda");
-    let q_lambda_algo = QLearningLambda::new(alpha, epsilon, lambda, max_steps, trace);
-    let q_lambda_episodes =
-        bench_until_optimal(&cw_mdp, &q_lambda_algo, seed, num_seeds, optimal_reward);
-    results.push(("Q-Learning(lambda)".to_owned(), q_lambda_episodes));
+    // println!("Q lambda");
+    // let q_lambda_algo = QLearningLambda::new(alpha, epsilon, lambda, max_steps, trace);
+    // let q_lambda_episodes =
+    //     bench_until_optimal(&cw_mdp, &q_lambda_algo, seed, num_seeds, optimal_reward);
+    // results.push(("Q-Learning(lambda)".to_owned(), q_lambda_episodes));
 
-    // Q-Learning(lambda)
-    println!("SARSA lambda");
-    let sarsa_lambda_algo = SarsaLambda::new(alpha, epsilon, lambda, max_steps, trace);
-    let sarsa_lambda_episodes =
-        bench_until_optimal(&cw_mdp, &sarsa_lambda_algo, seed, num_seeds, optimal_reward);
-    results.push(("SARSA(lambda)".to_owned(), sarsa_lambda_episodes));
+    // // Q-Learning(lambda)
+    // println!("SARSA lambda");
+    // let sarsa_lambda_algo = SarsaLambda::new(alpha, epsilon, lambda, max_steps, trace);
+    // let sarsa_lambda_episodes =
+    //     bench_until_optimal(&cw_mdp, &sarsa_lambda_algo, seed, num_seeds, optimal_reward);
+    // results.push(("SARSA(lambda)".to_owned(), sarsa_lambda_episodes));
 
     // DynaQ
     println!("DynaQ");
     let mut dyna_q_algo = DynaQ::new(alpha, epsilon, k, max_steps, deterministic, true, &cw_mdp);
-    let dyna_q_episodes = bench_until_optimal_dynaq(&cw_mdp, &mut dyna_q_algo, seed, num_seeds, optimal_reward);
+    let dyna_q_episodes =
+        bench_until_optimal_dynaq(&cw_mdp, &mut dyna_q_algo, seed, num_seeds, optimal_reward);
     results.push(("DynaQ".to_owned(), dyna_q_episodes));
+
+    // DynaQ
+    println!("BetaDynaQ, no converging alpha, no direct learning step");
+    let mut beta_dyna_q_algo = BetaDynaQ::new_with_settings(
+        alpha,
+        epsilon,
+        k,
+        max_steps,
+        deterministic,
+        &cw_mdp,
+        1,
+        false,
+        true,
+    );
+    let beta_dyna_q_episodes = bench_until_optimal_beta_dynaq(
+        &cw_mdp,
+        &mut beta_dyna_q_algo,
+        seed,
+        num_seeds,
+        optimal_reward,
+    );
+    results.push(("BetaDynaQ".to_owned(), beta_dyna_q_episodes));
 
     //
     // let mut _rng = ChaCha20Rng::seed_from_u64(seed);
@@ -139,6 +196,8 @@ pub fn bench_algos_until_optimal(lambda: f64, trace: Trace) {
     dbg!(&results);
     let mut path =
         format!("results/grid_world_optimal_alpha{alpha}_epsilon{epsilon}_lambda{lambda}_{trace}");
+    // let mut path =
+    //     format!("results/cliff_walking_optimal_beta_dyna_q");
     path = path.replace(".", "_");
     path.push_str(".csv");
     dbg!(&path);

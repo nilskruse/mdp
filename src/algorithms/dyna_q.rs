@@ -52,6 +52,14 @@ impl<S: GenericState, A: GenericAction> DynaQ<S, A> {
     }
 }
 
+impl<S: GenericState, A: GenericAction> BetaDynaQ<S, A> {
+    pub fn clear_model(&mut self) {
+        self.model.clear();
+        self.t_table.clear();
+        self.beta_denom = 0.0;
+    }
+}
+
 impl<S: GenericState, A: GenericAction> DynaQ<S, A> {
     pub fn new<M: GenericMdp<S, A>>(
         alpha: f64,

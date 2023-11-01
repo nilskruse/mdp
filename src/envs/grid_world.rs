@@ -53,7 +53,7 @@ pub fn build_mdp() -> anyhow::Result<MapMdp<CliffWalkingState, CliffWalkingActio
     grid[0][ROWS - 1] = Cell::Start;
     grid[COLS - 1][0] = Cell::End;
 
-    let mut mdp = CliffWalkingMdp::new(1.0, CliffWalkingState(ROWS - 1, 0));
+    let mut mdp = CliffWalkingMdp::new(0.9, CliffWalkingState(ROWS - 1, 0));
 
     // fill transition map for every state and action
     for row in 0..ROWS {
