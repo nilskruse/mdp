@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::{mdp::GenericMdp, policies::greedy_policy_ma, utils::print_q_map};
+use crate::{mdp::GenericMdp, policies::greedy_policy_ma};
 use std::collections::BTreeMap;
 
 use crate::{

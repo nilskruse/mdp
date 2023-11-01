@@ -1,6 +1,5 @@
 use clap::Command;
 use mdp::{
-    algorithms::Trace,
     benchmarks,
     experiments::{self},
     visualisation,

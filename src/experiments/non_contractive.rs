@@ -1,10 +1,6 @@
 use crate::{
     algorithms::{
         dyna_q::{BetaDynaQ, Dyna, DynaQ},
-        monte_carlo::MonteCarlo,
-        q_learning::QLearning,
-        q_learning_beta::QLearningBeta,
-        sarsa::Sarsa,
         GenericStateActionAlgorithm, GenericStateActionAlgorithmStateful,
     },
     eval::evaluate_greedy_policy,
